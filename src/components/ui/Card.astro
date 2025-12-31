@@ -1,0 +1,28 @@
+---
+interface Props {
+  variant?: 'default' | 'flat';
+  href?: string;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  variant = 'default',
+  href,
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+const variantClasses = {
+  default: 'card',
+  flat: 'card card-flat'
+};
+
+const classes = `${variantClasses[variant]} ${className}`.trim();
+
+const Tag = href ? 'a' : 'div';
+---
+
+<Tag href={href} class={classes} {...rest}>
+  <slot />
+</Tag>

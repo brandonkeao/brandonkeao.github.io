@@ -1,72 +1,85 @@
 ---
+import ThemeToggle from './ui/ThemeToggle.astro';
+
 const navLinks = [
   { href: '/about', label: 'About' },
-  { href: '/manager-readme', label: 'Manager README' },
-  { href: '/services', label: 'Services' },
+  { href: '/projects', label: 'Projects' },
   { href: '/writing', label: 'Writing' },
-  { href: '/bookshelf', label: 'Bookshelf' },
+  { href: '/services', label: 'Services' },
   { href: '/contact', label: 'Contact' },
 ];
 
 const currentPath = Astro.url.pathname;
 ---
 
-<header class="border-b border-[var(--color-border)]">
+<header class="sticky top-0 z-50 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border)]">
   <nav class="container py-4 flex items-center justify-between">
-    <a href="/" class="text-xl font-semibold text-[var(--color-text)] hover:text-[var(--color-text)]">
+    <!-- Logo/Brand -->
+    <a
+      href="/"
+      class="text-xl font-semibold text-[var(--text-primary)] hover:text-[var(--text-primary)] font-[var(--font-serif)]"
+    >
       Brandon Keao
     </a>
 
     <!-- Desktop Nav -->
-    <ul class="hidden md:flex items-center gap-8">
-      {navLinks.map(link => (
-        <li>
-          <a
-            href={link.href}
-            class:list={[
-              "text-sm font-medium transition-colors",
-              currentPath === link.href || currentPath.startsWith(link.href + '/')
-                ? "text-[var(--color-accent)]"
-                : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-            ]}
-          >
-            {link.label}
-          </a>
-        </li>
-      ))}
-    </ul>
+    <div class="hidden md:flex items-center gap-8">
+      <ul class="flex items-center gap-6">
+        {navLinks.map(link => (
+          <li>
+            <a
+              href={link.href}
+              class:list={[
+                "text-sm font-medium transition-colors link-underline",
+                currentPath === link.href || currentPath.startsWith(link.href + '/')
+                  ? "text-[var(--accent)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              ]}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
 
-    <!-- Mobile Menu Button -->
-    <button
-      id="mobile-menu-btn"
-      class="md:hidden p-2 -mr-2"
-      aria-label="Toggle menu"
-      aria-expanded="false"
-    >
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          id="menu-icon"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M4 6h16M4 12h16M4 18h16"
-        />
-      </svg>
-    </button>
+      <ThemeToggle />
+    </div>
+
+    <!-- Mobile Controls -->
+    <div class="flex items-center gap-2 md:hidden">
+      <ThemeToggle />
+
+      <button
+        id="mobile-menu-btn"
+        class="p-2 -mr-2 hover:bg-[var(--bg-secondary)] rounded-md transition-colors"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+      >
+        <svg class="w-6 h-6 text-[var(--text-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            id="menu-icon"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      </button>
+    </div>
   </nav>
 
   <!-- Mobile Nav -->
-  <div id="mobile-menu" class="hidden md:hidden border-t border-[var(--color-border)]">
-    <ul class="container py-4 flex flex-col gap-4">
+  <div id="mobile-menu" class="hidden md:hidden border-t border-[var(--border)] bg-[var(--bg-primary)]">
+    <ul class="container py-4 flex flex-col gap-2">
       {navLinks.map(link => (
         <li>
           <a
             href={link.href}
             class:list={[
-              "block py-2 text-base font-medium",
+              "block py-3 px-4 -mx-4 text-base font-medium rounded-md transition-colors",
               currentPath === link.href || currentPath.startsWith(link.href + '/')
-                ? "text-[var(--color-accent)]"
-                : "text-[var(--color-text-muted)]"
+                ? "text-[var(--accent)] bg-[var(--accent-subtle)]"
+                : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
             ]}
           >
             {link.label}
@@ -78,18 +91,26 @@ const currentPath = Astro.url.pathname;
 </header>
 
 <script>
-  const btn = document.getElementById('mobile-menu-btn');
-  const menu = document.getElementById('mobile-menu');
-  const icon = document.getElementById('menu-icon');
+  function initMobileMenu() {
+    const btn = document.getElementById('mobile-menu-btn');
+    const menu = document.getElementById('mobile-menu');
+    const icon = document.getElementById('menu-icon');
 
-  btn?.addEventListener('click', () => {
-    const isOpen = menu?.classList.toggle('hidden');
-    btn.setAttribute('aria-expanded', String(!isOpen));
+    btn?.addEventListener('click', () => {
+      const isHidden = menu?.classList.toggle('hidden');
+      btn.setAttribute('aria-expanded', String(!isHidden));
 
-    if (isOpen) {
-      icon?.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
-    } else {
-      icon?.setAttribute('d', 'M6 18L18 6M6 6l12 12');
-    }
-  });
+      if (isHidden) {
+        icon?.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+      } else {
+        icon?.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+      }
+    });
+  }
+
+  // Initialize on page load
+  initMobileMenu();
+
+  // Re-initialize after view transitions
+  document.addEventListener('astro:after-swap', initMobileMenu);
 </script>

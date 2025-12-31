@@ -1,0 +1,54 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  features?: string[];
+  href?: string;
+}
+
+const { title, description, features = [], href } = Astro.props;
+---
+
+<article class="card h-full flex flex-col">
+  <div class="flex flex-col gap-4 flex-1">
+    <h3 class="text-lg font-semibold">
+      {title}
+    </h3>
+
+    <p class="text-[var(--text-secondary)]">
+      {description}
+    </p>
+
+    {features.length > 0 && (
+      <ul class="space-y-2 mt-auto">
+        {features.map((feature) => (
+          <li class="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+            <svg
+              class="w-4 h-4 text-[var(--accent)] mt-0.5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            <span>{feature}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    {href && (
+      <a
+        href={href}
+        class="btn btn-secondary mt-4 w-full justify-center"
+      >
+        Learn more
+      </a>
+    )}
+  </div>
+</article>

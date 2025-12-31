@@ -1,0 +1,74 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  status?: 'active' | 'completed' | 'archived';
+  href?: string;
+  tags?: string[];
+  featured?: boolean;
+}
+
+const {
+  title,
+  description,
+  status = 'active',
+  href,
+  tags = [],
+  featured = false
+} = Astro.props;
+
+const statusLabels = {
+  active: 'Active',
+  completed: 'Completed',
+  archived: 'Archived'
+};
+
+const statusColors = {
+  active: 'text-green-600 dark:text-green-400',
+  completed: 'text-blue-600 dark:text-blue-400',
+  archived: 'text-[var(--text-tertiary)]'
+};
+---
+
+<article class={`card group ${featured ? 'border-[var(--accent)] border-2' : ''}`}>
+  <div class="flex flex-col gap-3">
+    <div class="flex items-start justify-between gap-4">
+      <h3 class="text-lg font-semibold group-hover:text-[var(--accent)] transition-colors">
+        {href ? (
+          <a href={href} class="hover:underline">
+            {title}
+          </a>
+        ) : (
+          title
+        )}
+      </h3>
+      <span class={`text-xs font-medium ${statusColors[status]}`}>
+        {statusLabels[status]}
+      </span>
+    </div>
+
+    <p class="text-[var(--text-secondary)]">
+      {description}
+    </p>
+
+    {tags.length > 0 && (
+      <div class="flex flex-wrap gap-2">
+        {tags.map((tag) => (
+          <span class="tag">{tag}</span>
+        ))}
+      </div>
+    )}
+
+    {href && (
+      <a
+        href={href}
+        class="inline-flex items-center gap-1 text-sm text-[var(--accent)] hover:text-[var(--accent-hover)] mt-2"
+      >
+        Learn more
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+      </a>
+    )}
+  </div>
+</article>
