@@ -1,0 +1,125 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const testimonials = [
+  {
+    quote: "Brandon led a complete redesign of the Bitly core offering, increasing SaaS revenues 75%.",
+    author: "Maria Thomas",
+    title: "VP of Product at Bitly"
+  },
+  {
+    quote: "Impressed by his ability to break down objectives into technical requirements and leadership ownership.",
+    author: "Andre Sugai",
+    title: "CTO and Partner @ Ora Interactive"
+  },
+  {
+    quote: "Brandon helped shape prioritization and tactics with honest communication and strong customer journey insights.",
+    author: "Walter Reid",
+    title: "Senior Product Manager @ ShowYourWay Rewards"
+  },
+  {
+    quote: "Brandon excelled as team leader and contributor, providing delivery acumen and lasting client value.",
+    author: "Josh Nardo",
+    title: "VP Americas, Professional Services @ Itiviti"
+  },
+  {
+    quote: "Brandon quickly grasps technology's impact on business initiatives and aligns strategy effectively.",
+    author: "Jonathan Bingham",
+    title: "President and CEO @ Janeiro Digital"
+  }
+];
+---
+
+<BaseLayout title="Home" description="Brandon Keao - Product Leader & AI/Context Engineering Expert. Helping companies build AI-powered products that work.">
+  <!-- Hero Section -->
+  <section class="container py-16 md:py-24">
+    <div class="max-w-3xl">
+      <h1 class="mb-6">
+        Product Leader.<br />
+        <span class="text-[var(--color-text-muted)]">Context Engineer.</span>
+      </h1>
+      <p class="text-xl text-[var(--color-text-muted)] mb-8 max-w-2xl">
+        18+ years building products. Now focused on the intersection of product strategy and AI.
+        It's not prompt engineering&mdash;it's <strong class="text-[var(--color-text)]">context engineering</strong>.
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href="/services" class="btn btn-primary">Work with me</a>
+        <a href="/writing" class="btn btn-secondary">Read my writing</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- What I Do Section -->
+  <section class="bg-gray-50 py-16">
+    <div class="container">
+      <h2 class="mb-8">What I Do</h2>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div>
+          <h3 class="text-lg font-semibold mb-2">AI Strategy</h3>
+          <p class="text-[var(--color-text-muted)]">
+            Helping leaders navigate AI integration with practical, evidence-based approaches. No hype, just results.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold mb-2">Context Engineering</h3>
+          <p class="text-[var(--color-text-muted)]">
+            Building Context Maps and agentic systems that give AI the information it needs to be truly useful.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold mb-2">Product Leadership</h3>
+          <p class="text-[var(--color-text-muted)]">
+            Fractional product leadership for companies scaling product-led growth, now enhanced with AI capabilities.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Current Focus Section -->
+  <section class="container py-16">
+    <h2 class="mb-8">Building in Public</h2>
+    <div class="prose max-w-none">
+      <p>
+        I'm currently building <strong>Jane</strong>&mdash;an AI Chief of Staff that manages context, coordinates agents, and handles the cognitive load of running a business. It's my laboratory for context engineering principles.
+      </p>
+      <p>
+        I share what I learn through writing, LinkedIn posts, and conversations with fellow builders. The best insights come from building real things.
+      </p>
+      <a href="/writing" class="inline-flex items-center gap-2 mt-4">
+        Follow along
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="bg-gray-50 py-16">
+    <div class="container">
+      <h2 class="mb-8">What People Say</h2>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {testimonials.map(t => (
+          <blockquote class="bg-white p-6 rounded-lg border border-[var(--color-border)]">
+            <p class="text-[var(--color-text-muted)] mb-4 italic">"{t.quote}"</p>
+            <footer class="text-sm">
+              <span class="font-medium">{t.author}</span>
+              <br />
+              <span class="text-[var(--color-text-muted)]">{t.title}</span>
+            </footer>
+          </blockquote>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="container py-16 text-center">
+    <h2 class="mb-4">Let's Talk</h2>
+    <p class="text-[var(--color-text-muted)] mb-8 max-w-xl mx-auto">
+      Whether you're exploring AI strategy, need product leadership, or want to discuss context engineering&mdash;I'd love to hear from you.
+    </p>
+    <a href="/contact" class="btn btn-primary">Get in touch</a>
+  </section>
+</BaseLayout>

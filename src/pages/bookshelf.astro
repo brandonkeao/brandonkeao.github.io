@@ -1,0 +1,124 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const categories = [
+  {
+    name: "Product Management & Strategy",
+    books: [
+      { title: "Inspired", author: "Marty Cagan" },
+      { title: "Empowered", author: "Marty Cagan" },
+      { title: "Continuous Discovery Habits", author: "Teresa Torres" },
+      { title: "Escaping the Build Trap", author: "Melissa Perri" },
+      { title: "Working Backwards", author: "Colin Bryar & Bill Carr" },
+      { title: "User Story Mapping", author: "Jeff Patton" },
+      { title: "Competing Against Luck", author: "Clayton Christensen" },
+      { title: "Hooked", author: "Nir Eyal" },
+      { title: "Obviously Awesome", author: "April Dunford" },
+      { title: "Product Roadmaps Relaunched", author: "C. Todd Lombardo" },
+      { title: "Zero to One", author: "Peter Thiel" },
+      { title: "Traction", author: "Gabriel Weinberg" },
+      { title: "The Lean Startup", author: "Eric Ries" },
+      { title: "Sprint", author: "Jake Knapp" },
+      { title: "The Innovator's Dilemma", author: "Clayton Christensen" },
+      { title: "Loved", author: "Martina Lauchengco" },
+      { title: "Transformed", author: "Marty Cagan" },
+      { title: "Sense and Respond", author: "Jeff Gothelf" },
+      { title: "Product-Led Growth", author: "Wes Bush" }
+    ]
+  },
+  {
+    name: "Leadership & Organizations",
+    books: [
+      { title: "Good to Great", author: "Jim Collins" },
+      { title: "Great by Choice", author: "Jim Collins" },
+      { title: "Good Strategy/Bad Strategy", author: "Richard Rumelt" },
+      { title: "The Hard Thing About Hard Things", author: "Ben Horowitz" },
+      { title: "High Output Management", author: "Andy Grove" },
+      { title: "Team Topologies", author: "Matthew Skelton & Manuel Pais" },
+      { title: "The Five Dysfunctions of a Team", author: "Patrick Lencioni" },
+      { title: "An Elegant Puzzle", author: "Will Larson" },
+      { title: "Dare to Lead", author: "Brené Brown" },
+      { title: "Extreme Ownership", author: "Jocko Willink" },
+      { title: "The Dichotomy of Leadership", author: "Jocko Willink" },
+      { title: "No Rules Rules", author: "Reed Hastings" },
+      { title: "Culture Code", author: "Daniel Coyle" },
+      { title: "The Outsiders", author: "William Thorndike" },
+      { title: "Brave New Work", author: "Aaron Dignan" },
+      { title: "Build", author: "Tony Fadell" },
+      { title: "Scale", author: "Reid Hoffman" },
+      { title: "Leadership in Turbulent Times", author: "Doris Kearns Goodwin" }
+    ]
+  },
+  {
+    name: "Thinking & Decision Making",
+    books: [
+      { title: "Thinking in Bets", author: "Annie Duke" },
+      { title: "Range", author: "David Epstein" },
+      { title: "The Scout Mindset", author: "Julia Galef" },
+      { title: "Superforecasting", author: "Philip Tetlock" },
+      { title: "Tools of Titans", author: "Tim Ferriss" }
+    ]
+  },
+  {
+    name: "Design & Innovation",
+    books: [
+      { title: "Change by Design", author: "Tim Brown" },
+      { title: "The Design of Everyday Things", author: "Don Norman" },
+      { title: "Design Org Design", author: "Peter Merholz" },
+      { title: "Solving Problems with Design Thinking", author: "Jeanne Liedtka" }
+    ]
+  },
+  {
+    name: "Communication & Sales",
+    books: [
+      { title: "Never Split the Difference", author: "Chris Voss" },
+      { title: "Getting to Yes", author: "Roger Fisher" },
+      { title: "Nonviolent Communication", author: "Marshall Rosenberg" },
+      { title: "The Challenger Sale", author: "Matthew Dixon" },
+      { title: "Predictable Revenue", author: "Aaron Ross" },
+      { title: "Give and Take", author: "Adam Grant" }
+    ]
+  },
+  {
+    name: "Technology & Business",
+    books: [
+      { title: "Platform Revolution", author: "Geoffrey Parker" },
+      { title: "The Third Wave", author: "Steve Case" },
+      { title: "Power and Prediction", author: "Ajay Agrawal" },
+      { title: "Rework", author: "Jason Fried" },
+      { title: "Let My People Go Surfing", author: "Yvon Chouinard" }
+    ]
+  }
+];
+---
+
+<BaseLayout title="Bookshelf" description="Books that have shaped Brandon Keao's thinking on product, strategy, leadership, and decision-making.">
+  <section class="container py-16">
+    <div class="max-w-4xl">
+      <h1 class="mb-4">Bookshelf</h1>
+      <p class="text-xl text-[var(--color-text-muted)] mb-12">
+        Books that have shaped my thinking. Not exhaustive&mdash;just the ones I find myself recommending.
+      </p>
+
+      <div class="space-y-12">
+        {categories.map(category => (
+          <div>
+            <h2 class="text-lg font-semibold mb-6 pb-2 border-b border-[var(--color-border)]">
+              {category.name}
+            </h2>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {category.books.map(book => (
+                <div class="p-4 bg-gray-50 rounded-lg">
+                  <h3 class="font-medium text-sm">{book.title}</h3>
+                  <p class="text-sm text-[var(--color-text-muted)]">
+                    {book.author}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

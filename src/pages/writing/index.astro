@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('writing');
+const sortedPosts = posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+---
+
+<BaseLayout title="Writing" description="Thoughts on AI, product management, context engineering, and building in public from Brandon Keao.">
+  <section class="container py-16">
+    <div class="max-w-3xl">
+      <h1 class="mb-4">Writing</h1>
+      <p class="text-xl text-[var(--color-text-muted)] mb-12">
+        Thoughts on product management, leadership, and technology. Practical insights from actually making things.
+      </p>
+
+      <div class="space-y-8">
+        {sortedPosts.map(post => (
+          <article class="border-b border-[var(--color-border)] pb-8 last:border-0">
+            <time class="text-sm text-[var(--color-text-muted)]" datetime={post.data.date.toISOString()}>
+              {formatDate(post.data.date)}
+            </time>
+            <h2 class="text-xl mt-2 mb-2">
+              <a href={`/writing/${post.id}`} class="text-[var(--color-text)] hover:text-[var(--color-accent)]">
+                {post.data.title}
+              </a>
+            </h2>
+            <p class="text-[var(--color-text-muted)]">{post.data.description}</p>
+          </article>
+        ))}
+      </div>
+
+      <div class="mt-12 p-6 bg-gray-50 rounded-lg">
+        <p class="text-[var(--color-text-muted)]">
+          I also share shorter thoughts on <a href="https://linkedin.com/in/brandonkeao" target="_blank" rel="noopener noreferrer">LinkedIn</a>. Follow along for regular updates on what I'm learning and building.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

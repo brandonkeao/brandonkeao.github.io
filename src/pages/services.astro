@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const services = [
+  {
+    name: "AI Strategy Assessment",
+    description: "A focused engagement to evaluate your AI readiness and identify high-impact opportunities. We'll assess your current state, map potential use cases, and create a prioritized roadmap.",
+    includes: [
+      "Current state analysis",
+      "AI opportunity mapping",
+      "Prioritized recommendations",
+      "Implementation roadmap"
+    ]
+  },
+  {
+    name: "Context Engineering Consulting",
+    description: "Deep dive into making AI systems genuinely useful for your organization. I'll help you build Context Maps, design agent architectures, and create systems that work.",
+    includes: [
+      "Context Map development",
+      "Agent system design",
+      "Implementation guidance",
+      "Team training"
+    ]
+  },
+  {
+    name: "Fractional Product + AI Leadership",
+    description: "Embedded product leadership for companies integrating AI into their products or operations. Part strategist, part builder, fully accountable.",
+    includes: [
+      "Product strategy",
+      "AI integration planning",
+      "Team leadership",
+      "Hands-on building"
+    ]
+  }
+];
+---
+
+<BaseLayout title="Services" description="AI strategy, context engineering consulting, and fractional product leadership services from Brandon Keao.">
+  <section class="container py-16">
+    <div class="max-w-3xl">
+      <h1 class="mb-4">Services</h1>
+      <p class="text-xl text-[var(--color-text-muted)] mb-12">
+        I help companies figure out AI strategy, build AI systems that actually work, and lead product teams through the transition.
+      </p>
+    </div>
+
+    <div class="space-y-12">
+      {services.map(service => (
+        <div class="border border-[var(--color-border)] rounded-lg p-8">
+          <h2 class="text-xl mb-4">{service.name}</h2>
+          <p class="text-[var(--color-text-muted)] mb-6">{service.description}</p>
+          <div>
+            <h3 class="text-sm font-semibold uppercase tracking-wide text-[var(--color-text-muted)] mb-3">Includes</h3>
+            <ul class="grid sm:grid-cols-2 gap-2">
+              {service.includes.map(item => (
+                <li class="flex items-center gap-2 text-sm">
+                  <svg class="w-4 h-4 text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-16 bg-gray-50 rounded-lg p-8 text-center">
+      <h2 class="mb-4">Not sure what you need?</h2>
+      <p class="text-[var(--color-text-muted)] mb-6 max-w-xl mx-auto">
+        Let's start with a conversation. I'll help you figure out if and how I can help.
+      </p>
+      <a href="/contact" class="btn btn-primary">Schedule a call</a>
+    </div>
+  </section>
+</BaseLayout>
