@@ -14,34 +14,44 @@ function formatDate(date: Date) {
 }
 ---
 
-<BaseLayout title="Writing" description="Thoughts on AI, product management, context engineering, and building in public from Brandon Keao.">
-  <section class="container py-16">
-    <div class="max-w-3xl">
-      <h1 class="mb-4">Writing</h1>
-      <p class="text-xl text-[var(--color-text-muted)] mb-12">
-        Thoughts on product management, leadership, and technology. Practical insights from actually making things.
-      </p>
+<BaseLayout title="Writing" description="Thoughts on context engineering, agentic systems, and the changing nature of product work. Building in public.">
+  <section class="section">
+    <div class="container">
+      <div class="max-w-3xl">
+        <h1 class="mb-6">Writing</h1>
+        <div class="prose mb-12">
+          <p class="text-xl text-[var(--text-secondary)]">
+            I write about context engineering, agentic systems, and the changing nature of product work. Most of what I publish starts as a LinkedIn post -- testing ideas in public, seeing what resonates, learning from the responses.
+          </p>
 
-      <div class="space-y-8">
-        {sortedPosts.map(post => (
-          <article class="border-b border-[var(--color-border)] pb-8 last:border-0">
-            <time class="text-sm text-[var(--color-text-muted)]" datetime={post.data.date.toISOString()}>
-              {formatDate(post.data.date)}
-            </time>
-            <h2 class="text-xl mt-2 mb-2">
-              <a href={`/writing/${post.id}`} class="text-[var(--color-text)] hover:text-[var(--color-accent)]">
-                {post.data.title}
-              </a>
-            </h2>
-            <p class="text-[var(--color-text-muted)]">{post.data.description}</p>
-          </article>
-        ))}
-      </div>
+          <p>
+            The pieces that have legs get expanded here. More depth. More nuance. Room to explore implications that don't fit in a feed scroll.
+          </p>
 
-      <div class="mt-12 p-6 bg-gray-50 rounded-lg">
-        <p class="text-[var(--color-text-muted)]">
-          I also share shorter thoughts on <a href="https://linkedin.com/in/brandonkeao" target="_blank" rel="noopener noreferrer">LinkedIn</a>. Follow along for regular updates on what I'm learning and building.
-        </p>
+          <p>
+            My focus right now is on what I'm calling the shift from deterministic to probabilistic work -- how AI changes not just what we can do, but how we think about doing it. I'm interested in the practical application of these ideas. What's actually working. What's harder than the demos suggest. The gap between AI capability and AI value.
+          </p>
+
+          <p>
+            If you want the real-time version, follow me on <a href="https://linkedin.com/in/brandonkeao" target="_blank" rel="noopener noreferrer">LinkedIn</a>. If you want the longer exploration, you're in the right place.
+          </p>
+        </div>
+
+        <div class="space-y-8">
+          {sortedPosts.map(post => (
+            <article class="border-b border-[var(--border)] pb-8 last:border-0">
+              <time class="text-sm text-[var(--text-tertiary)]" datetime={post.data.date.toISOString()}>
+                {formatDate(post.data.date)}
+              </time>
+              <h2 class="text-xl mt-2 mb-2">
+                <a href={`/writing/${post.id}`} class="text-[var(--text-primary)] hover:text-[var(--accent)]">
+                  {post.data.title}
+                </a>
+              </h2>
+              <p class="text-[var(--text-secondary)]">{post.data.description}</p>
+            </article>
+          ))}
+        </div>
       </div>
     </div>
   </section>

@@ -41,16 +41,34 @@ const services = [
 
 const testimonials = [
   {
-    quote: "Brandon led a complete redesign of the Bitly core offering, increasing SaaS revenues 75%.",
+    quote: "Brandon is a top-notch full-stack product leader who is highly capable and willing to be accountable for vast product areas.",
     author: "Maria Thomas",
     title: "VP of Product",
     company: "Bitly"
   },
   {
-    quote: "Impressed by his ability to break down objectives into technical requirements and leadership ownership.",
+    quote: "His ability to break down business objectives into actionable technical requirements impressed me most.",
     author: "Andre Sugai",
     title: "CTO and Partner",
     company: "Ora Interactive"
+  },
+  {
+    quote: "Brandon has an honest and thoughtful communication style, a keen eye for the customer journey.",
+    author: "Walter Reid",
+    title: "Senior Product Manager",
+    company: "ShowYourWay Rewards"
+  },
+  {
+    quote: "A strong team member, team leader, and individual contributor, Brandon excelled in the variety of client cultures.",
+    author: "Josh Nardo",
+    title: "VP Americas, Professional Services",
+    company: "Itiviti"
+  },
+  {
+    quote: "Brandon is a motivated and focused individual with skills that allow him to quickly grasp how technology impacts business.",
+    author: "Jonathan Bingham",
+    title: "President and CEO",
+    company: "Janeiro Digital"
   }
 ];
 
@@ -77,7 +95,7 @@ const recentPosts = [
 ];
 ---
 
-<BaseLayout title="Home" description="Brandon Keao - Product Leader & Context Engineer. Helping companies build AI-powered products that actually work.">
+<BaseLayout title="Home" description="Brandon Keao - Product Leader & AI Builder. 18+ years building products and teams. Now pioneering practical context engineering.">
 
   <!-- Hero Section -->
   <section class="section-lg">
@@ -85,14 +103,16 @@ const recentPosts = [
       <div class="max-w-3xl reveal">
         <h1 class="mb-6 text-balance">
           Product Leader.<br />
-          <span class="text-[var(--text-secondary)]">Context Engineer.</span>
+          <span class="text-[var(--text-secondary)]">AI Builder.</span>
         </h1>
         <p class="lead mb-8 max-w-2xl">
-          18+ years building products. Now focused on the intersection of product strategy and AI.
-          It's not prompt engineering&mdash;it's <strong class="text-[var(--text-primary)]">context engineering</strong>.
+          18+ years building products and teams. Now pioneering practical context engineering -- and sharing the journey.
+        </p>
+        <p class="text-lg text-[var(--text-secondary)] mb-8 max-w-2xl">
+          I help leaders navigate the shift from deterministic to probabilistic work. Not with theory, but with systems I'm building in public.
         </p>
         <div class="flex flex-wrap gap-4">
-          <a href="/services" class="btn btn-primary">Work with me</a>
+          <a href="/contact" class="btn btn-primary">Start a Conversation</a>
           <a href="/writing" class="btn btn-secondary">Read my writing</a>
         </div>
       </div>
@@ -182,8 +202,11 @@ const recentPosts = [
   <!-- Testimonials -->
   <section class="section-alt section">
     <div class="container">
-      <h2 class="mb-8">What People Say</h2>
-      <div class="grid md:grid-cols-2 gap-6 reveal-stagger">
+      <h2 class="mb-4">What People Say</h2>
+      <p class="text-[var(--text-secondary)] mb-8 max-w-2xl">
+        I've worked with leaders across startups, enterprises, and everything in between. A few perspectives from people who've seen the work firsthand.
+      </p>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 reveal-stagger">
         {testimonials.map(t => (
           <Testimonial {...t} />
         ))}

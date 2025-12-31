@@ -2,52 +2,121 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="About" description="Brandon Keao's background, AI journey, and philosophy on building products.">
-  <section class="container py-16">
-    <div class="max-w-3xl">
-      <h1 class="mb-8">About</h1>
+<BaseLayout title="About" description="Brandon Keao's background, AI journey, and philosophy on building products that work.">
+  <section class="section">
+    <div class="container">
+      <div class="max-w-3xl">
+        <h1 class="mb-8">About</h1>
 
-      <div class="prose">
-        <p class="text-xl text-[var(--color-text-muted)]">
-          I'm a product leader with 18+ years of experience, now focused on the intersection of product strategy and AI.
-        </p>
+        <div class="prose">
+          <!-- Section 1: Lead with Product/Leadership -->
+          <p class="text-xl text-[var(--text-secondary)] mb-8">
+            I've spent 18+ years building products, leading teams, and designing systems that work for real people in real organizations.
+          </p>
 
-        <h2>Background</h2>
-        <p>
-          My career has spanned product management, design, and strategy across startups and enterprises. I've led teams, shipped products, and helped companies figure out what to build and how to build it well.
-        </p>
-        <p>
-          The common thread: I care about building things that actually work for people. Not features for the sake of features. Not technology for the sake of technology. Useful tools that solve real problems.
-        </p>
+          <p>
+            From early-stage startups figuring out what to build, to scaling companies optimizing what they've built, to enterprise organizations trying to remember why they built it in the first place -- I've seen the full cycle. User research. Product strategy. Design systems. Team development. The messy reality of shipping things that matter.
+          </p>
 
-        <h2>The AI Chapter</h2>
-        <p>
-          In late 2024, I dove deep into AI&mdash;not as an observer, but as a builder. I started with the question that matters: "How do I make AI genuinely useful for my work?"
-        </p>
-        <p>
-          The answer wasn't prompt engineering. It was <strong>context engineering</strong>&mdash;giving AI systems the right information, structure, and understanding to be truly helpful. Prompts are just the interface. Context is the substance.
-        </p>
-        <p>
-          This led me to build Jane, an AI Chief of Staff, and develop frameworks like Context Maps that help AI systems work more like knowledgeable colleagues than clever chatbots.
-        </p>
+          <p>
+            The common thread across all of it: I care about things that actually work. Not features for the sake of roadmap completeness. Not technology for the sake of appearing innovative. Useful tools that solve real problems for real people.
+          </p>
 
-        <h2>Philosophy</h2>
-        <ul>
-          <li><strong>Build, don't speculate.</strong> The best insights come from making things. I learn by shipping.</li>
-          <li><strong>Practical over theoretical.</strong> I care about what works, not what sounds impressive.</li>
-          <li><strong>Evidence-based.</strong> Strong opinions, loosely held. Always testing assumptions.</li>
-          <li><strong>Build in public.</strong> Share the journey, not just the destination.</li>
-        </ul>
+          <p>
+            That said, building useful things requires more than good intentions. It requires understanding systems -- how information flows, how decisions get made, how teams coordinate under uncertainty. Product work, at its core, is systems design. I just didn't realize until recently how literally that would apply.
+          </p>
 
-        <h2>Leadership Style</h2>
-        <p>
-          For a deeper look at how I work with teams, check out my <a href="/manager-readme">Manager README</a>.
-        </p>
+          <!-- Section 2: Bridge to AI -->
+          <h2>The AI Chapter</h2>
 
-        <h2>Let's Connect</h2>
-        <p>
-          I'm always interested in conversations about AI strategy, product leadership, and what's actually working in practice. <a href="/contact">Reach out</a> or find me on <a href="https://linkedin.com/in/brandonkeao" target="_blank" rel="noopener noreferrer">LinkedIn</a>.
-        </p>
+          <p>
+            In late 2024, I dove deep into AI -- not as an observer reading trend reports, but as a builder trying to figure out how to make this actually useful.
+          </p>
+
+          <p>
+            Most of the conversation around AI focuses on the model. Which one is smarter. Which one is faster. In my opinion, that's the wrong conversation. The models are going to keep getting better. What won't automatically improve is how we give AI the context it needs to do meaningful work.
+          </p>
+
+          <p>
+            This is where product thinking meets AI engineering. Designing how information flows to AI systems. Structuring context so it's useful, not just available. Building the scaffolding that turns clever chatbots into genuine collaborators. I call this context engineering -- not prompt engineering -- because prompts are just the interface. Context is the substance.
+          </p>
+
+          <p>
+            Eighteen years of thinking about user needs, information architecture, and system design prepared me for this in ways I didn't expect.
+          </p>
+
+          <!-- Section 3: Current Building -->
+          <h2>What I'm Building</h2>
+
+          <p>
+            I'm building an AI agent ecosystem. Jane is my AI Chief of Staff -- she coordinates specialized agents across content, engineering, and strategy. Each agent has its own context, its own role, its own memory. Jane orchestrates them, routes tasks, and maintains continuity across sessions.
+          </p>
+
+          <p>
+            It's ambitious. It's also practical. I'm building what I need to do better work, and sharing the journey as I go.
+          </p>
+
+          <p>
+            Beyond Jane, I'm developing frameworks like Context Maps -- structured approaches to giving AI systems the information they need to be genuinely helpful. Not theoretical frameworks. Working systems that I use every day.
+          </p>
+
+          <p>
+            This work happens at night and on weekends. By day, I'm Head of Product at Rebrandly, where I lead product strategy and AI integration for the link management platform. The two worlds inform each other -- what I learn building Jane shapes how I think about Rebrandly's AI approach, and what I learn at scale informs how I build my own systems.
+          </p>
+
+          <!-- Section 4: Philosophy -->
+          <h2>Philosophy</h2>
+
+          <p>
+            <strong>Build, don't speculate.</strong> The best insights come from making things. I learn by shipping.
+          </p>
+
+          <p>
+            <strong>Practical over theoretical.</strong> I care about what works in practice, not what sounds impressive in conference talks. The gap between AI demos and AI value is where the real work happens.
+          </p>
+
+          <p>
+            <strong>Evidence-based.</strong> Strong opinions, loosely held. Every assumption gets tested. When the evidence points in a different direction, I change course.
+          </p>
+
+          <p>
+            <strong>Start simple, iterate based on evidence.</strong> I've learned this the hard way. Phase 2 of my agent system was over-engineered -- I built infrastructure for problems I didn't have yet. Phase 4 started with markdown files and grew from there. The simple version taught me what the complex version actually needed.
+          </p>
+
+          <p>
+            <strong>Build in public.</strong> The journey is the content. I share what's working, what's broken, and what I'm learning along the way. Not polished case studies written after the fact -- real-time dispatches from the work itself.
+          </p>
+
+          <!-- Section 5: Personal -->
+          <h2>Personal</h2>
+
+          <p>
+            I'm a husband and father. Hannah and I have two kids who provide endless perspective on what actually matters -- and a continuous reminder that the best systems are the ones that work alongside life, not despite it.
+          </p>
+
+          <p>
+            I'm building this agent ecosystem while the 3-year-old decides that lunch is optional and bedtime is negotiable. That constraint has been useful. It forces focus. It demands that things actually work, not just look good in a demo.
+          </p>
+
+          <p>
+            The infrastructure work doesn't pause for family chaos. That said, I'm realizing the binding constraint isn't building the system -- it's sustaining it alongside actual life. That's a different kind of engineering problem.
+          </p>
+
+          <!-- Section 6: How I Work -->
+          <h2>How I Work</h2>
+
+          <p>
+            I've written a Manager README that goes deeper on how I lead teams, give feedback, and think about professional development. If you're considering working with me -- whether as a colleague, client, or collaborator -- it's worth a read.
+          </p>
+
+          <p>
+            The short version: I believe in extreme ownership, action over debate, and treating every person I work with as capable of leading from wherever they are. I serve my teams, not the other way around.
+          </p>
+
+          <p>
+            <a href="/manager-readme" class="link-underline">Read my Manager README →</a>
+          </p>
+        </div>
       </div>
     </div>
   </section>
