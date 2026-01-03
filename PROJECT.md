@@ -2,7 +2,7 @@
 project: brandonkeao.com
 type: personal-website
 status: active
-version: 1.0.0
+version: 1.1.0
 last_updated: 2026-01-03
 tech_stack: [Astro 5.x, Tailwind CSS 4.x, TypeScript]
 deployment: GitHub Pages
@@ -15,7 +15,7 @@ sections:
   - qa-standards
   - changelog
 pages: [home, about, services, writing, contact, bookshelf, manager-readme, projects]
-components: [Header, Footer, Button, Card, Tag, ThemeToggle, ServiceCard, ProjectCard, PostCard, Testimonial]
+components: [Header, Footer, Button, Card, Tag, ServiceCard, ProjectCard, PostCard, Testimonial]
 ---
 
 # PROJECT.md - brandonkeao.com
@@ -215,7 +215,6 @@ Content collection location: `src/content/writing/`
 | `Button` | primary, secondary, ghost | size: sm, md, lg |
 | `Card` | default, flat | - |
 | `Tag` | - | - |
-| `ThemeToggle` | - | - |
 
 **Content Components:**
 | Component | Purpose |
@@ -228,9 +227,9 @@ Content collection location: `src/content/writing/`
 **Layout Components:**
 | Component | Features |
 |-----------|----------|
-| `Header` | Sticky nav, logo, theme toggle, mobile menu |
-| `Footer` | Links, copyright |
-| `BaseLayout` | SEO, fonts, dark mode, view transitions |
+| `Header` | Sticky nav, logo, mobile menu |
+| `Footer` | Single-line layout: nav links left, social icons right (LinkedIn, Email) |
+| `BaseLayout` | SEO, fonts, view transitions |
 
 ### Accessibility
 
@@ -294,8 +293,7 @@ brandonkeao.github.io/
 │   │   ├── ui/             # Primitives
 │   │   │   ├── Button.astro
 │   │   │   ├── Card.astro
-│   │   │   ├── Tag.astro
-│   │   │   └── ThemeToggle.astro
+│   │   │   └── Tag.astro
 │   │   └── content/        # Content-specific
 │   │       ├── ServiceCard.astro
 │   │       ├── ProjectCard.astro
@@ -343,7 +341,7 @@ brandonkeao.github.io/
 
 ### Key Features
 
-- **Dark Mode**: System preference detection, localStorage persistence, no flash
+- **Light Mode Only**: Clean editorial aesthetic, no theme toggle
 - **View Transitions**: SPA-like navigation between pages
 - **SEO**: Meta tags, Open Graph, Twitter Cards, sitemap, canonical URLs
 - **Performance**: Static generation, font preloading, optimized images
@@ -356,7 +354,6 @@ brandonkeao.github.io/
 
 - [ ] All 8 pages load without errors
 - [ ] Navigation links work (header and footer)
-- [ ] Theme toggle switches between light/dark
 - [ ] Mobile menu opens/closes correctly
 - [ ] Blog post listing displays all 17 posts
 - [ ] Individual blog posts render correctly
@@ -420,6 +417,16 @@ brandonkeao.github.io/
 ---
 
 ## Changelog
+
+### v1.1.0 - 2026-01-03
+
+**Editorial Design System Overhaul**
+- Removed dark mode entirely (deleted ThemeToggle component)
+- Updated typography: DM Serif Display headlines, Source Serif 4 prose, Inter UI
+- Changed accent color to terracotta (#c45c3d)
+- Simplified footer to single-line layout (nav links left, social icons right)
+- Removed X/Twitter from social links
+- Applied editorial styling across pages (eyebrow text, sharp corners, generous spacing)
 
 ### v1.0.0 - 2026-01-03
 
