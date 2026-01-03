@@ -14,7 +14,7 @@ const featuredProjects = [
     featured: true
   },
   {
-    title: 'Rebrandly - CPO',
+    title: 'Rebrandly - Head of Product',
     description: 'Leading product strategy and AI integration at Rebrandly, shaping how the platform uses AI for link management and brand building.',
     status: 'active' as const,
     tags: ['Product Leadership', 'AI Strategy']
@@ -39,6 +39,7 @@ const services = [
   }
 ];
 
+// Curated to 3 strong testimonials for editorial impact
 const testimonials = [
   {
     quote: "Brandon is a top-notch full-stack product leader who is highly capable and willing to be accountable for vast product areas.",
@@ -57,18 +58,6 @@ const testimonials = [
     author: "Walter Reid",
     title: "Senior Product Manager",
     company: "ShowYourWay Rewards"
-  },
-  {
-    quote: "A strong team member, team leader, and individual contributor, Brandon excelled in the variety of client cultures.",
-    author: "Josh Nardo",
-    title: "VP Americas, Professional Services",
-    company: "Itiviti"
-  },
-  {
-    quote: "Brandon is a motivated and focused individual with skills that allow him to quickly grasp how technology impacts business.",
-    author: "Jonathan Bingham",
-    title: "President and CEO",
-    company: "Janeiro Digital"
   }
 ];
 
@@ -76,42 +65,42 @@ const testimonials = [
 
 <BaseLayout title="Home" description="Brandon Keao - Product Leader & AI Builder. 18+ years building products and teams. Now pioneering practical context engineering.">
 
-  <!-- Hero Section -->
-  <section class="section-lg">
+  <!-- Hero Section - Editorial -->
+  <section class="py-20 md:py-32">
     <div class="container">
-      <div class="max-w-3xl reveal">
-        <h1 class="mb-6 text-balance">
-          Product Leader.<br />
-          <span class="text-[var(--text-secondary)]">AI Builder.</span>
+      <div class="max-w-4xl reveal">
+        <p class="eyebrow mb-6">Product Leader / AI Builder</p>
+        <h1 class="mb-8 text-balance leading-none">
+          Building the bridge between<br class="hidden md:block" />
+          human judgment and<br class="hidden md:block" />
+          AI capability.
         </h1>
-        <p class="lead mb-8 max-w-2xl">
+        <p class="lead mb-12 max-w-2xl">
           18+ years building products and teams. Now pioneering practical context engineering; sharing the journey as I go.
         </p>
-        <p class="text-lg text-[var(--text-secondary)] mb-8 max-w-2xl">
-          I help leaders navigate the shift from deterministic to probabilistic work. Not with theory, but with systems I'm building in public; this is what 2026 demands.
-        </p>
-        <div class="flex flex-wrap gap-4">
+        <div class="flex flex-wrap items-center gap-6">
           <a href="/contact" class="btn btn-primary">Start a Conversation</a>
-          <a href="/writing" class="btn btn-secondary">Read my writing</a>
+          <a href="/writing" class="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors">
+            Read my writing &rarr;
+          </a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Identity Statement -->
-  <section class="section-alt section">
+  <!-- Identity Statement - Editorial pull-quote style -->
+  <section class="py-16 md:py-24 bg-[var(--bg-secondary)]">
     <div class="container">
       <div class="max-w-3xl reveal">
-        <h2 class="mb-6">What I Believe</h2>
-        <div class="prose">
-          <p class="text-lg">
+        <div class="border-l-4 border-[var(--accent)] pl-8">
+          <p class="font-[var(--font-serif)] text-xl md:text-2xl leading-relaxed text-[var(--text-primary)] mb-6">
             The promise of AI for business outcomes won't be realized through better prompts.
             It will come from <strong>engineered, applied AI-centric systems</strong>: systems
             that understand context, coordinate intelligently, and augment human judgment.
           </p>
-          <p>
+          <p class="text-[var(--text-secondary)] leading-relaxed">
             The 60-70% that AI can handle doesn't scale linearly to business outcomes.
-            The remaining 40%; judgment, context, synthesis: that's where the real work is.
+            The remaining 40%: judgment, context, synthesis. That's where the real work is.
             That's what I focus on.
           </p>
         </div>
@@ -120,13 +109,15 @@ const testimonials = [
   </section>
 
   <!-- Featured Work -->
-  <section class="section">
+  <section class="py-16 md:py-24">
     <div class="container">
-      <div class="flex items-baseline justify-between mb-8">
+      <div class="flex items-baseline justify-between mb-10">
         <h2>What I'm Building</h2>
-        <a href="/projects" class="link-underline text-sm">View all projects</a>
+        <a href="/projects" class="text-sm font-medium text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors">
+          View all &rarr;
+        </a>
       </div>
-      <div class="grid md:grid-cols-2 gap-6 reveal-stagger">
+      <div class="grid md:grid-cols-2 gap-8 reveal-stagger">
         {featuredProjects.map(project => (
           <ProjectCard {...project} />
         ))}
@@ -136,13 +127,15 @@ const testimonials = [
 
 
   <!-- Services Preview -->
-  <section class="section">
+  <section class="py-16 md:py-24 bg-[var(--bg-secondary)]">
     <div class="container">
-      <div class="flex items-baseline justify-between mb-8">
+      <div class="flex items-baseline justify-between mb-10">
         <h2>How I Can Help</h2>
-        <a href="/services" class="link-underline text-sm">View all services</a>
+        <a href="/services" class="text-sm font-medium text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors">
+          View all &rarr;
+        </a>
       </div>
-      <div class="grid md:grid-cols-3 gap-6 reveal-stagger">
+      <div class="grid md:grid-cols-3 gap-8 reveal-stagger">
         {services.map(service => (
           <ServiceCard {...service} />
         ))}
@@ -151,13 +144,11 @@ const testimonials = [
   </section>
 
   <!-- Testimonials -->
-  <section class="section-alt section">
+  <section class="py-16 md:py-24">
     <div class="container">
-      <h2 class="mb-4">What People Say</h2>
-      <p class="text-[var(--text-secondary)] mb-8 max-w-2xl">
-        I've worked with leaders across startups, enterprises, and everything in between. A few perspectives from people who've seen the work firsthand.
-      </p>
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 reveal-stagger">
+      <p class="eyebrow mb-3">What People Say</p>
+      <h2 class="mb-12">A few perspectives from people who've seen the work firsthand.</h2>
+      <div class="grid md:grid-cols-3 gap-12 reveal-stagger">
         {testimonials.map(t => (
           <Testimonial {...t} />
         ))}
@@ -166,14 +157,14 @@ const testimonials = [
   </section>
 
   <!-- CTA Section -->
-  <section class="section text-center">
+  <section class="py-20 md:py-32 bg-[var(--bg-secondary)]">
     <div class="container">
-      <div class="max-w-xl mx-auto reveal">
-        <h2 class="mb-4">Let's Talk</h2>
-        <p class="lead mb-8">
-          Whether you're exploring AI strategy, need product leadership, or want to discuss context engineering; I'd love to hear from you.
+      <div class="max-w-2xl reveal">
+        <h2 class="mb-6">Let's Talk</h2>
+        <p class="lead mb-10 max-w-xl">
+          Whether you're exploring AI strategy, need product leadership, or want to discuss context engineering: I'd love to hear from you.
         </p>
-        <a href="/contact" class="btn btn-primary btn-lg">Get in touch</a>
+        <a href="/contact" class="btn btn-primary">Start a Conversation</a>
       </div>
     </div>
   </section>
