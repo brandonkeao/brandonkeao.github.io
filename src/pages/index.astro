@@ -15,7 +15,7 @@ const featuredProjects = [
   },
   {
     title: 'Rebrandly - CPO',
-    description: 'Leading product strategy and AI integration at Rebrandly, shaping how the platform leverages AI for link management and brand building.',
+    description: 'Leading product strategy and AI integration at Rebrandly, shaping how the platform uses AI for link management and brand building.',
     status: 'active' as const,
     tags: ['Product Leadership', 'AI Strategy']
   }
@@ -72,27 +72,6 @@ const testimonials = [
   }
 ];
 
-// Placeholder posts - will be replaced with actual content collection
-const recentPosts = [
-  {
-    title: 'Context Engineering: Beyond Prompt Engineering',
-    description: 'Why the future of AI productivity is about context architecture, not clever prompts.',
-    date: new Date('2025-01-15'),
-    href: '/writing'
-  },
-  {
-    title: 'Building Jane: Lessons from AI Agent Development',
-    description: 'What I learned building an AI Chief of Staff from scratch.',
-    date: new Date('2025-01-10'),
-    href: '/writing'
-  },
-  {
-    title: 'The Product Leader\'s Guide to Agentic Systems',
-    description: 'How product thinking applies to multi-agent AI systems.',
-    date: new Date('2025-01-05'),
-    href: '/writing'
-  }
-];
 ---
 
 <BaseLayout title="Home" description="Brandon Keao - Product Leader & AI Builder. 18+ years building products and teams. Now pioneering practical context engineering.">
@@ -106,10 +85,10 @@ const recentPosts = [
           <span class="text-[var(--text-secondary)]">AI Builder.</span>
         </h1>
         <p class="lead mb-8 max-w-2xl">
-          18+ years building products and teams. Now pioneering practical context engineering -- and sharing the journey.
+          18+ years building products and teams. Now pioneering practical context engineering; sharing the journey as I go.
         </p>
         <p class="text-lg text-[var(--text-secondary)] mb-8 max-w-2xl">
-          I help leaders navigate the shift from deterministic to probabilistic work. Not with theory, but with systems I'm building in public.
+          I help leaders navigate the shift from deterministic to probabilistic work. Not with theory, but with systems I'm building in public; this is what 2026 demands.
         </p>
         <div class="flex flex-wrap gap-4">
           <a href="/contact" class="btn btn-primary">Start a Conversation</a>
@@ -127,12 +106,12 @@ const recentPosts = [
         <div class="prose">
           <p class="text-lg">
             The promise of AI for business outcomes won't be realized through better prompts.
-            It will come from <strong>engineered, applied AI-centric systems</strong>&mdash;systems
+            It will come from <strong>engineered, applied AI-centric systems</strong>: systems
             that understand context, coordinate intelligently, and augment human judgment.
           </p>
           <p>
             The 60-70% that AI can handle doesn't scale linearly to business outcomes.
-            The remaining 40%&mdash;judgment, context, synthesis&mdash;is where real leverage lives.
+            The remaining 40%; judgment, context, synthesis: that's where the real work is.
             That's what I focus on.
           </p>
         </div>
@@ -155,34 +134,6 @@ const recentPosts = [
     </div>
   </section>
 
-  <!-- Latest Writing -->
-  <section class="section-alt section">
-    <div class="container">
-      <div class="flex items-baseline justify-between mb-8">
-        <h2>Latest Writing</h2>
-        <a href="/writing" class="link-underline text-sm">View all posts</a>
-      </div>
-      <div class="grid gap-6 reveal-stagger">
-        {recentPosts.map(post => (
-          <article class="group py-4 border-b border-[var(--border)] last:border-0">
-            <a href={post.href} class="block">
-              <div class="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-6">
-                <time class="text-sm text-[var(--text-tertiary)] md:w-28 flex-shrink-0">
-                  {post.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </time>
-                <div class="flex-1">
-                  <h3 class="text-lg font-semibold group-hover:text-[var(--accent)] transition-colors mb-1">
-                    {post.title}
-                  </h3>
-                  <p class="text-[var(--text-secondary)]">{post.description}</p>
-                </div>
-              </div>
-            </a>
-          </article>
-        ))}
-      </div>
-    </div>
-  </section>
 
   <!-- Services Preview -->
   <section class="section">
@@ -220,7 +171,7 @@ const recentPosts = [
       <div class="max-w-xl mx-auto reveal">
         <h2 class="mb-4">Let's Talk</h2>
         <p class="lead mb-8">
-          Whether you're exploring AI strategy, need product leadership, or want to discuss context engineering&mdash;I'd love to hear from you.
+          Whether you're exploring AI strategy, need product leadership, or want to discuss context engineering; I'd love to hear from you.
         </p>
         <a href="/contact" class="btn btn-primary btn-lg">Get in touch</a>
       </div>
