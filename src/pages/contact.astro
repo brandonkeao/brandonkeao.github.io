@@ -3,43 +3,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="Contact" description="Get in touch with Brandon Keao. Let's talk about AI strategy, product leadership, or collaboration.">
-  <section class="section">
+  <section class="py-20 md:py-32">
     <div class="container">
-      <div class="max-w-2xl mx-auto">
-        <h1 class="mb-6">Let's Talk</h1>
+      <div class="max-w-2xl">
+        <h1 class="mb-8">Let's Talk</h1>
 
-        <div class="prose mb-12">
-          <p class="text-xl text-[var(--text-secondary)]">
-            Whether you have a specific project in mind or just want to explore fit, I'd like to hear from you.
-          </p>
+        <p class="lead mb-16 max-w-xl">
+          Whether you have a specific project in mind or just want to explore fit, I'd like to hear from you.
+        </p>
 
-          <p>
-            Fill out the form below and I'll respond within 48 hours; usually faster. If there's potential for us to work together, we'll set up a discovery call. If I'm not the right fit, I'll try to point you somewhere useful.
-          </p>
-        </div>
+        <!-- Direct Contact - Primary -->
+        <div class="space-y-12 mb-16">
+          <div>
+            <p class="eyebrow mb-3">Email</p>
+            <a
+              href="mailto:brandon.keao@gmail.com"
+              class="font-[var(--font-serif)] text-2xl md:text-3xl text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors"
+            >
+              brandon.keao@gmail.com
+            </a>
+          </div>
 
-        <!-- Google Form Embed Placeholder -->
-        <div class="bg-[var(--bg-secondary)] rounded-lg p-8 mb-12">
-          <div class="text-center py-8">
-            <p class="text-[var(--text-secondary)] mb-6">
-              Contact form coming soon. In the meantime, reach out directly via email.
-            </p>
-            <a href="mailto:brandon.keao@gmail.com?subject=Let's%20Talk" class="btn btn-primary">
-              Email Me
+          <div>
+            <p class="eyebrow mb-3">LinkedIn</p>
+            <a
+              href="https://linkedin.com/in/brandonkeao"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-[var(--font-serif)] text-2xl md:text-3xl text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors"
+            >
+              /in/brandonkeao
             </a>
           </div>
         </div>
 
-        <!-- Direct Contact -->
-        <div class="border-t border-[var(--border)] pt-8">
-          <p class="text-[var(--text-secondary)] mb-6">
-            Prefer email? You can also reach me directly at <a href="mailto:brandon.keao@gmail.com" class="text-[var(--accent)] hover:underline">brandon.keao@gmail.com</a>
-          </p>
-
-          <p class="text-[var(--text-secondary)]">
-            Find me elsewhere: <a href="https://linkedin.com/in/brandonkeao" target="_blank" rel="noopener noreferrer" class="text-[var(--accent)] hover:underline">LinkedIn</a>
-          </p>
-        </div>
+        <!-- Response note -->
+        <p class="text-sm text-[var(--text-tertiary)]">
+          I typically respond within 48 hours. If we're a good fit, we'll set up a discovery call.
+        </p>
       </div>
     </div>
   </section>

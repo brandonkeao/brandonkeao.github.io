@@ -3,14 +3,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="About" description="Brandon Keao's background, AI journey, and philosophy on building products that work.">
-  <section class="section">
+  <section class="py-20 md:py-32">
     <div class="container">
       <div class="max-w-3xl">
-        <h1 class="mb-8">About</h1>
+        <h1 class="mb-10">About</h1>
 
         <div class="prose">
           <!-- Section 1: Lead with Product/Leadership -->
-          <p class="text-xl text-[var(--text-secondary)] mb-8">
+          <p class="lead mb-10">
             I've spent 18+ years building products, leading teams, and designing systems that work for real people in real organizations.
           </p>
 
@@ -114,7 +114,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </p>
 
           <p>
-            <a href="/manager-readme" class="link-underline">Read my Manager README →</a>
+            <a href="/manager-readme" class="text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors">Read my Manager README &rarr;</a>
           </p>
         </div>
       </div>

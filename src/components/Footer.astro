@@ -11,23 +11,23 @@ const footerLinks = [
 ];
 ---
 
-<footer class="border-t border-[var(--border)] mt-16 bg-[var(--bg-primary)]">
-  <div class="container py-12">
-    <div class="grid gap-8 md:grid-cols-3">
+<footer class="border-t border-[var(--border)] mt-20 bg-[var(--bg-primary)]">
+  <div class="container py-16">
+    <div class="grid gap-12 md:grid-cols-3">
       <!-- Brand -->
       <div>
-        <a href="/" class="text-lg font-semibold text-[var(--text-primary)] font-[var(--font-serif)]">
+        <a href="/" class="text-xl text-[var(--text-primary)] font-[var(--font-display)] tracking-tight">
           Brandon Keao
         </a>
-        <p class="mt-2 text-sm text-[var(--text-secondary)]">
+        <p class="mt-3 text-sm text-[var(--text-tertiary)]">
           Product Leader. AI Builder.
         </p>
       </div>
 
       <!-- Navigation -->
       <div>
-        <h4 class="text-sm font-semibold text-[var(--text-primary)] mb-4">Navigation</h4>
-        <ul class="space-y-2">
+        <p class="eyebrow mb-4">Navigation</p>
+        <ul class="space-y-3">
           {footerLinks.map(link => (
             <li>
               <a
@@ -43,13 +43,13 @@ const footerLinks = [
 
       <!-- Connect -->
       <div>
-        <h4 class="text-sm font-semibold text-[var(--text-primary)] mb-4">Connect</h4>
+        <p class="eyebrow mb-4">Connect</p>
         <div class="flex items-center gap-4">
           <a
             href="https://linkedin.com/in/brandonkeao"
             target="_blank"
             rel="noopener noreferrer"
-            class="p-2 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label="LinkedIn"
           >
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -60,7 +60,7 @@ const footerLinks = [
             href="https://twitter.com/brandonkeao"
             target="_blank"
             rel="noopener noreferrer"
-            class="p-2 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label="Twitter / X"
           >
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -69,7 +69,7 @@ const footerLinks = [
           </a>
           <a
             href="mailto:brandon.keao@gmail.com"
-            class="p-2 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label="Email"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -81,9 +81,9 @@ const footerLinks = [
     </div>
 
     <!-- Copyright -->
-    <div class="mt-12 pt-8 border-t border-[var(--border)]">
-      <p class="text-sm text-[var(--text-tertiary)] text-center">
-        &copy; {currentYear} Brandon Keao. All rights reserved.
+    <div class="mt-16 pt-8 border-t border-[var(--border)]">
+      <p class="text-sm text-[var(--text-tertiary)]">
+        &copy; {currentYear} Brandon Keao
       </p>
     </div>
   </div>

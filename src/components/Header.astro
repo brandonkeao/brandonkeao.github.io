@@ -1,6 +1,4 @@
 ---
-import ThemeToggle from './ui/ThemeToggle.astro';
-
 const navLinks = [
   { href: '/about', label: 'About' },
   { href: '/services', label: 'Work With Me' },
@@ -12,28 +10,28 @@ const navLinks = [
 const currentPath = Astro.url.pathname;
 ---
 
-<header class="sticky top-0 z-50 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border)]">
-  <nav class="container py-4 flex items-center justify-between">
-    <!-- Logo/Brand -->
+<header class="border-b border-[var(--border)]">
+  <nav class="container py-6 flex items-center justify-between">
+    <!-- Logo/Brand - Editorial: Display font, larger -->
     <a
       href="/"
-      class="text-xl font-semibold text-[var(--text-primary)] hover:text-[var(--text-primary)] font-[var(--font-serif)]"
+      class="text-2xl text-[var(--text-primary)] hover:text-[var(--text-primary)] font-[var(--font-display)] tracking-tight"
     >
       Brandon Keao
     </a>
 
-    <!-- Desktop Nav -->
-    <div class="hidden md:flex items-center gap-8">
-      <ul class="flex items-center gap-6">
+    <!-- Desktop Nav - Editorial: Uppercase, tracked -->
+    <div class="hidden md:flex items-center">
+      <ul class="flex items-center gap-10">
         {navLinks.map(link => (
           <li>
             <a
               href={link.href}
               class:list={[
-                "text-sm font-medium transition-colors link-underline",
+                "text-xs font-medium uppercase tracking-widest transition-colors",
                 currentPath === link.href || currentPath.startsWith(link.href + '/')
-                  ? "text-[var(--accent)]"
-                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  ? "text-[var(--text-primary)]"
+                  : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
               ]}
             >
               {link.label}
@@ -41,14 +39,10 @@ const currentPath = Astro.url.pathname;
           </li>
         ))}
       </ul>
-
-      <ThemeToggle />
     </div>
 
     <!-- Mobile Controls -->
-    <div class="flex items-center gap-2 md:hidden">
-      <ThemeToggle />
-
+    <div class="flex items-center md:hidden">
       <button
         id="mobile-menu-btn"
         class="p-2 -mr-2 hover:bg-[var(--bg-secondary)] rounded-md transition-colors"
@@ -68,18 +62,18 @@ const currentPath = Astro.url.pathname;
     </div>
   </nav>
 
-  <!-- Mobile Nav -->
+  <!-- Mobile Nav - Editorial style -->
   <div id="mobile-menu" class="hidden md:hidden border-t border-[var(--border)] bg-[var(--bg-primary)]">
-    <ul class="container py-4 flex flex-col gap-2">
+    <ul class="container py-6 flex flex-col gap-1">
       {navLinks.map(link => (
         <li>
           <a
             href={link.href}
             class:list={[
-              "block py-3 px-4 -mx-4 text-base font-medium rounded-md transition-colors",
+              "block py-3 text-sm font-medium uppercase tracking-widest transition-colors",
               currentPath === link.href || currentPath.startsWith(link.href + '/')
-                ? "text-[var(--accent)] bg-[var(--accent-subtle)]"
-                : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
+                ? "text-[var(--text-primary)]"
+                : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
             ]}
           >
             {link.label}
