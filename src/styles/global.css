@@ -51,6 +51,10 @@
 
   --highlight: #fef3c7;
 
+  /* Status Colors */
+  --status-active: #16a34a;
+  --status-completed: #2563eb;
+
   /* Spacing */
   --space-section-sm: 3rem;
   --space-section: 4rem;
@@ -81,7 +85,7 @@
 
   --text-primary: #fafafa;
   --text-secondary: #a3a3a3;
-  --text-tertiary: #737373;
+  --text-tertiary: #9ca3af;  /* Lightened from #737373 for WCAG contrast */
   --text-muted: #525252;
 
   --accent: #60a5fa;
@@ -92,6 +96,10 @@
   --border-subtle: #333333;
 
   --highlight: #422006;
+
+  /* Status Colors - Dark Mode */
+  --status-active: #4ade80;
+  --status-completed: #60a5fa;
 
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-base: 0 4px 6px -1px rgb(0 0 0 / 0.3);
@@ -460,10 +468,14 @@ a:hover {
   font-size: var(--text-xs);
   font-weight: 500;
   background-color: var(--accent-subtle);
-  color: var(--accent);
+  color: #1e40af;  /* Darker blue for WCAG contrast (was --accent) */
   border-radius: 9999px;
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
+}
+
+.dark .tag {
+  color: #93c5fd;  /* Lighter blue for dark mode contrast */
 }
 
 /* ========================================
