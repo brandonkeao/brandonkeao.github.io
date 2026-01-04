@@ -11,13 +11,19 @@ Jim Collins' emphasis on discipline as a cornerstone of moving from "good to gre
 
 The piece highlights discipline's role in making strategic decisions. Jobs once noted that "focus means saying no to the hundred other good ideas." Collins reinforces this by explaining that highly undiversified portfolios work when you're right about direction.
 
+![Hedgehog Concept](/images/blog/hedgehog-concept.png)
+
 Product managers must identify their "Hedgehog" concept—the unique competitive advantage—and use it as a filter for saying no. Without focus, nothing achieves completion.
 
 ## Building Team Momentum
 
+![VP Product Comic](/images/blog/vp-product-comic.jpg)
+
 Discipline creates infectious energy. When focused efforts yield results, teams gravitate toward shared vision and mutual understanding of success. Since product managers lack direct reports, influential leadership becomes crucial for team alignment.
 
 ## Confronting Reality
+
+![James Stockdale](/images/blog/james-stockdale.jpg)
 
 Drawing from Jim Stockdale's Vietnam War experience, I want to emphasize balancing optimism with realism. Stockdale observed that optimists died of broken hearts after repeated disappointments about release dates.
 

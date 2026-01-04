@@ -5,20 +5,26 @@ date: 2015-07-24
 tags: ["marketing", "technology"]
 ---
 
-I purchased my first GoPro camera to document ski trips with friends. After two years of skiing, I wanted to capture memories from increasingly frequent mountain adventures.
+![Beatriz from GoPro](/images/blog/beatriz-gopro.jpg)
 
-## The PowPenguins
+A few years back, I obtained my first GoPro camera after spending two years learning to ski. I wanted to capture memories from increasingly frequent ski trips with friends. The portable HD camera, launched around 2004, had generated significant buzz and accumulated millions of user-uploaded videos on YouTube.
 
-In March 2014, my friends and I wore matching penguin costumes while skiing in Telluride, Colorado. We filmed ourselves and quickly edited the footage using GoPro's free video editing software, uploading the result to YouTube.
+## Enter the PowPenguins
 
-## Unexpected Outreach
+In March 2014, my friends and I visited the Telluride, Colorado ski slopes wearing matching penguin costumes. We filmed footage on a clear day, quickly assembled it with music using GoPro's free editing software, and published the video to YouTube within hours.
 
-Shortly after posting, Beatriz, a User Generated Content Coordinator at GoPro, contacted me through YouTube. The company wanted to license my footage—an exciting validation for a first-time poster.
+## Redefining Inbound Marketing
 
-## The Real Marketing Strategy
+After posting the video, I received an unexpected email from Beatriz, a User Generated Content Coordinator at GoPro, who discovered my content through YouTube. She expressed interest in licensing my footage. This experience revealed GoPro's marketing strategy: rather than creating traditional advertisements, they sourced and curated user-generated content, turning some submissions into commercials.
 
-Rather than traditional advertising, GoPro built its growth on tapping into users' desires for recognition. The company curates and repurposes user videos, sometimes converting them into commercials. This approach inspired both existing and prospective customers to create content.
+## User Generated Content
 
-## The Outcome
+The strategy tapped into people's desire for recognition by allowing them to potentially achieve viral success. GoPro's tagline emphasized this appeal to users seeking their moment of recognition.
 
-Though my video wasn't featured prominently, I received free camera mounts and negotiated gear rental for a second shoot. I became an advocate while GoPro obtained quality footage and community engagement—a mutually beneficial arrangement that defines modern user-driven marketing.
+## New Competitors
+
+Emerging platforms like Meerkat offered live streaming capabilities, providing alternatives to post-edited video content that GoPro dominated.
+
+## Powder Penguins, Concluded
+
+While I didn't achieve featured status on GoPro's official channel, I licensed my footage for two free mounts and negotiated gear rental for a second shoot. I remain a dedicated GoPro advocate despite minimal direct recognition from the company.

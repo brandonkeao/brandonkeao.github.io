@@ -5,15 +5,21 @@ date: 2015-07-18
 tags: ["productivity", "personal-development"]
 ---
 
-The concept of "Inbox Zero"—achieving zero unread emails—has transformed my approach to email management. My previous approach was overly complicated and unsustainable.
+![Hannah's Inbox](/images/blog/hannah-inbox.png)
 
-## Getting Things Done (GTD) Philosophy
+Inbox Zero represents the ideal state of having nothing in your inbox occupying your mind—zero unread emails. While I previously promoted my email management approach as universal, I now acknowledge this was misguided. My own email and task management have deteriorated, prompting me to restore my system.
 
-David Allan's *Getting Things Done* transformed my organizational approach. However, my initial elaborate system using Remember the Milk eventually fell apart as the complexity proved difficult to maintain as a lasting habit.
+## Getting Things Done
 
-## A Simpler Email System
+I was influenced by David Allan's book *Getting Things Done* (GTD) several years ago. The methodology helped me establish an organized process for managing tasks and work. I implemented Remember the Milk for task management and created detailed diagrams of my ideal workflow.
 
-Inspired by Hannah Gay's LinkedIn article on inbox management, I adopted a five-label system:
+However, my complicated system didn't sustain itself. Initial enthusiasm faded, and habits didn't form. Over time, my GTD-inspired approach deteriorated despite my attempts to maintain core principles. I kept task lists in notebooks tied to email, but my unread count ballooned while I focused on goal-oriented lists.
+
+## Inbox Management for the Rest of Us
+
+![Brandon's Inbox](/images/blog/brandon-inbox.png)
+
+I discovered an article by Hannah Gay addressing inbox management that resonated deeply. Her approach emphasizes five email labels:
 
 1. Action Needed
 2. Reply Needed
@@ -21,12 +27,10 @@ Inspired by Hannah Gay's LinkedIn article on inbox management, I adopted a five-
 4. Delete when done
 5. Look at this
 
-Gay emphasized that this streamlined method helped her feel "very zen with my inbox, and managing it keeps me on top of both personal and professional life."
+Gay notes: "With all of this, I feel very zen with my inbox." She suggests additional tactics like BCCing yourself and converting email chains to calendar invites.
 
-## Boomerang Tool
+## Boomerang
 
-To enhance the process, I use Boomerang, a Gmail plugin enabling emails to reappear at specified times, particularly useful for tracking responses.
+To enhance Hannah's system, I plan on using Boomerang—a Gmail plugin that temporarily removes emails and resurfaces them as unread at specified times. This supports the "Waiting For Response" label by automatically reminding me about pending replies.
 
-## Takeaway
-
-Success lies in simplicity combined with GTD principles, transforming email management into a sustainable habit.
+I believe this simplified process, combined with GTD principles, offers genuine sustainability. I aim to regain control of my work and email management through disciplined execution.

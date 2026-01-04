@@ -7,6 +7,8 @@ tags: ["product-management", "leadership"]
 
 Product Managers operate differently from CEOs, despite the common comparison that PMs are "CEOs of their products." The key distinction lies in organizational structure—PMs typically lack direct reports, whereas all reporting ultimately flows to a CEO. However, both roles share a critical commonality: accountability for success within their respective domains.
 
+![The Hard Thing About Hard Things](/images/blog/hard-things-book.jpg)
+
 Ben Horowitz's book *The Hard Thing About Hard Things* offers valuable insights for product professionals. Drawing from his background as a PM before becoming a CEO and investor, Horowitz provides lessons applicable to product leadership.
 
 ## Product Vision

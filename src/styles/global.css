@@ -339,26 +339,26 @@ a:hover {
 .container {
   max-width: var(--container-wide);
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
 }
 
 .container-content {
   max-width: var(--container-content);
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
 }
 
 .container-prose {
   max-width: var(--container-prose);
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
 }
 
 @media (min-width: 768px) {
   .container,
   .container-content,
   .container-prose {
-    padding: 0 2rem;
+    padding: 0 3rem;
   }
 }
 

@@ -5,9 +5,13 @@ date: 2020-04-04
 tags: ["product-management", "strategy"]
 ---
 
+![Escaping the Build Trap](/images/blog/escaping-the-build-trap-book.jpg)
+
 Organizations can maximize value by prioritizing outcomes over outputs, as Melissa Perri argues in *Escaping the Build Trap*.
 
 ## The Problem
+
+![Product Management Ocean](/images/blog/pm-ocean.jpg)
 
 Many organizations operate with top-down structures that push predetermined features to development teams, rather than focusing on desired business results.
 
@@ -16,6 +20,8 @@ Many organizations operate with top-down structures that push predetermined feat
 Perri defines these as entities that "understand and organize around outcomes over outputs" through experimentation and iterative delivery. Management rewards learning and goal achievement while encouraging teams to stay connected with customers.
 
 ## The Product Kata Framework
+
+![Product Kata](/images/blog/product-kata.png)
 
 This approach connects company vision to measurable outcomes through:
 
@@ -26,5 +32,7 @@ This approach connects company vision to measurable outcomes through:
 Perri emphasizes falling in love with the "problem rather than the solution."
 
 ## Building Momentum
+
+![Flywheel](/images/blog/flywheel.jpg)
 
 This transformation connects to Jim Collins' Flywheel concept—sustained, disciplined effort creates compounding results over time. Organizations must continually renew and improve components to maintain momentum.

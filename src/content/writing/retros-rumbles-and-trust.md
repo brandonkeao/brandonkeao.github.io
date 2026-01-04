@@ -5,6 +5,8 @@ date: 2020-04-13
 tags: ["leadership", "team-dynamics"]
 ---
 
+![Dare to Lead](/images/blog/dare-to-lead-book.jpg)
+
 I want to explore three key leadership concepts from Brené Brown's *Dare to Lead*: vulnerability as a prerequisite for trust, identifying core personal values, and conducting meaningful team retrospectives.
 
 ## Vulnerability Before Trust
