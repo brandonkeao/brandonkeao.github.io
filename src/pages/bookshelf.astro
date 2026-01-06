@@ -117,7 +117,13 @@ const categories: Category[] = [
     <div class="container">
       <div class="max-w-5xl">
         <h1 class="mb-4">Bookshelf</h1>
-        <p class="lead mb-16">Great Resources for Product Management and Leadership</p>
+        <p class="lead mb-8">Books that shaped how I think about building products and leading teams.</p>
+
+        <div class="prose mb-16">
+          <p>
+            I'm not someone who collects books to signal sophistication. These are the ones I actually reference -- the books that changed how I approach problems, the ones I keep recommending to people I work with. Some are classics everyone should read. Some are niche picks that happened to hit at the right moment. The through-line is practical application: books that made me better at the work, not just smarter about the theory.
+          </p>
+        </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {categories.flatMap(category => category.books).map(book => (
