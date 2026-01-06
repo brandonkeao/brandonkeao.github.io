@@ -9,14 +9,13 @@ const footerLinks = [
 ---
 
 <footer class="border-t border-[var(--border)] mt-20 bg-[var(--bg-primary)]">
-  <div class="max-w-[var(--container-wide)] mx-auto py-12 px-8 md:px-12 lg:px-16">
-    <div class="flex items-center justify-between">
-      <!-- Nav links left -->
-      <nav class="flex flex-wrap gap-x-8 gap-y-2">
+  <div class="container py-6 flex items-center justify-between">
+    <!-- Nav links left -->
+    <nav class="flex flex-wrap gap-x-8 gap-y-2">
         {footerLinks.map(link => (
           <a
             href={link.href}
-            class="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            class="text-xs font-medium uppercase tracking-widest text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
           >
             {link.label}
           </a>
@@ -45,7 +44,6 @@ const footerLinks = [
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
           </svg>
         </a>
-      </div>
     </div>
   </div>
 </footer>
