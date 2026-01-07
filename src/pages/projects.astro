@@ -5,7 +5,7 @@ import ProjectCard from '../components/content/ProjectCard.astro';
 const projects = [
   {
     title: 'Jane - AI Chief of Staff',
-    description: 'An agentic AI system that manages context, coordinates agents, and handles the cognitive load of running a business. Jane is my laboratory for context engineering principles: a real system solving real problems.',
+    description: 'An AI Agent persona that manages a team of specialized agents. Applying the same techniques we use for non-deterministic humans to non-deterministic AI.',
     status: 'active' as const,
     tags: ['Context Engineering', 'Agentic AI', 'Claude Code'],
     featured: true,
@@ -18,7 +18,7 @@ const projects = [
   },
   {
     title: 'Agentic OS',
-    description: 'A framework for building and orchestrating AI agent systems. The operating system layer that makes multi-agent coordination possible.',
+    description: 'The operating system layer for managing AI agent teams. How do you coordinate multiple agents across different domains? This is my answer.',
     status: 'active' as const,
     tags: ['Framework', 'Agent Orchestration', 'System Design'],
     details: [
@@ -30,7 +30,7 @@ const projects = [
   },
   {
     title: 'Context Maps',
-    description: 'A methodology and toolset for structuring information architecture for AI systems. Making context engineering practical and repeatable.',
+    description: 'How do you give AI systems the information they need to be genuinely helpful? Context Maps are my structured approach to solving this problem.',
     status: 'active' as const,
     tags: ['Methodology', 'Context Engineering'],
     details: [
@@ -42,20 +42,6 @@ const projects = [
   }
 ];
 
-const pastWork = [
-  {
-    title: 'Rebrandly - CPO',
-    description: 'Leading product strategy and AI integration at Rebrandly, shaping how the platform uses AI for link management and brand building at scale.',
-    status: 'active' as const,
-    tags: ['Product Leadership', 'AI Strategy', 'SaaS']
-  },
-  {
-    title: 'Bitly Product Redesign',
-    description: 'Led a complete redesign of the Bitly core offering, resulting in 75% increase in SaaS revenues. Transformed the product from a simple URL shortener to a comprehensive link management platform.',
-    status: 'completed' as const,
-    tags: ['Product Strategy', 'SaaS', 'Growth']
-  }
-];
 ---
 
 <BaseLayout title="Projects" description="Projects and work by Brandon Keao - context engineering, agentic AI systems, and product leadership.">
@@ -66,7 +52,7 @@ const pastWork = [
       <div class="max-w-3xl reveal">
         <h1 class="mb-6">Projects</h1>
         <p class="lead">
-          I build systems that bridge human judgment and AI capability. Here's what I'm working on and what I've built.
+          I'm rebuilding how I work, from personal workflows to professional systems, into an Agentic Ecosystem.
         </p>
       </div>
     </div>
@@ -81,14 +67,10 @@ const pastWork = [
         <div class="grid lg:grid-cols-2 gap-8">
           <div class="prose">
             <p>
-              Jane is an agentic AI system designed to handle the cognitive load of running a business.
-              She manages context, coordinates specialized agents, and maintains continuity across sessions.
+              Jane is an AI Agent persona that helps manage a team of specialized agents. I'm applying the same techniques we use for non-deterministic humans to non-deterministic AI: feedback, coaching, delegation, quality controls.
             </p>
             <p>
-              More than a chatbot or assistant, Jane represents a new paradigm: AI that understands
-              the <em>context</em> of your work, not just the content. She's my laboratory for
-              proving that context engineering, not prompt engineering, is the key to
-              useful AI systems.
+              The goal is practical: AI that understands the <em>context</em> of your work, not just the content. Jane is where I'm testing whether context engineering matters more than prompt engineering.
             </p>
             <p class="text-[var(--text-secondary)]">
               <strong class="text-[var(--text-primary)]">Built with:</strong> Claude Code, TypeScript,
@@ -148,17 +130,6 @@ const pastWork = [
     </div>
   </section>
 
-  <!-- Past Work -->
-  <section class="section-alt section">
-    <div class="container">
-      <h2 class="mb-8">Professional Work</h2>
-      <div class="grid md:grid-cols-2 gap-6 reveal-stagger">
-        {pastWork.map(work => (
-          <ProjectCard {...work} />
-        ))}
-      </div>
-    </div>
-  </section>
 
   <!-- Building in Public -->
   <section class="section">
@@ -167,12 +138,7 @@ const pastWork = [
         <h2 class="mb-6">Building in Public</h2>
         <div class="prose">
           <p>
-            I share my journey building these systems through writing and LinkedIn posts.
-            The best insights come from building real things, including the mistakes.
-          </p>
-          <p>
-            If you're interested in context engineering, agentic systems, or the future of
-            AI-augmented work, follow along.
+            I share the journey as I go: what's working, what's broken, what I'm learning. The best insights come from building real things, mistakes included.
           </p>
         </div>
         <div class="flex flex-wrap gap-4 mt-8">

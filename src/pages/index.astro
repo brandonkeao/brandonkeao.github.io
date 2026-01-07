@@ -6,18 +6,17 @@ import ServiceCard from '../components/content/ServiceCard.astro';
 
 const featuredProjects = [
   {
-    title: 'Jane - AI Chief of Staff',
-    description: 'An agentic AI system that manages context, coordinates agents, and handles the cognitive load of running a business. My laboratory for context engineering principles.',
-    status: 'active' as const,
-    href: '/projects',
-    tags: ['Context Engineering', 'Agentic AI'],
-    featured: true
-  },
-  {
     title: 'Rebrandly - Head of Product',
     description: 'Leading product strategy and AI integration at Rebrandly, shaping how the platform uses AI for link management and brand building.',
     status: 'active' as const,
     tags: ['Product Leadership', 'AI Strategy']
+  },
+  {
+    title: 'Context Maps',
+    description: 'How do you give AI systems the information they need to be genuinely helpful? A structured approach to context engineering.',
+    status: 'active' as const,
+    href: '/projects',
+    tags: ['Methodology', 'Context Engineering']
   }
 ];
 
@@ -42,22 +41,22 @@ const services = [
 // Curated to 3 strong testimonials for editorial impact
 const testimonials = [
   {
-    quote: "Brandon is a top-notch full-stack product leader who is highly capable and willing to be accountable for vast product areas.",
-    author: "Maria Thomas",
-    title: "VP of Product",
+    quote: "Brandon was a great partner during our time together at Bitly. He is a rare mix in successfully blending an openness-to-listen with authority in decision-making, a clarity of vision with a practical grounding in how to 'get it done.' Whilst we were moving incredibly quickly in maturing Customer Success in tandem, he was matching pace with helping redesign and reshape the core product offering, whilst ensuring the voice and needs of customers were front and center throughout.",
+    author: "Adam Bambrough",
+    title: "Customer Success Executive",
     company: "Bitly"
   },
   {
-    quote: "His ability to break down business objectives into actionable technical requirements impressed me most.",
+    quote: "I'm not sure if I was more impressed by his ability to break down business objectives into actionable technical requirements - or his ability to show true leadership when it came to owning the project, teams, and client relationship. Finding someone who is good at one of these is already difficult, so anyone who has worked with Product Managers can empathize with how rare it is to find someone who can do both well.",
     author: "Andre Sugai",
     title: "CTO and Partner",
     company: "Ora Interactive"
   },
   {
-    quote: "Brandon has an honest and thoughtful communication style, a keen eye for the customer journey.",
-    author: "Walter Reid",
-    title: "Senior Product Manager",
-    company: "ShowYourWay Rewards"
+    quote: "Brandon and I worked together for 7 years. In that time, Brandon cultivated the ability to both understand and deliver deep, complex technical solutions and discuss high level technical concepts in an efficient manner with leadership. A strong team member, team leader, and individual contributor, Brandon excelled in the variety of client cultures that we worked with.",
+    author: "Josh Nardo",
+    title: "VP Americas, Professional Services",
+    company: "Itiviti"
   }
 ];
 
@@ -129,7 +128,7 @@ const testimonials = [
     <div class="container">
       <p class="eyebrow mb-3">What People Say</p>
       <h2 class="mb-12">A few perspectives from people who've seen the work firsthand.</h2>
-      <div class="grid md:grid-cols-3 gap-12 reveal-stagger">
+      <div class="grid gap-12 reveal-stagger">
         {testimonials.map(t => (
           <Testimonial {...t} />
         ))}
