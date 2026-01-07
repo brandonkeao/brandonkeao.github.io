@@ -2,8 +2,8 @@
 project: brandonkeao.com
 type: personal-website
 status: active
-version: 1.1.0
-last_updated: 2026-01-03
+version: 1.1.1
+last_updated: 2026-01-07
 tech_stack: [Astro 5.x, Tailwind CSS 4.x, TypeScript]
 deployment: GitHub Pages
 domain: brandonkeao.com
@@ -418,6 +418,14 @@ brandonkeao.github.io/
 
 ## Changelog
 
+### v1.1.1 - 2026-01-07
+
+**UX/UI Refinements**
+- Fixed container CSS blocking Tailwind `py-*` utilities (`padding` → `padding-inline`)
+- Updated header nav padding to `py-2` for tighter appearance
+- Updated footer: `py-6` padding, link styling to match header (uppercase, tracking-widest)
+- New favicon: sans-serif "B" in terracotta brand color (#c45c3d)
+
 ### v1.1.0 - 2026-01-03
 
 **Editorial Design System Overhaul**
@@ -466,4 +474,4 @@ When making changes to the project:
 
 ---
 
-*Last updated: 2026-01-03*
+*Last updated: 2026-01-07*
