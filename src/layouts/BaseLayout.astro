@@ -58,6 +58,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
     <!-- View Transitions -->
     <ViewTransitions />
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-C99HMEFJ4G"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-C99HMEFJ4G');
+    </script>
   </head>
   <body class="min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-primary)]">
     <Header />
