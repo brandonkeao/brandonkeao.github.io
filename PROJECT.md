@@ -2,7 +2,7 @@
 project: brandonkeao.com
 type: personal-website
 status: active
-version: 1.1.1
+version: 1.1.2
 last_updated: 2026-01-07
 tech_stack: [Astro 5.x, Tailwind CSS 4.x, TypeScript]
 deployment: GitHub Pages
@@ -417,6 +417,13 @@ brandonkeao.github.io/
 ---
 
 ## Changelog
+
+### v1.1.2 - 2026-01-07
+
+**Infrastructure**
+- Configured GoDaddy DNS to point brandonkeao.com to GitHub Pages
+- Custom domain verified and SSL certificate provisioned
+- Site now live at https://brandonkeao.com
 
 ### v1.1.1 - 2026-01-07
 
