@@ -2,8 +2,8 @@
 project: brandonkeao.com
 type: personal-website
 status: active
-version: 1.1.2
-last_updated: 2026-01-07
+version: 1.1.3
+last_updated: 2026-01-22
 tech_stack: [Astro 5.x, Tailwind CSS 4.x, TypeScript]
 deployment: GitHub Pages
 domain: brandonkeao.com
@@ -417,6 +417,13 @@ brandonkeao.github.io/
 ---
 
 ## Changelog
+
+### v1.1.3 - 2026-01-22
+
+**Content**
+- Added blog post: "Building an Agentic OS for Knowledge Work"
+- Content sourced from LinkedIn article (Personal Branding V2 draft)
+- Hero image added for post and social previews
 
 ### v1.1.2 - 2026-01-07
 
