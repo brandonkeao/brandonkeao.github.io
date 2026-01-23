@@ -3,7 +3,10 @@ title: "Building an Agentic OS for Knowledge Work"
 description: "From chaos to framework: the journey through context engineering, the architecture of Context Maps, and the paradigm shift from deterministic to probabilistic thinking that made it possible."
 date: 2026-01-13
 tags: ["ai", "context-engineering", "knowledge-work", "agentic-systems"]
+image: "/images/blog/building-agentic-os-knowledge-work.jpeg"
 ---
+
+![Building an Agentic OS for Knowledge Work](/images/blog/building-agentic-os-knowledge-work.jpeg)
 
 *From chaos to framework: the journey, the architecture, and the paradigm shift*
 
