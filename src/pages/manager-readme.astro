@@ -2,104 +2,95 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Manager README" description="Brandon Keao's leadership philosophy, working style, and what you can expect when working together.">
-  <section class="py-16 md:py-24">
+<BaseLayout title="Manager README" description="Brandon Keao's original management philosophy, working style, and values.">
+  <section class="page-hero">
     <div class="container">
-      <div class="max-w-3xl">
-        <h1 class="mb-10">Manager README</h1>
-
-        <div class="prose">
-
-        <h2>Why This Exists</h2>
-        <p>
-          I've found that the first few months of any working relationship involve a lot of unnecessary friction: figuring out how someone operates, what they value, where they're flexible and where they're not. This document is meant to compress that learning curve.
-        </p>
-
-        <p>
-          It's also a tool for holding myself accountable. Writing down how I want to work makes it harder to drift from it. If you see a gap between what's here and what I'm actually doing, call it out.
-        </p>
-
-        <p>
-          <em>Disclaimer: This applies only to me. Other managers operate differently.</em>
-        </p>
-
-        <h2>My Role</h2>
-        <p>
-          I work directly with Product, Design, and Research teams. At the core, my job is to help us build things that actually work for real people: products that capture value for the business while genuinely solving problems for users. That said, shipping products is only part of the job.
-        </p>
-
-        <p>
-          The other part is building the team: creating reliable processes that scale, mentoring people to expand their leadership capacity, establishing clear success criteria, and making sure individual growth aligns with what the organization needs. I think of it as tending to two systems simultaneously: the product system and the people system. Both need attention; neglect either and the whole thing drifts.
-        </p>
-
-        <h2>Philosophy</h2>
-
-        <p>
-          <strong>One on Ones:</strong> I structure these as 10-10-10: ten minutes for your priorities, ten for mine, ten for future planning. The focus is development and well-being, not status updates. If you need to report status, there are better async mechanisms.
-        </p>
-
-        <p>
-          <strong>Feedback:</strong> Timely and honest. Critical feedback happens privately; praise happens publicly. I don't store up feedback for quarterly reviews. If something needs to be said, I'll say it soon. I expect the same from you.
-        </p>
-
-        <p>
-          <strong>Coaching and Delegation:</strong> I invest in development because it compounds — better people build better products, and the organization's capacity expands. The question I keep coming back to: "What happens if we don't invest in people, and they stay?"
-        </p>
-
-        <h2>Core Values</h2>
-
-        <p>
-          <strong>Leadership from everywhere.</strong> You don't need to be a manager to lead. I expect people to take ownership of problems regardless of title or reporting structure. If something needs to be done, do it or escalate it. Don't wait for permission.
-        </p>
-
-        <p>
-          <strong>Action over debate.</strong> Starting and learning beats endless planning. I'd rather ship something imperfect and iterate than spend weeks getting alignment on a spec. That said, some decisions warrant more deliberation; judgment about which is which matters.
-        </p>
-
-        <p>
-          <strong>Extreme ownership.</strong> Problems get solved, not passed around. If something breaks, we fix it and figure out how to prevent it. Blame-shifting is a signal that the culture needs work.
-        </p>
-
-        <p>
-          <strong>Positive intent.</strong> Assume good faith until proven otherwise. Most miscommunication comes from context gaps, not bad actors. Start there.
-        </p>
-
-        <p>
-          <strong>Systems thinking.</strong> I tend to break complex problems into flowcharts and processes. If I can't map it, I probably don't understand it yet.
-        </p>
-
-        <p>
-          <strong>Service orientation.</strong> I serve you, not the other way around. My job is to remove obstacles, provide context, and create conditions where you can do your best work.
-        </p>
-
-        <p>
-          <strong>Continual small fixes.</strong> I believe in the compounding power of continually fixing small things. Quality is everyone's responsibility, and there are always improvements to be made.
-        </p>
-
-        <h2>How to Work with Me</h2>
-
-        <p>
-          <strong>Tell me early if something's off.</strong> Bad news doesn't improve with age. I'd rather hear about a problem when it's small than when it's a crisis.
-        </p>
-
-        <p>
-          <strong>Bring problems and your thinking on solutions.</strong> I don't expect you to have the answer, but I do expect you to have thought about it. "Here's what's broken and here's what I've considered" is more useful than "here's what's broken."
-        </p>
-
-        <p>
-          <strong>Push back when you disagree.</strong> I have opinions, but I'm not always right. If you think I'm missing something, say so. I'd rather have the argument now than discover the blind spot later.
-        </p>
-
-        <p>
-          <strong>Be honest about capacity.</strong> Overcommitting helps no one. If the workload isn't sustainable, flag it. We'll figure out what to deprioritize together.
-        </p>
-
-        <h2>What I'm Working On</h2>
-        <p>
-          I move fast, sometimes too fast. The thing I'm actively working on is slowing down to bring people along: making sure context gets shared, not just decisions. I also notice my impatience with process-for-process's-sake. Not all process is waste, but not all process serves purpose either.
-        </p>
-        </div>
-      </div>
+      <p class="kicker">Leadership · Working together</p>
+      <h1 class="page-title">Manager<br />README</h1>
+      <p class="page-dek">My approach to leadership, collaborating, getting things done, and enjoying work. A practical tool for working well together and for keeping me accountable to my values.</p>
     </div>
   </section>
+
+  <div class="container manager-layout">
+    <nav class="manager-toc" aria-label="On this page">
+      <strong>On this page</strong>
+      <a href="#motivations">Motivations</a>
+      <a href="#role">My role</a>
+      <a href="#philosophy">Philosophy</a>
+      <a href="#values">Values</a>
+    </nav>
+
+    <article class="manager-copy">
+      <section id="motivations">
+        <h2>Motivations</h2>
+        <p>This document outlines my approach to leadership, collaborating, getting things done, and enjoying work. This document is meant to help us work well together to our mutual benefit. This document is a tool to help keep me accountable to my values.</p>
+
+        <h3>Disclaimer</h3>
+        <p>This document applies only to me, and in no way should be considered to apply to any other manager, team, or organization.</p>
+      </section>
+
+      <section id="role">
+        <h2>My Role</h2>
+        <p>As a Product leader, I generally oversee and work directly with Product, Design, and Research teams. My mission is to:</p>
+        <ul>
+          <li>Deliver and manage products that <strong>CAPTURE CUSTOMER VALUE</strong></li>
+          <li>Deliver and manage products that <strong>SURPRISE AND DELIGHT USERS</strong></li>
+          <li>Iterate on reliable processes that build a scalable organization and business</li>
+          <li>Mentor individual contributors and managers to increase leadership capacity</li>
+          <li>Work to retain and attract talent over time by deeply taking care of who we have and building a team brand that other companies and employees envy</li>
+          <li>Set clear expectations on how to be successful as an individual and as a team</li>
+          <li>Align professional growth to benefit team and company performance AND individual career growth</li>
+        </ul>
+      </section>
+
+      <section id="philosophy">
+        <h2>Philosophy</h2>
+        <p>Having the minimum amount of process in place to be effective is important to me, and I often spend more time trying to remove processes than add them. That said, there are core elements that define the foundation of my management style.</p>
+
+        <h3>One on Ones</h3>
+        <p>My direct reports and I will have weekly 1 on 1s that take 30 minutes. These are not status updates, but an opportunity to focus more widely on professional development and well-being. We're here to help each other and having this regular meeting ensures that we do. 1 on 1s are structured as follows:</p>
+        <ul>
+          <li>10 minutes for you</li>
+          <li>10 minutes for me</li>
+          <li>10 minutes for the future</li>
+        </ul>
+
+        <h3>Feedback</h3>
+        <p>There's nothing more important to growth than honest and frequent feedback. Feedback is neither good nor bad, but it should be timely. I will give you feedback in the moment and I expect the same. If you are unsure about whether feedback will be well received, give it in private, person to person. A more crass rule of thumb is that critical feedback should be done in private while praise should be done in public.</p>
+
+        <h3>Coaching and Delegation</h3>
+        <p>The best way for a team or company to grow is for every individual to grow. Everyone on the team will be working to develop skills in one area or another, including me. It's my responsibility to help identify those growth areas that are not only beneficial to the company, but also to your own professional development.</p>
+        <blockquote>
+          <p><em>CFO asks CEO, “What happens if we invest in developing our people and then they leave us?”</em></p>
+          <p><em>CEO: “What happens if we don't, and they stay?”</em></p>
+        </blockquote>
+        <p class="manager-bam"><strong>BAM!</strong></p>
+      </section>
+
+      <section id="values">
+        <h2>Values</h2>
+
+        <h3>Leadership Comes From Everywhere</h3>
+        <p>I've wasted a lot of time in poorly run meetings by bad managers. While I believe managers are an essential part of a scaling organization, I don't believe they have a monopoly on leadership, and I work hard to build other constructs and opportunities in our teams for non-managers to lead.</p>
+
+        <h3>Heavy Bias Towards Action</h3>
+        <p>Long meetings where we endlessly debate potential directions could lead to meaningful insights, but I believe “starting is the best way to begin learning and make progress.” This is not always the correct strategy. This strategy annoys those who like to debate.</p>
+
+        <h3>Extreme Ownership</h3>
+        <p>“Leaders must own everything in their world. There is no one else to blame.” When a team takes ownership of its problems, the problems get solved.</p>
+
+        <h3>Positive Intent</h3>
+        <p>I start with an assumption of positive intent for all involved. This has worked out well for me over my career.</p>
+
+        <h3>I See Things As Systems</h3>
+        <p>I reduce complex things into systems. I think in flowcharts. I take great joy in attempting to understand how these systems and flowcharts all fit together. When I see large or small inefficiencies in systems, I'd like to fix them with your help.</p>
+
+        <h3>Continually Fix Small Things</h3>
+        <p>I believe in the compounding awesomeness of continually fixing small things. I believe quality assurance is everyone's responsibility and there are bugs to be fixed everywhere… all the time.</p>
+
+        <h3>I Serve You, Not the Other Way Around</h3>
+        <p>I'm always available to assist so please don't hesitate to ask me for help. Let's help each other grow as individuals and a team.</p>
+      </section>
+    </article>
+  </div>
 </BaseLayout>

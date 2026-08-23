@@ -1,17 +1,21 @@
 ---
 const footerLinks = [
-  { href: '/about', label: 'About' },
+  { href: '/services', label: 'Work With Me' },
   { href: '/writing', label: 'Writing' },
   { href: '/bookshelf', label: 'Bookshelf' },
   { href: '/manager-readme', label: 'Manager README' },
-  { href: '/contact', label: 'Contact' },
+  { href: '/about', label: 'About' },
 ];
 ---
 
-<footer class="border-t border-[var(--border)] mt-20 bg-[var(--bg-primary)]">
-  <div class="container py-6 flex items-center justify-between">
-    <!-- Nav links left -->
-    <nav class="flex flex-wrap gap-x-8 gap-y-2">
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <p class="footer-statement">Build useful things.<br />Help people lead.</p>
+      <p class="meta">© {new Date().getFullYear()} Brandon Keao</p>
+    </div>
+    <div>
+      <nav class="footer-links" aria-label="Footer navigation">
         {footerLinks.map(link => (
           <a
             href={link.href}
@@ -20,10 +24,10 @@ const footerLinks = [
             {link.label}
           </a>
         ))}
+        <a href="/contact" class="text-xs font-medium uppercase tracking-widest text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors">Contact</a>
       </nav>
 
-      <!-- Icons right -->
-      <div class="flex items-center gap-5">
+      <div class="footer-social">
         <a
           href="https://linkedin.com/in/brandonkeao"
           target="_blank"
@@ -44,6 +48,7 @@ const footerLinks = [
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
           </svg>
         </a>
+      </div>
     </div>
   </div>
 </footer>

@@ -1,177 +1,121 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const serviceAreas = [
+  {
+    title: 'Product Vision, Strategy & Positioning',
+    items: ['Vision development', 'Strategic planning', 'Positioning', 'Roadmapping', 'Go-to-market strategy', 'Strategy summits']
+  },
+  {
+    title: 'Product Design & User Research',
+    items: ['User personas', 'Experience research', 'Customer journeys', 'Interviews', 'Usability testing', 'Opportunity mapping']
+  },
+  {
+    title: 'Product Operations & Organization Design',
+    items: ['Organizational assessments', 'Team structure', 'Competency frameworks', 'Analytics reviews', 'Decision practices', 'Operating cadence']
+  },
+  {
+    title: 'Coaching & Mentoring',
+    items: ['Product coaching', 'Team hiring', 'Communication', 'Prioritization', 'Functional training', 'Leadership development']
+  }
+];
 ---
 
-<BaseLayout title="Work With Me" description="AI strategy advisory and fractional product leadership. Practical, evidence-based guidance on AI integration.">
-  <section class="py-16 md:py-24">
+<BaseLayout title="Work With Me" description="Product strategy, discovery, assessment, and fractional product leadership with Brandon Keao.">
+  <section class="page-hero">
     <div class="container">
-      <div class="max-w-3xl">
-        <h1 class="mb-8">Work With Me</h1>
+      <p class="kicker">Work with me</p>
+      <h1 class="page-title">Get unstuck.<br />Build momentum.</h1>
+      <p class="page-dek">I help leaders clarify product direction, understand customer and market needs, strengthen the team around the work, and stay close enough to execution to make the change real.</p>
+    </div>
+  </section>
 
-        <!-- Opening -->
-        <div class="prose mb-16">
-          <p class="lead">
-            My day job is leading product at Rebrandly. What I think about most is how AI changes the physics of knowledge work: how information flows, how decisions compound, how context becomes the binding constraint.
-          </p>
-
-          <p>
-            For select engagements, where there's strong fit and I can genuinely help, I'm available for advisory and fractional leadership.
-          </p>
-
-          <p>
-            I'm not here to convince you AI matters; you already know that. I'm here to help you figure out what to do about it. In my opinion, most organizations are asking the wrong question: they're optimizing prompts when they should be engineering context. That's where the real leverage is, and that's what's going to be tablestakes by 2026.
-          </p>
-
-          <p>
-            <strong>I take on 1-2 advisory relationships at a time.</strong> My full-time role means I'm selective about the work I take on outside of it. That's a feature, not a bug: it means every engagement gets real attention, and I only say yes when I can make a real difference.
-          </p>
-        </div>
+  <section class="v2-section">
+    <div class="container">
+      <div class="v2-section-heading">
+        <p class="kicker">How we begin</p>
+        <h2 class="v2-section-title">Start with the amount of help the problem needs.</h2>
       </div>
 
-      <!-- Not sure CTA - positioned at top per content package -->
-      <div class="border-l-4 border-[var(--accent)] pl-8 py-6 mb-16 max-w-3xl">
-        <h2 class="text-xl mb-4">Not sure what you need?</h2>
-        <p class="text-[var(--text-secondary)] mb-6">
-          Let's start with a conversation. I'll help you figure out if and how I can help.
-        </p>
-        <a href="/contact" class="btn btn-primary">Book a Discovery Call</a>
+      <div class="v2-engagements">
+        <article class="v2-engagement">
+          <span class="v2-number">01</span>
+          <div>
+            <span class="v2-engagement-meta">Free · 30 minutes</span>
+            <h3>Phone consultation</h3>
+          </div>
+          <p>Tell me what you are trying to accomplish and where you are stuck. I will give you an honest view of whether I can help and what a useful next step could be.</p>
+          <span class="v2-engagement-symbol" aria-hidden="true">◎</span>
+        </article>
+
+        <article class="v2-engagement">
+          <span class="v2-number">02</span>
+          <div>
+            <span class="v2-engagement-meta">Up to 20 hours · Two weeks</span>
+            <h3>Discovery and assessment</h3>
+          </div>
+          <p>A focused diagnostic when the team knows something needs to change but has not yet aligned on the cause, the options, or the next move.</p>
+          <span class="v2-engagement-symbol" aria-hidden="true">↗</span>
+        </article>
+
+        <article class="v2-engagement">
+          <span class="v2-number">03</span>
+          <div>
+            <span class="v2-engagement-meta">Ongoing · Scope to fit</span>
+            <h3>Fractional Head of Product</h3>
+          </div>
+          <p>Hands-on product leadership to define the vision, drive strategy, guide development, improve product-market fit, and help the team build the capacity to keep going.</p>
+          <span class="v2-engagement-symbol" aria-hidden="true">∞</span>
+        </article>
       </div>
 
-      <div class="max-w-3xl">
-        <h2 class="text-2xl mb-8">How We Can Work Together</h2>
+      <p class="meta max-w-2xl">The engagement names and original scope come from the pre-Astro site. Current pricing, availability, and exact commitments are intentionally held for Brandon's review.</p>
+    </div>
+  </section>
 
-        <!-- Discovery Call -->
-        <div class="border border-[var(--border)] p-8 mb-8">
-          <div class="flex flex-wrap items-baseline gap-4 mb-4">
-            <h3 class="text-xl">Discovery Call</h3>
-            <span class="tag">Free | 30 minutes</span>
-          </div>
-
-          <div class="prose">
-            <p>
-              A conversation to explore fit. No pitch, no obligation.
-            </p>
-
-            <p>
-              I'll ask about your situation: what you're trying to accomplish, where you're stuck, how you're thinking about AI integration. You'll get a sense of how I approach these problems and whether my perspective is useful.
-            </p>
-
-            <p>
-              If there's a clear fit, we'll talk about what working together could look like. If not, I'll try to point you toward resources that might help.
-            </p>
-
-            <p><strong>What to expect:</strong></p>
-            <ul>
-              <li>Honest assessment of whether I can actually help</li>
-              <li>Context on how I think about AI strategy and product leadership</li>
-              <li>Clarity on next steps (or not; that's okay too)</li>
-            </ul>
-
-            <p><strong>Format:</strong> Video call, scheduled via Calendly</p>
-          </div>
-
-          <div class="mt-6">
-            <a href="/contact" class="btn btn-primary">Book a Discovery Call</a>
-          </div>
+  <section class="v2-section v2-dark">
+    <div class="container">
+      <div class="v2-split-heading">
+        <div>
+          <p class="kicker">Where I can help</p>
+          <h2 class="v2-section-title">The product is only one part of the system.</h2>
         </div>
-
-        <!-- AI Strategy Advisory -->
-        <div class="border border-[var(--border)] p-8 mb-8">
-          <h3 class="text-xl mb-2">AI Strategy Advisory</h3>
-          <p class="text-[var(--text-secondary)] mb-4">For executives exploring AI integration</p>
-
-          <div class="prose">
-            <p>
-              You know AI matters. You're past the "should we do something" phase and into "what exactly should we do and how." That's where I come in.
-            </p>
-
-            <p>
-              This isn't about implementing ChatGPT or fine-tuning models. It's about context engineering: designing how information flows to and from AI systems. The difference is significant. Prompt engineering optimizes individual interactions, while context engineering builds the scaffolding that makes those interactions consistently valuable. That said, both matter; the question is which constraint you're actually hitting.
-            </p>
-
-            <p><strong>What this looks like:</strong></p>
-            <ul>
-              <li>Assessment of your current state and opportunities</li>
-              <li>Roadmap grounded in your actual constraints (team, resources, timeline)</li>
-              <li>Hands-on guidance on implementation approach</li>
-              <li>Ongoing advisory as you execute</li>
-            </ul>
-
-            <p><strong>Who this is for:</strong></p>
-            <ul>
-              <li>Executives at growth-stage companies (Series B+)</li>
-              <li>Product leaders building AI-enabled products</li>
-              <li>Ops leaders exploring automation and workflow AI</li>
-              <li>Teams that want practical application, not slides</li>
-            </ul>
-
-            <p><strong>Format:</strong> Typically 2-4 hours/month, structured around your priorities. Custom to your situation.</p>
-          </div>
-        </div>
-
-        <!-- Fractional Product + AI Leadership -->
-        <div class="border border-[var(--border)] p-8 mb-16">
-          <h3 class="text-xl mb-2">Fractional Product + AI Leadership</h3>
-          <p class="text-[var(--text-secondary)] mb-4">Ongoing hands-on partnership</p>
-
-          <div class="prose">
-            <p>
-              For organizations that need product and AI strategy expertise on a sustained basis, but don't need (or can't justify) a full-time hire.
-            </p>
-
-            <p>
-              This is the deepest level of engagement. I embed with your team, understand your business, and help drive outcomes over months, not hours.
-            </p>
-
-            <p><strong>What this includes:</strong></p>
-            <ul>
-              <li>Strategic direction on product and AI integration</li>
-              <li>Hands-on work with your team (not just advice from the side)</li>
-              <li>Participation in key decisions and meetings</li>
-              <li>Accountability for outcomes, not just deliverables</li>
-            </ul>
-
-            <p><strong>Who this is for:</strong></p>
-            <ul>
-              <li>Companies where product and AI strategy are intertwined</li>
-              <li>Teams going through a transition (new AI initiative, product pivot, scaling challenges)</li>
-              <li>Founders who want a senior partner, not a consultant</li>
-            </ul>
-
-            <p><strong>Format:</strong> Monthly retainer, typically 10-20 hours/month. Structured around what your business actually needs.</p>
-          </div>
-        </div>
-
-        <!-- Availability -->
-        <div class="prose mb-12">
-          <h2>Availability</h2>
-
-          <p>
-            I'm intentionally selective. Between my full-time role at Rebrandly and my own building work (Jane, Context Maps, all the stuff I share on LinkedIn), I have limited bandwidth for outside engagements.
-          </p>
-
-          <p>
-            That constraint keeps me focused on the work where I can have the most impact.
-          </p>
-
-          <p>
-            <strong>Current availability:</strong> Open to 1 new engagement
-          </p>
-
-          <p>
-            If you're exploring fit, let's start with a discovery conversation. If the timing doesn't work now, I'm happy to stay in touch.
-          </p>
-        </div>
-
-        <!-- CTA -->
-        <div class="py-12 border-t border-[var(--border)]">
-          <h2 class="mb-4">Let's Talk</h2>
-          <p class="text-[var(--text-secondary)] mb-8 max-w-xl">
-            If something here resonates, reach out. Even if you're not sure which tier makes sense, that's what the discovery call is for.
-          </p>
-          <a href="/contact" class="btn btn-primary">Start a Conversation</a>
-        </div>
+        <p class="v2-lead">Important outcomes often cross Product, Design, Research, Engineering, Growth, Data, Marketing, and Operations. I work across those boundaries without losing the customer problem at the center.</p>
       </div>
+
+      <div class="service-area-grid">
+        {serviceAreas.map((area, index) => (
+          <article class="service-area">
+            <span>0{index + 1}</span>
+            <h3>{area.title}</h3>
+            <ul>
+              {area.items.map(item => <li>{item}</li>)}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="v2-section">
+    <div class="container v2-about-grid">
+      <div>
+        <p class="kicker">What working together feels like</p>
+        <h2 class="v2-section-title">Clear expectations. Honest feedback. Shared ownership.</h2>
+      </div>
+      <div>
+        <p class="v2-lead">I believe leadership comes from everywhere. My role is to help make the problem clear, create the conditions for good work, and support the people doing it.</p>
+        <p class="service-body">The full version includes how I run one-on-ones, give feedback, think about development, and hold myself accountable when my behavior does not match the values on the page.</p>
+        <a class="text-link" href="/manager-readme">Read my Manager README <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="v2-section v2-contact">
+    <div class="container">
+      <p class="kicker">Start a conversation</p>
+      <h2>Tell me what you're trying to move.</h2>
+      <a class="btn btn-primary" href="/contact">Get in touch <span aria-hidden="true">↗</span></a>
     </div>
   </section>
 </BaseLayout>

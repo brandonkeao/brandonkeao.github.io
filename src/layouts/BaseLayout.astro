@@ -12,7 +12,7 @@ interface Props {
 
 const {
   title,
-  description = "Brandon Keao - Product Leader & AI/Context Engineering Expert",
+  description = "Brandon Keao is a product leader, builder, and advisor helping teams build useful products, stronger systems, and lasting growth.",
   ogImage = "/og-image.png"
 } = Astro.props;
 
@@ -69,8 +69,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     </script>
   </head>
   <body class="min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-primary)]">
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <Header />
-    <main class="flex-1">
+    <main class="flex-1" id="main-content">
       <slot />
     </main>
     <Footer />
