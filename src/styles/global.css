@@ -746,9 +746,22 @@ body {
   text-transform: uppercase;
 }
 
+.v2-intro {
+  min-height: calc(100svh - 5rem);
+  display: flex;
+  flex-direction: column;
+}
+
 .v2-hero {
+  flex: 1;
+  display: flex;
+  align-items: center;
   padding: clamp(2.5rem, 5vh, 4.5rem) 0 clamp(3rem, 5vh, 4.5rem);
   border-bottom: 1px solid var(--text-primary);
+}
+
+.v2-hero > .container {
+  width: 100%;
 }
 
 .v2-hero-grid {
@@ -1763,6 +1776,10 @@ body {
 @media (max-width: 720px) {
   .container {
     padding-inline: 1.25rem;
+  }
+
+  .v2-intro {
+    min-height: auto;
   }
 
   .footer-grid,

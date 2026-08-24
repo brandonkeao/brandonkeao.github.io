@@ -83,40 +83,42 @@ const engagements = [
   title="Senior Product & Growth Operator"
   description="Senior product leadership for important business problems that cross Product, Growth, Data, Engineering, Operations, and AI."
 >
-  <section class="v2-hero">
-    <div class="container v2-hero-grid">
-      <div class="v2-hero-copy reveal">
-        <div>
-          <p class="kicker">Senior product & growth operator</p>
-          <h1 class="v2-display">Senior product leadership for complex problems that <em>cross teams.</em></h1>
+  <div class="v2-intro">
+    <section class="v2-hero">
+      <div class="container v2-hero-grid">
+        <div class="v2-hero-copy reveal">
+          <div>
+            <p class="kicker">Senior product & growth operator</p>
+            <h1 class="v2-display">Senior product leadership for complex problems that <em>cross teams.</em></h1>
+          </div>
+          <p class="v2-lead">
+            I work with leadership teams when growth is stuck, the data is not settling the debate, or a critical initiative needs several functions to move as one. We understand the system, choose a direction, and do the work needed to create momentum.
+          </p>
+          <div class="v2-actions">
+            <a class="btn btn-primary" href="/contact">Start a Conversation <span aria-hidden="true">↗</span></a>
+            <a class="btn btn-secondary" href="#experience">See the experience <span aria-hidden="true">↓</span></a>
+          </div>
         </div>
-        <p class="v2-lead">
-          I work with leadership teams when growth is stuck, the data is not settling the debate, or a critical initiative needs several functions to move as one. We understand the system, choose a direction, and do the work needed to create momentum.
-        </p>
-        <div class="v2-actions">
-          <a class="btn btn-primary" href="/contact">Start a Conversation <span aria-hidden="true">↗</span></a>
-          <a class="btn btn-secondary" href="#experience">See the experience <span aria-hidden="true">↓</span></a>
-        </div>
+        <aside class="v2-note reveal">
+          <strong>The role I play</strong>
+          <p>Senior enough to shape the direction. Close enough to the work to help make it happen.</p>
+        </aside>
       </div>
-      <aside class="v2-note reveal">
-        <strong>The role I play</strong>
-        <p>Senior enough to shape the direction. Close enough to the work to help make it happen.</p>
-      </aside>
-    </div>
-  </section>
+    </section>
 
-  <section class="v2-proof" aria-label="Experience summary">
-    <div class="container v2-proof-grid">
-      <div class="v2-proof-stat">
-        <b>18+</b>
-        <span>years building products, teams, and complex systems</span>
+    <section class="v2-proof" aria-label="Experience summary">
+      <div class="container v2-proof-grid">
+        <div class="v2-proof-stat">
+          <b>18+</b>
+          <span>years building products, teams, and complex systems</span>
+        </div>
+        <div class="v2-company-list">
+          <small>Experience includes</small>
+          {companies.map(company => <span>{company}</span>)}
+        </div>
       </div>
-      <div class="v2-company-list">
-        <small>Experience includes</small>
-        {companies.map(company => <span>{company}</span>)}
-      </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
   <section class="v2-section" id="experience">
     <div class="container">
