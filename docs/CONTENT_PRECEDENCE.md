@@ -1,7 +1,7 @@
 # Website V2 Content Precedence
 
-**Status:** Working rule for the `website-v2` branch  
-**Owner:** Brandon  
+**Status:** Working rule for the `website-v2` branch
+**Owner:** Brandon
 **Established:** 2026-08-23
 
 ## The rule

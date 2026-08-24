@@ -1,7 +1,7 @@
 # Brandon Keao Website Writing Style
 
-**Status:** Working draft for review  
-**Applies to:** Public website copy on the `website-v2` branch  
+**Status:** Working draft for review
+**Applies to:** Public website copy on the `website-v2` branch
 **Last updated:** 2026-08-23
 
 ## Purpose
@@ -124,4 +124,3 @@ Before copy is ready for Brandon:
 - `/Users/brandonkeao/AI Workspaces v4/personal_branding/projects/website_redesign/editing/manager-readme.md`
 - `/Users/brandonkeao/AI Workspaces v3/phase3_workspace/brandon_voice_profiles/raw_samples/`
 - `/Users/brandonkeao/AI Workspaces v4/personal_branding/memory/evolution/learnings/2026-01-07_website-voice-session.md`
-

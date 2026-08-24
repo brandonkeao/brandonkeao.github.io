@@ -16,4 +16,3 @@ Content precedence:
 1. Original website content.
 2. Current goal and direction.
 3. Current website content as fallback.
-
