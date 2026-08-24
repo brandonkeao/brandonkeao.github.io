@@ -13,10 +13,11 @@ interface Props {
 const {
   title,
   description = "Brandon Keao is a product leader, builder, and advisor helping teams build useful products, stronger systems, and lasting growth.",
-  ogImage = "/og-image.png"
+  ogImage
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const resolvedOgImage = ogImage ? new URL(ogImage, Astro.site).toString() : undefined;
 ---
 
 <!DOCTYPE html>
@@ -46,13 +47,13 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={ogImage} />
+    {resolvedOgImage && <meta property="og:image" content={resolvedOgImage} />}
 
     <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:card" content={resolvedOgImage ? "summary_large_image" : "summary"} />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImage} />
+    {resolvedOgImage && <meta name="twitter:image" content={resolvedOgImage} />}
 
     <meta name="generator" content={Astro.generator} />
 
