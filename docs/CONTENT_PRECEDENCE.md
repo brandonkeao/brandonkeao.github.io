@@ -9,7 +9,7 @@
 When two versions of the website say different things, use this order:
 
 1. **Original website content.** Preserve Brandon's earlier language, ideas, structure, and useful quirks when a reliable source survives.
-2. **Current goal and direction.** Add what the original site needs to serve the new purpose: consulting opportunities and senior product-leadership roles, with cross-functional product, growth, data, engineering, and operating range.
+2. **Current goal and direction.** Add what the original site needs to serve the new purpose: consulting and fractional opportunities, with cross-functional product, growth, data, engineering, and operating range. Keep full-time-role positioning dormant while Brandon remains fully employed by Rebrandly unless he explicitly reactivates it.
 3. **Current website content.** Use the January 2026 Astro copy only when the first two layers do not answer the need or when Brandon explicitly prefers it.
 
 This is a content rule, not a requirement to reproduce the old visual design. The current editorial design direction can continue to evolve around the recovered writing.
@@ -53,7 +53,7 @@ Every material page should be built in three passes:
 
 ## Current page decisions
 
-- **Homepage:** lead with the accepted working direction: senior product and growth leadership for important business problems that cross functional boundaries. Use the original builder identity and management philosophy to make that positioning sound and feel like Brandon.
+- **Homepage:** use consulting and fractional work as the primary lens. The exact buyer/problem direction remains under review; use the original builder identity and management philosophy to make each proposal sound and feel like Brandon.
 - **Manager README:** restore the full January 3 Squarespace copy as the baseline.
 - **Services:** recover the consultation, discovery and assessment, and Fractional Head of Product model; adapt the problems and outcomes to today's goals.
 - **About:** lead with product leadership and systems thinking; AI supports the story rather than replacing it.
