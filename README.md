@@ -15,11 +15,13 @@ Read [`docs/CONTENT_PRECEDENCE.md`](docs/CONTENT_PRECEDENCE.md) before changing 
 ## Current V2 scope
 
 - editorial homepage based on the reviewed visual direction;
-- original builder and product-leadership positioning restored;
+- homepage repositioned around senior product leadership for problems that do not stay inside Product;
 - original consultation, assessment, and Fractional Head of Product model restored;
 - full pre-Astro Manager README restored;
 - About page updated so AI supports the career story rather than replacing it;
-- existing Writing, Bookshelf, Contact, Projects, and archive routes preserved as fallbacks pending review.
+- Bookshelf restored to primary navigation and homepage discovery;
+- Writing routes preserved but hidden from navigation until the editorial review is ready;
+- existing Contact, Projects, and archive routes preserved as fallbacks pending review.
 
 ## Local review
 

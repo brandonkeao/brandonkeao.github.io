@@ -17,7 +17,7 @@ Develop the next version of Brandon's professional website without disrupting th
 
 ## Current thesis
 
-Brandon is a product leader, builder, and advisor who helps leaders scale product-led innovation and growth by understanding customer and market needs. His range across product, growth, data, engineering, operations, and AI supports that identity; it does not replace it.
+Brandon is a senior product and growth operator for important business problems that cross functional boundaries. Product, Growth, Data, Engineering, Operations, and AI are capabilities he connects around one outcome, not separate consulting identities.
 
 This remains a working thesis until Brandon approves the public positioning.
 
@@ -45,7 +45,7 @@ Use [`docs/WRITING_STYLE.md`](docs/WRITING_STYLE.md) for the website register.
 | `/about/` | Rebuilt around builder-first career story |
 | `/services/` | Original service model restored and adapted |
 | `/manager-readme/` | Full January 3 pre-Astro copy restored |
-| `/writing/` | Existing archive preserved; curation pending |
+| `/writing/` | Existing archive preserved but removed from site navigation until curation is ready |
 | `/bookshelf/` | Existing content preserved; review pending |
 | `/contact/` | Existing implementation preserved; conversion review pending |
 | `/projects/` | Existing implementation preserved; evidence and architecture review pending |

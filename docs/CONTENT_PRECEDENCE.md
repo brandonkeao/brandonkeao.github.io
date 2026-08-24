@@ -53,9 +53,8 @@ Every material page should be built in three passes:
 
 ## Current page decisions
 
-- **Homepage:** recover the original builder identity and product-led innovation and growth promise; use the new cross-functional goal to sharpen where Brandon is useful.
+- **Homepage:** lead with the accepted working direction: senior product and growth leadership for important business problems that cross functional boundaries. Use the original builder identity and management philosophy to make that positioning sound and feel like Brandon.
 - **Manager README:** restore the full January 3 Squarespace copy as the baseline.
 - **Services:** recover the consultation, discovery and assessment, and Fractional Head of Product model; adapt the problems and outcomes to today's goals.
 - **About:** lead with product leadership and systems thinking; AI supports the story rather than replacing it.
-- **Writing and Bookshelf:** preserve them as expressions of how Brandon thinks, not merely as conversion assets.
-
+- **Writing and Bookshelf:** keep Bookshelf visible as an expression of Brandon's influences. Preserve Writing routes but remove them from discovery until the archive is reviewed and ready.
