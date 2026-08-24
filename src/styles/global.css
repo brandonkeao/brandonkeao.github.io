@@ -747,28 +747,28 @@ body {
 }
 
 .v2-hero {
-  padding: clamp(3.5rem, 6vw, 6.5rem) 0 clamp(3.75rem, 6vw, 6rem);
+  padding: clamp(2.5rem, 5vh, 4.5rem) 0 clamp(3rem, 5vh, 4.5rem);
   border-bottom: 1px solid var(--text-primary);
 }
 
 .v2-hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 2.25fr) minmax(250px, 0.75fr);
-  gap: clamp(3rem, 5vw, 6rem);
+  gap: clamp(2.5rem, 4vw, 5rem);
   align-items: end;
 }
 
 .v2-hero-copy {
   display: grid;
-  gap: clamp(2rem, 3vw, 2.75rem);
+  gap: clamp(1.5rem, 2.5vh, 2rem);
 }
 
 .v2-display {
   max-width: 100%;
   margin: 0;
-  font-size: clamp(3.75rem, 6vw, 6.5rem);
+  font-size: clamp(3.75rem, min(5.6vw, 8.3vh), 5.5rem);
   letter-spacing: -0.05em;
-  line-height: 0.91;
+  line-height: 0.93;
   text-wrap: balance;
 }
 
@@ -784,6 +784,16 @@ body {
   font-family: var(--font-serif);
   font-size: clamp(1.25rem, 2.4vw, 1.85rem);
   line-height: 1.4;
+}
+
+.v2-hero .kicker {
+  margin-bottom: 1rem;
+}
+
+.v2-hero .v2-lead {
+  max-width: 880px;
+  font-size: clamp(1.15rem, min(1.6vw, 2.4vh), 1.55rem);
+  line-height: 1.35;
 }
 
 .v2-actions {
