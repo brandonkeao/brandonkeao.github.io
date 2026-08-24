@@ -81,6 +81,17 @@
   --space-section: 5rem;        /* 80px */
   --space-section-lg: 8rem;     /* 128px */
 
+  /* V2 responsive rhythm - shared by the homepage and supporting routes */
+  --space-v2-hero-top: clamp(2.5rem, 5vh, 4.5rem);
+  --space-v2-hero-bottom: clamp(3rem, 5vh, 4.5rem);
+  --space-v2-section: clamp(4rem, min(8vw, 8vh), 7rem);
+
+  /* V2 responsive typography - one scale across the full site */
+  --text-v2-display: clamp(3.75rem, min(5.6vw, 8.3vh), 5.5rem);
+  --text-v2-lead: clamp(1.15rem, min(1.6vw, 2.4vh), 1.55rem);
+  --leading-v2-display: 0.93;
+  --leading-v2-lead: 1.35;
+
   /* Container Widths */
   --container-prose: 660px;     /* Optimal reading width */
   --container-content: 880px;   /* Content with some room */
@@ -760,7 +771,7 @@ body {
   flex: 1;
   display: flex;
   align-items: center;
-  padding: clamp(2.5rem, 5vh, 4.5rem) 0 clamp(3rem, 5vh, 4.5rem);
+  padding: var(--space-v2-hero-top) 0 var(--space-v2-hero-bottom);
   border-bottom: 1px solid var(--text-primary);
 }
 
@@ -783,9 +794,9 @@ body {
 .v2-display {
   max-width: 100%;
   margin: 0;
-  font-size: clamp(3.75rem, min(5.6vw, 8.3vh), 5.5rem);
+  font-size: var(--text-v2-display);
   letter-spacing: -0.05em;
-  line-height: 0.93;
+  line-height: var(--leading-v2-display);
   text-wrap: balance;
 }
 
@@ -809,8 +820,8 @@ body {
 
 .v2-hero .v2-lead {
   max-width: 880px;
-  font-size: clamp(1.15rem, min(1.6vw, 2.4vh), 1.55rem);
-  line-height: 1.35;
+  font-size: var(--text-v2-lead);
+  line-height: var(--leading-v2-lead);
 }
 
 .v2-actions {
@@ -905,7 +916,7 @@ body {
 }
 
 .v2-section {
-  padding: clamp(4rem, min(8vw, 8vh), 7rem) 0;
+  padding: var(--space-v2-section) 0;
   border-bottom: 1px solid var(--text-primary);
 }
 
@@ -1233,32 +1244,37 @@ body {
 /* Long-form V2 pages */
 
 .page-hero {
-  padding: clamp(3.5rem, min(7vw, 7vh), 6rem) 0 clamp(3rem, min(6vw, 6vh), 4.5rem);
+  padding: var(--space-v2-hero-top) 0 var(--space-v2-hero-bottom);
   border-bottom: 1px solid var(--text-primary);
 }
 
+.page-hero .kicker {
+  margin-bottom: 1rem;
+}
+
 .page-title {
-  max-width: 950px;
+  max-width: 1100px;
   margin: 0;
-  font-size: clamp(3.75rem, min(7.5vw, 11vh), 6.5rem);
-  line-height: 0.91;
+  font-size: var(--text-v2-display);
+  letter-spacing: -0.05em;
+  line-height: var(--leading-v2-display);
   text-wrap: balance;
 }
 
 .page-dek {
-  max-width: 840px;
-  margin: clamp(1.5rem, 3vh, 2rem) 0 0;
+  max-width: 880px;
+  margin: clamp(1.5rem, 2.5vh, 2rem) 0 0;
   color: var(--text-secondary);
   font-family: var(--font-serif);
-  font-size: clamp(1.2rem, min(2vw, 3vh), 1.65rem);
-  line-height: 1.42;
+  font-size: var(--text-v2-lead);
+  line-height: var(--leading-v2-lead);
 }
 
 .manager-layout {
   display: grid;
   grid-template-columns: minmax(160px, 0.55fr) minmax(0, 2fr);
   gap: clamp(3rem, 7vw, 7rem);
-  padding: clamp(3.5rem, min(7vw, 7vh), 6rem) 0;
+  padding: var(--space-v2-section) 0;
 }
 
 .manager-toc {
@@ -1295,8 +1311,8 @@ body {
   margin: 0 0 1.5rem;
   padding-top: 0.35rem;
   border-top: 1px solid var(--text-primary);
-  font-size: clamp(2.7rem, 6vw, 4.8rem);
-  line-height: 0.95;
+  font-size: clamp(2.75rem, min(5.5vw, 8vh), 5.25rem);
+  line-height: 0.97;
 }
 
 .manager-copy h3 {
@@ -1650,7 +1666,7 @@ body {
 }
 
 .article-shell {
-  padding-block: clamp(3.5rem, min(7vw, 7vh), 6rem);
+  padding-block: var(--space-v2-section);
 }
 
 .article-inner {
@@ -1773,12 +1789,9 @@ body {
     gap: 2rem;
   }
 
-  .v2-display {
-    font-size: clamp(3.55rem, 17vw, 5.5rem);
-  }
-
+  .v2-display,
   .page-title {
-    font-size: clamp(3.4rem, 16vw, 5rem);
+    font-size: clamp(3.55rem, 17vw, 5.5rem);
   }
 
   .v2-proof-stat {
