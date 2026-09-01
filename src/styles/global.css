@@ -84,7 +84,13 @@
   /* V2 responsive rhythm - shared by the homepage and supporting routes */
   --space-v2-hero-top: clamp(2.5rem, 5vh, 4.5rem);
   --space-v2-hero-bottom: clamp(3rem, 5vh, 4.5rem);
-  --space-v2-section: clamp(4rem, min(8vw, 8vh), 7rem);
+  --space-v2-page-hero-top: clamp(3.5rem, 6.5vh, 5.5rem);
+  --space-v2-page-hero-bottom: clamp(4rem, 7vh, 6rem);
+  --space-v2-section: clamp(4.75rem, min(9.5vw, 9.5vh), 8rem);
+  --space-v2-heading-gap: clamp(3.25rem, min(7vw, 7vh), 6rem);
+  --space-v2-row-y: clamp(2.75rem, 4vh, 3rem);
+  --space-v2-card: clamp(2.25rem, min(3vw, 3vh), 2.75rem);
+  --space-v2-list-row: clamp(2.1rem, 3.5vh, 2.5rem);
 
   /* V2 responsive typography - one scale across the full site */
   --text-v2-display: clamp(3.75rem, min(5.6vw, 8.3vh), 5.5rem);
@@ -729,7 +735,7 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, 1fr);
   gap: clamp(2.5rem, 6vw, 6rem);
-  padding-block: clamp(2.5rem, 5vh, 4rem);
+  padding-block: clamp(3.25rem, 6vh, 5rem);
 }
 
 .footer-statement {
@@ -924,7 +930,7 @@ body {
   display: grid;
   grid-template-columns: minmax(140px, 0.7fr) minmax(0, 2.3fr);
   gap: 3rem;
-  margin-bottom: clamp(2.5rem, min(6vw, 6vh), 5rem);
+  margin-bottom: var(--space-v2-heading-gap);
 }
 
 .v2-section-title {
@@ -948,7 +954,7 @@ body {
   grid-template-columns: 3.5rem minmax(220px, 0.9fr) minmax(260px, 1.1fr);
   gap: 2rem;
   align-items: start;
-  padding: 2rem 0;
+  padding: var(--space-v2-row-y) 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -1002,7 +1008,7 @@ body {
   grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.7fr);
   gap: clamp(3rem, 7vw, 7rem);
   align-items: end;
-  margin-bottom: clamp(3rem, min(7vw, 7vh), 5.5rem);
+  margin-bottom: var(--space-v2-heading-gap);
 }
 
 .v2-principles {
@@ -1016,7 +1022,7 @@ body {
   min-height: clamp(19rem, 24vw, 22rem);
   display: flex;
   flex-direction: column;
-  padding: 1.6rem;
+  padding: var(--space-v2-card);
   border-right: 1px solid rgba(242, 238, 230, 0.25);
 }
 
@@ -1055,7 +1061,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   gap: clamp(2.5rem, 5vw, 4rem);
-  padding: 2rem;
+  padding: var(--space-v2-card);
   border-right: 1px solid var(--text-primary);
   border-bottom: 1px solid var(--text-primary);
   color: var(--text-primary);
@@ -1118,7 +1124,7 @@ body {
   grid-template-columns: 3rem minmax(220px, 0.9fr) minmax(260px, 1fr) 3rem;
   gap: 2rem;
   align-items: center;
-  padding: 2rem 0;
+  padding: var(--space-v2-row-y) 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -1184,7 +1190,7 @@ body {
   grid-template-columns: minmax(110px, 0.45fr) minmax(0, 1fr) 2rem;
   gap: 1rem;
   align-items: center;
-  padding: 1.8rem 0;
+  padding: var(--space-v2-list-row) 0;
   border-bottom: 1px solid var(--border);
   color: var(--text-primary);
 }
@@ -1211,7 +1217,7 @@ body {
 }
 
 .v2-about-grid > div:last-child > p:not(.v2-lead) {
-  margin: 1.5rem 0 2rem;
+  margin: 2rem 0 2.5rem;
   color: var(--text-secondary);
   font-family: var(--font-serif);
   font-size: 1.05rem;
@@ -1225,7 +1231,7 @@ body {
 
 .v2-contact h2 {
   max-width: 1040px;
-  margin: 0 0 3rem;
+  margin: 0 0 clamp(3.5rem, 6vh, 4.5rem);
   color: var(--bg-primary);
   font-size: clamp(3rem, min(6.5vw, 9vh), 6rem);
   line-height: 0.95;
@@ -1244,7 +1250,7 @@ body {
 /* Long-form V2 pages */
 
 .page-hero {
-  padding: var(--space-v2-hero-top) 0 var(--space-v2-hero-bottom);
+  padding: var(--space-v2-page-hero-top) 0 var(--space-v2-page-hero-bottom);
   border-bottom: 1px solid var(--text-primary);
 }
 
@@ -1263,7 +1269,7 @@ body {
 
 .page-dek {
   max-width: 880px;
-  margin: clamp(1.5rem, 2.5vh, 2rem) 0 0;
+  margin: clamp(2rem, 3.5vh, 2.75rem) 0 0;
   color: var(--text-secondary);
   font-family: var(--font-serif);
   font-size: var(--text-v2-lead);
@@ -1303,7 +1309,7 @@ body {
 }
 
 .manager-copy section {
-  padding: 0 0 clamp(3rem, 8vw, 6rem);
+  padding: 0 0 clamp(4rem, min(9vw, 9vh), 7rem);
   scroll-margin-top: 7rem;
 }
 
@@ -1372,7 +1378,7 @@ body {
 
 .service-area {
   min-height: clamp(19rem, 25vw, 22rem);
-  padding: 2rem;
+  padding: var(--space-v2-card);
   border-right: 1px solid rgba(242, 238, 230, 0.35);
   border-bottom: 1px solid rgba(242, 238, 230, 0.35);
 }
@@ -1465,7 +1471,7 @@ body {
 .bookshelf-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 2vw, 1.75rem);
+  gap: clamp(2.25rem, 4vw, 3.5rem) clamp(1rem, 2vw, 1.75rem);
 }
 
 .book-card {
@@ -1567,7 +1573,7 @@ body {
 }
 
 .project-capabilities li {
-  padding: 0.85rem 0;
+  padding: 1.15rem 0;
   border-bottom: 1px solid rgba(242, 238, 230, 0.25);
   color: #d8d1c6;
   font-family: var(--font-serif);
@@ -1590,7 +1596,7 @@ body {
   grid-template-columns: minmax(90px, 0.35fr) minmax(0, 1fr) 2rem;
   gap: 1rem;
   align-items: center;
-  padding: clamp(1.5rem, 3vw, 2.25rem) 0;
+  padding: var(--space-v2-list-row) 0;
   border-bottom: 1px solid var(--border);
   color: var(--text-primary);
 }
@@ -1630,7 +1636,7 @@ body {
   display: grid;
   grid-template-columns: minmax(150px, 0.35fr) minmax(0, 1fr);
   gap: clamp(1.5rem, 4vw, 4rem);
-  padding: clamp(1.75rem, 3vw, 2.5rem) 0;
+  padding: var(--space-v2-list-row) 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -1767,6 +1773,16 @@ body {
 }
 
 @media (max-width: 720px) {
+  :root {
+    --space-v2-page-hero-top: 3.5rem;
+    --space-v2-page-hero-bottom: 4rem;
+    --space-v2-section: 4.5rem;
+    --space-v2-heading-gap: 3.25rem;
+    --space-v2-row-y: 2.5rem;
+    --space-v2-card: 2rem;
+    --space-v2-list-row: 2rem;
+  }
+
   .container {
     padding-inline: 1.25rem;
   }
