@@ -3,94 +3,250 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="Manager README" description="Brandon Keao's original management philosophy, working style, and values.">
-  <section class="page-hero">
-    <div class="container">
-      <p class="kicker">Leadership · Working together</p>
-      <h1 class="page-title">Manager<br />README</h1>
-      <p class="page-dek">My approach to leadership, collaborating, getting things done, and enjoying work. A practical tool for working well together and for keeping me accountable to my values.</p>
+  <div class="readme-page">
+    <section class="page-hero readme-masthead" aria-labelledby="readme-title">
+      <div class="container">
+      <p class="readme-eyebrow">Leadership · Working together</p>
+      <h1 id="readme-title">Manager <span>README</span></h1>
+      <p class="readme-dek">My approach to leadership, collaborating, getting things done, and enjoying work. A practical tool for working well together and for keeping me accountable to my values.</p>
+      </div>
+    </section>
+    <div class="readme-layout container">
+      <aside class="readme-rail">
+        <nav class="readme-toc" aria-label="On this page">
+          <p class="readme-eyebrow">On this page</p>
+          <a href="#motivations"><span aria-hidden="true">01</span>Motivations</a>
+          <a href="#role"><span aria-hidden="true">02</span>My role</a>
+          <a href="#philosophy"><span aria-hidden="true">03</span>Philosophy</a>
+          <a href="#values"><span aria-hidden="true">04</span>Values</a>
+        </nav>
+      </aside>
+      <article class="readme-copy" aria-labelledby="readme-title">
+        <section id="motivations" aria-labelledby="motivations-title">
+          <div class="readme-section-heading"><span aria-hidden="true">01</span><h2 id="motivations-title">Motivations</h2></div>
+          <p>This document outlines my approach to leadership, collaborating, getting things done, and enjoying work. This document is meant to help us work well together to our mutual benefit. This document is a tool to help keep me accountable to my values.</p>
+          <div class="readme-disclaimer">
+            <h3>Disclaimer</h3>
+            <p>This document applies only to me, and in no way should be considered to apply to any other manager, team, or organization.</p>
+          </div>
+        </section>
+        <section id="role" aria-labelledby="role-title">
+          <div class="readme-section-heading"><span aria-hidden="true">02</span><h2 id="role-title">My Role</h2></div>
+          <p>As a Product leader, I generally oversee and work directly with Product, Design, and Research teams. My mission is to:</p>
+          <ul class="mission-list" role="list">
+            <li>Deliver and manage products that <strong>CAPTURE CUSTOMER VALUE</strong></li>
+            <li>Deliver and manage products that <strong>SURPRISE AND DELIGHT USERS</strong></li>
+            <li>Iterate on reliable processes that build a scalable organization and business</li>
+            <li>Mentor individual contributors and managers to increase leadership capacity</li>
+            <li>Work to retain and attract talent over time by deeply taking care of who we have and building a team brand that other companies and employees envy</li>
+            <li>Set clear expectations on how to be successful as an individual and as a team</li>
+            <li>Align professional growth to benefit team and company performance AND individual career growth</li>
+          </ul>
+        </section>
+        <section id="philosophy" aria-labelledby="philosophy-title">
+          <div class="readme-section-heading"><span aria-hidden="true">03</span><h2 id="philosophy-title">Philosophy</h2></div>
+          <p>Having the minimum amount of process in place to be effective is important to me, and I often spend more time trying to remove processes than add them. That said, there are core elements that define the foundation of my management style.</p>
+          <div class="readme-practice">
+            <h3>One on Ones</h3>
+            <p>My direct reports and I will have weekly 1 on 1s that take 30 minutes. These are not status updates, but an opportunity to focus more widely on professional development and well-being. We're here to help each other and having this regular meeting ensures that we do. 1 on 1s are structured as follows:</p>
+            <ul class="one-on-one" role="list">
+              <li><span class="time-amount">10 <span>minutes</span></span> for you</li>
+              <li><span class="time-amount">10 <span>minutes</span></span> for me</li>
+              <li><span class="time-amount">10 <span>minutes</span></span> for the future</li>
+            </ul>
+          </div>
+          <div class="readme-practice">
+            <h3>Feedback</h3>
+            <p>There's nothing more important to growth than honest and frequent feedback. Feedback is neither good nor bad, but it should be timely. I will give you feedback in the moment and I expect the same. If you are unsure about whether feedback will be well received, give it in private, person to person. A more crass rule of thumb is that critical feedback should be done in private while praise should be done in public.</p>
+          </div>
+          <div class="readme-practice">
+            <h3>Coaching and Delegation</h3>
+            <p>The best way for a team or company to grow is for every individual to grow. Everyone on the team will be working to develop skills in one area or another, including me. It's my responsibility to help identify those growth areas that are not only beneficial to the company, but also to your own professional development.</p>
+          </div>
+          <div class="readme-quote">
+            <blockquote>
+              <p><em>CFO asks CEO, “What happens if we invest in developing our people and then they leave us?”</em></p>
+              <p><em>CEO: “What happens if we don't, and they stay?”</em></p>
+            </blockquote>
+            <p class="readme-bam"><strong>BAM!</strong></p>
+          </div>
+        </section>
+        <section id="values" aria-labelledby="values-title">
+          <div class="readme-section-heading"><span aria-hidden="true">04</span><h2 id="values-title">Values</h2></div>
+          <div class="readme-value">
+            <h3>Leadership Comes From Everywhere</h3>
+            <p>I've wasted a lot of time in poorly run meetings by bad managers. While I believe managers are an essential part of a scaling organization, I don't believe they have a monopoly on leadership, and I work hard to build other constructs and opportunities in our teams for non-managers to lead.</p>
+          </div>
+          <div class="readme-value">
+            <h3>Heavy Bias Towards Action</h3>
+            <p>Long meetings where we endlessly debate potential directions could lead to meaningful insights, but I believe “starting is the best way to begin learning and make progress.” This is not always the correct strategy. This strategy annoys those who like to debate.</p>
+          </div>
+          <div class="readme-value">
+            <h3>Extreme Ownership</h3>
+            <p>“Leaders must own everything in their world. There is no one else to blame.” When a team takes ownership of its problems, the problems get solved.</p>
+          </div>
+          <div class="readme-value">
+            <h3>Positive Intent</h3>
+            <p>I start with an assumption of positive intent for all involved. This has worked out well for me over my career.</p>
+          </div>
+          <div class="readme-value">
+            <h3>I See Things As Systems</h3>
+            <p>I reduce complex things into systems. I think in flowcharts. I take great joy in attempting to understand how these systems and flowcharts all fit together. When I see large or small inefficiencies in systems, I'd like to fix them with your help.</p>
+          </div>
+          <div class="readme-value">
+            <h3>Continually Fix Small Things</h3>
+            <p>I believe in the compounding awesomeness of continually fixing small things. I believe quality assurance is everyone's responsibility and there are bugs to be fixed everywhere… all the time.</p>
+          </div>
+          <div class="readme-value">
+            <h3>I Serve You, Not the Other Way Around</h3>
+            <p>I'm always available to assist so please don't hesitate to ask me for help. Let's help each other grow as individuals and a team.</p>
+          </div>
+        </section>
+        <div class="readme-end"><a class="text-link" href="#readme-title">Back to the beginning <span aria-hidden="true">↑</span></a><a class="text-link" href="/contact">Start a Conversation <span aria-hidden="true">↗</span></a></div>
+      </article>
     </div>
-  </section>
-
-  <div class="container manager-layout">
-    <nav class="manager-toc" aria-label="On this page">
-      <strong>On this page</strong>
-      <a href="#motivations">Motivations</a>
-      <a href="#role">My role</a>
-      <a href="#philosophy">Philosophy</a>
-      <a href="#values">Values</a>
-    </nav>
-
-    <article class="manager-copy">
-      <section id="motivations">
-        <h2>Motivations</h2>
-        <p>This document outlines my approach to leadership, collaborating, getting things done, and enjoying work. This document is meant to help us work well together to our mutual benefit. This document is a tool to help keep me accountable to my values.</p>
-
-        <h3>Disclaimer</h3>
-        <p>This document applies only to me, and in no way should be considered to apply to any other manager, team, or organization.</p>
-      </section>
-
-      <section id="role">
-        <h2>My Role</h2>
-        <p>As a Product leader, I generally oversee and work directly with Product, Design, and Research teams. My mission is to:</p>
-        <ul>
-          <li>Deliver and manage products that <strong>CAPTURE CUSTOMER VALUE</strong></li>
-          <li>Deliver and manage products that <strong>SURPRISE AND DELIGHT USERS</strong></li>
-          <li>Iterate on reliable processes that build a scalable organization and business</li>
-          <li>Mentor individual contributors and managers to increase leadership capacity</li>
-          <li>Work to retain and attract talent over time by deeply taking care of who we have and building a team brand that other companies and employees envy</li>
-          <li>Set clear expectations on how to be successful as an individual and as a team</li>
-          <li>Align professional growth to benefit team and company performance AND individual career growth</li>
-        </ul>
-      </section>
-
-      <section id="philosophy">
-        <h2>Philosophy</h2>
-        <p>Having the minimum amount of process in place to be effective is important to me, and I often spend more time trying to remove processes than add them. That said, there are core elements that define the foundation of my management style.</p>
-
-        <h3>One on Ones</h3>
-        <p>My direct reports and I will have weekly 1 on 1s that take 30 minutes. These are not status updates, but an opportunity to focus more widely on professional development and well-being. We're here to help each other and having this regular meeting ensures that we do. 1 on 1s are structured as follows:</p>
-        <ul>
-          <li>10 minutes for you</li>
-          <li>10 minutes for me</li>
-          <li>10 minutes for the future</li>
-        </ul>
-
-        <h3>Feedback</h3>
-        <p>There's nothing more important to growth than honest and frequent feedback. Feedback is neither good nor bad, but it should be timely. I will give you feedback in the moment and I expect the same. If you are unsure about whether feedback will be well received, give it in private, person to person. A more crass rule of thumb is that critical feedback should be done in private while praise should be done in public.</p>
-
-        <h3>Coaching and Delegation</h3>
-        <p>The best way for a team or company to grow is for every individual to grow. Everyone on the team will be working to develop skills in one area or another, including me. It's my responsibility to help identify those growth areas that are not only beneficial to the company, but also to your own professional development.</p>
-        <blockquote>
-          <p><em>CFO asks CEO, “What happens if we invest in developing our people and then they leave us?”</em></p>
-          <p><em>CEO: “What happens if we don't, and they stay?”</em></p>
-        </blockquote>
-        <p class="manager-bam"><strong>BAM!</strong></p>
-      </section>
-
-      <section id="values">
-        <h2>Values</h2>
-
-        <h3>Leadership Comes From Everywhere</h3>
-        <p>I've wasted a lot of time in poorly run meetings by bad managers. While I believe managers are an essential part of a scaling organization, I don't believe they have a monopoly on leadership, and I work hard to build other constructs and opportunities in our teams for non-managers to lead.</p>
-
-        <h3>Heavy Bias Towards Action</h3>
-        <p>Long meetings where we endlessly debate potential directions could lead to meaningful insights, but I believe “starting is the best way to begin learning and make progress.” This is not always the correct strategy. This strategy annoys those who like to debate.</p>
-
-        <h3>Extreme Ownership</h3>
-        <p>“Leaders must own everything in their world. There is no one else to blame.” When a team takes ownership of its problems, the problems get solved.</p>
-
-        <h3>Positive Intent</h3>
-        <p>I start with an assumption of positive intent for all involved. This has worked out well for me over my career.</p>
-
-        <h3>I See Things As Systems</h3>
-        <p>I reduce complex things into systems. I think in flowcharts. I take great joy in attempting to understand how these systems and flowcharts all fit together. When I see large or small inefficiencies in systems, I'd like to fix them with your help.</p>
-
-        <h3>Continually Fix Small Things</h3>
-        <p>I believe in the compounding awesomeness of continually fixing small things. I believe quality assurance is everyone's responsibility and there are bugs to be fixed everywhere… all the time.</p>
-
-        <h3>I Serve You, Not the Other Way Around</h3>
-        <p>I'm always available to assist so please don't hesitate to ask me for help. Let's help each other grow as individuals and a team.</p>
-      </section>
-    </article>
   </div>
 </BaseLayout>
+
+
+<script>
+  let disposeReadingPosition: (() => void) | undefined;
+
+  function initReadingPosition() {
+    disposeReadingPosition?.();
+    const root = document.querySelector('.readme-page');
+    if (!root) return;
+
+    const links = [...root.querySelectorAll<HTMLAnchorElement>('.readme-toc a')];
+    const sections = links.map(link => document.getElementById(link.hash.slice(1)));
+    let frame = 0;
+
+    function updateReadingPosition() {
+      const boundary = Math.max(112, Math.min(window.innerHeight * 0.3, 220));
+      let current = sections[0];
+      for (const section of sections) {
+        if (section && section.getBoundingClientRect().top <= boundary) current = section;
+      }
+      for (const link of links) {
+        if (current && link.hash === `#${current.id}`) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      }
+      frame = 0;
+    }
+
+    function scheduleReadingPosition() {
+      if (!frame) frame = requestAnimationFrame(updateReadingPosition);
+    }
+
+    window.addEventListener('scroll', scheduleReadingPosition, { passive: true });
+    window.addEventListener('resize', scheduleReadingPosition);
+    disposeReadingPosition = () => {
+      window.removeEventListener('scroll', scheduleReadingPosition);
+      window.removeEventListener('resize', scheduleReadingPosition);
+      cancelAnimationFrame(frame);
+    };
+    updateReadingPosition();
+  }
+
+  initReadingPosition();
+  document.addEventListener('astro:page-load', initReadingPosition);
+  document.addEventListener('astro:before-swap', () => disposeReadingPosition?.());
+</script>
+
+<style>
+
+  .readme-page {
+    --readme-accent: #a9432c;
+    --readme-accent-dark: #843323;
+    --readme-sheet: #fbf9f5;
+    --readme-muted: #57554f;
+    --readme-rule: #bfb6a8;
+    background: var(--bg-primary);
+  }
+  .readme-eyebrow { font: .75rem/1.5 var(--font-mono); letter-spacing: .11em; text-transform: uppercase; }
+  .readme-masthead .readme-eyebrow { color: #df7659; }
+  #readme-title { scroll-margin-top: 7rem; }
+  .readme-page :focus-visible { outline-color: var(--readme-accent-dark); }
+  .readme-end .text-link { display: inline-flex; align-items: center; min-height: 44px; }
+  /* The reviewed editorial README, scoped to this route. */
+  .readme-masthead { padding-block: clamp(4rem, 8vw, 7rem); }
+  .readme-masthead h1 { color: var(--bg-primary); font-size: clamp(3.2rem, 6.8vw, 6rem); letter-spacing: -.04em; line-height: 1.06; margin-block: 21px 25px; }
+  .readme-masthead h1 span { color: #df7659; }
+  .readme-dek { max-width: 48rem; font: 1.4rem/1.55 var(--font-serif); color: #d8d1c6; }
+  .readme-layout { display: grid; grid-template-columns: 190px minmax(0, 740px); gap: clamp(48px, 7vw, 104px); padding-block: 58px 76px; }
+  .readme-rail { min-width: 0; }
+  .readme-toc { position: sticky; top: 7rem; }
+  .readme-toc .readme-eyebrow { margin-bottom: 18px; color: var(--readme-muted); }
+  .readme-toc a { display: flex; align-items: center; gap: 14px; padding: 10px 12px; min-height: 44px; border-left: 2px solid var(--readme-rule); text-decoration: none; color: var(--readme-muted); font-size: .875rem; }
+  .readme-toc a span { font: .6875rem var(--font-mono); }
+  .readme-toc a:hover { color: var(--readme-accent-dark); background: var(--readme-sheet); }
+  .readme-toc a[aria-current="location"] { border-color: var(--readme-accent); color: var(--readme-accent-dark); background: var(--readme-sheet); font-weight: 600; }
+  .readme-copy { min-width: 0; font: 1.1875rem/1.7 var(--font-serif); }
+  .readme-copy > section { scroll-margin-top: 7rem; }
+  .readme-copy > section + section { margin-top: 76px; }
+  .readme-section-heading { display: flex; align-items: baseline; gap: 18px; border-top: 1px solid var(--readme-accent); padding-top: 18px; margin-bottom: 25px; }
+  .readme-section-heading > span { color: var(--readme-accent); font: .75rem var(--font-mono); }
+  .readme-section-heading h2 { font-size: 2.875rem; letter-spacing: -.025em; }
+  .readme-copy h3 { font-size: 1.875rem; letter-spacing: -.015em; line-height: 1.18; }
+  .readme-copy p { margin: 0; }
+  .readme-disclaimer { margin-top: 30px; padding: 22px 26px; background: var(--readme-sheet); border-left: 2px solid var(--readme-rule); }
+  .readme-disclaimer h3 { font: 600 .875rem/1.5 var(--font-sans); letter-spacing: 0; margin-bottom: 8px; }
+  .readme-disclaimer p { font-size: 1.0625rem; color: var(--readme-muted); }
+  .mission-list { margin: 28px 0 0; padding: 0; list-style: none; counter-reset: mission; }
+  .mission-list li { position: relative; padding: 19px 0 19px 42px; border-top: 1px solid var(--readme-rule); counter-increment: mission; }
+  .mission-list li:last-child { border-bottom: 1px solid var(--readme-rule); }
+  .mission-list li::before { content: counter(mission, decimal-leading-zero) / ""; position: absolute; left: 0; top: 23px; color: var(--readme-accent); font: .75rem/1.5 var(--font-mono); }
+  .mission-list strong { font-size: .9em; letter-spacing: .02em; }
+  .readme-practice { margin-top: 38px; }
+  .readme-practice h3 { margin-bottom: 14px; }
+  .one-on-one { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; padding: 0; margin: 28px 0 0; border-block: 1px solid var(--readme-rule); background: var(--readme-sheet); }
+  .one-on-one li { margin: 20px 0; padding: 0 23px; font: 1rem/1.5 var(--font-sans); }
+  .one-on-one li + li { border-left: 1px solid var(--readme-rule); }
+  .time-amount { display: block; color: var(--readme-accent-dark); font: 2.625rem/1.2 var(--font-display); margin-bottom: 9px; }
+  .time-amount > span { font: .8125rem var(--font-sans); }
+  .readme-quote { margin-top: 34px; background: var(--bg-secondary); color: var(--text-primary); padding: 31px 34px 25px; }
+  .readme-quote blockquote { margin: 0; font-size: 1.45rem; line-height: 1.5; }
+  .readme-quote blockquote p + p { margin-top: 23px; }
+  .readme-quote .readme-bam { margin-top: 25px; padding-top: 18px; border-top: 1px solid var(--readme-rule); font: 1.75rem/1.2 var(--font-display); }
+  .readme-quote strong { font-weight: 400; }
+  .readme-value { display: grid; grid-template-columns: 215px minmax(0, 1fr); gap: 30px; padding-block: 27px; border-bottom: 1px solid var(--readme-rule); }
+  .readme-value:first-of-type { padding-top: 5px; }
+  .readme-value h3 { font-size: 1.6rem; line-height: 1.25; }
+  .readme-value p { font-size: 1.125rem; }
+  .readme-end { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-top: 36px; font-family: var(--font-sans); }
+
+  @media (max-width: 1000px) {
+    .readme-layout { grid-template-columns: 155px minmax(0, 1fr); gap: 40px; }
+    .readme-value { grid-template-columns: 1fr; gap: 13px; }
+    .readme-value h3 { font-size: 1.75rem; }
+    .readme-value p { font-size: 1.1875rem; }
+    .one-on-one li { padding-inline: 15px; }
+  }
+  @media (max-width: 760px) {
+    .readme-masthead { padding-block: 3.5rem; }
+    .readme-masthead h1 { color: var(--bg-primary); margin-block: 18px 22px; }
+    .readme-dek { font-size: 1.1875rem; }
+    .readme-layout { grid-template-columns: 1fr; gap: 36px; padding-block: 30px 48px; }
+    .readme-toc { position: static; display: grid; grid-template-columns: 1fr 1fr; }
+    .readme-toc .readme-eyebrow { grid-column: 1 / -1; margin-bottom: 12px; }
+    .readme-toc a { padding-block: 12px; }
+    .readme-copy { font-size: 1.125rem; }
+    .readme-copy > section + section { margin-top: 54px; }
+    .readme-section-heading { gap: 14px; margin-bottom: 22px; }
+    .readme-section-heading h2 { font-size: 2.35rem; }
+    .readme-disclaimer { padding: 18px 20px; }
+    .readme-practice h3 { font-size: 1.75rem; }
+    .readme-value p { font-size: 1.125rem; }
+    .readme-quote { padding: 26px 24px 22px; }
+    .readme-quote blockquote { font-size: 1.3rem; }
+  }
+  @media (max-width: 430px) {
+    .readme-masthead h1 span { display: block; }
+    .one-on-one { grid-template-columns: 1fr; }
+    .one-on-one li { display: flex; align-items: baseline; gap: 18px; padding: 15px 18px; margin: 0; }
+    .one-on-one li + li { border-left: 0; border-top: 1px solid var(--readme-rule); }
+    .time-amount { margin: 0; font-size: 2rem; min-width: 101px; }
+  }
+
+
+</style>

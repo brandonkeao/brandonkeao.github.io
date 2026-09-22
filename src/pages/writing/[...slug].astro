@@ -23,29 +23,35 @@ function formatDate(date: Date) {
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-  <article class="container article-shell">
-    <div class="article-inner">
-      <a href="/writing" class="article-back">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-        </svg>
-        Back to Writing
-      </a>
+  <article>
+    <header class="page-hero article-header">
+      <div class="container">
+        <div class="article-inner">
+          <a href="/writing" class="article-back">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back to Writing
+          </a>
 
-      <header class="article-header">
-        <time class="article-date" datetime={post.data.date.toISOString()}>
-          {formatDate(post.data.date)}
-        </time>
-        <h1 class="article-title">{post.data.title}</h1>
-        {post.data.tags && (
-          <div class="article-tags">
-            {post.data.tags.map((tag: string) => <span>{tag}</span>)}
-          </div>
-        )}
-      </header>
+          <time class="article-date" datetime={post.data.date.toISOString()}>
+            {formatDate(post.data.date)}
+          </time>
+          <h1 class="article-title">{post.data.title}</h1>
+          {post.data.tags && (
+            <div class="article-tags">
+              {post.data.tags.map((tag: string) => <span>{tag}</span>)}
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
 
-      <div class="prose article-body">
-        <Content />
+    <div class="container article-shell">
+      <div class="article-inner">
+        <div class="prose article-body">
+          <Content />
+        </div>
       </div>
     </div>
   </article>

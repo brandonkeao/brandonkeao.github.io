@@ -12,16 +12,14 @@ The live site is not changed by work in this folder.
 
 Read [`docs/CONTENT_PRECEDENCE.md`](docs/CONTENT_PRECEDENCE.md) before changing copy. Use [`docs/WRITING_STYLE.md`](docs/WRITING_STYLE.md) as the working website voice standard.
 
-## Current V2 scope
+## Current site
 
-- editorial homepage based on the reviewed visual direction;
-- homepage repositioned around senior product leadership for problems that do not stay inside Product;
-- original consultation, assessment, and Fractional Head of Product model restored;
-- full pre-Astro Manager README restored;
-- About page updated so AI supports the career story rather than replacing it;
-- Bookshelf restored to primary navigation and homepage discovery;
-- Writing routes preserved but hidden from navigation until the editorial review is ready;
-- existing Contact, Projects, and archive routes preserved as fallbacks pending review.
+- `/`: broad professional homepage with the reviewed product-leadership story.
+- `/consulting/`: dedicated landing page with its own wordmark header and contact CTA.
+- `/services/`, `/manager-readme/`, `/bookshelf/`, `/about/`, and `/contact/`: supporting pages with shared navigation.
+- `/projects/` and all `/writing/` routes remain available. Writing is excluded from primary discovery and the sitemap.
+
+See [September 22 release notes](docs/RELEASE_2026_09_22.md) for cleanup, mobile QA, and the remaining toolchain maintenance.
 
 ## Local review
 

@@ -110,37 +110,80 @@ const categories: Category[] = [
 ---
 
 <BaseLayout title="Bookshelf" description="Books that have shaped Brandon Keao's thinking on product, strategy, leadership, and decision-making.">
-  <section class="page-hero">
+  <section class="page-hero bookshelf-hero">
     <div class="container">
-      <h1 class="page-title">Bookshelf</h1>
-      <p class="page-dek">Books that shaped how I think about building products and leading teams.</p>
+      <p class="kicker">Bookshelf</p>
+      <h1 class="page-title">On the shoulders of giants</h1>
+      <p class="page-dek">I've learned a lot from people who took the time to write down what they've figured out. These books have shaped how I think about building products and leading teams. I hope you find something useful here, too.</p>
     </div>
   </section>
 
   <section class="v2-section">
     <div class="container">
-      <div class="bookshelf-grid reveal-stagger">
+      <ul class="bookshelf-grid" aria-label="Books">
         {categories.flatMap(category => category.books).map(book => (
-          <a
-            href={book.amazonUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="book-card"
-          >
-            <div class="book-cover">
-              <img
-                src={book.cover}
-                alt={book.title}
-                loading="lazy"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-              />
-              <div class="book-fallback">{book.title}</div>
-            </div>
-            <p class="book-title">{book.title}</p>
-            <p class="book-author">{book.author}</p>
-          </a>
+          <li class="book-entry">
+            <a
+              href={book.amazonUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="book-card"
+            >
+              <div class="book-cover">
+                <img
+                  src={book.cover}
+                  alt=""
+                  width="2"
+                  height="3"
+                  loading="lazy"
+                  decoding="async"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                />
+                <div class="book-fallback" aria-hidden="true">{book.title}</div>
+              </div>
+              <p class="book-title">{book.title}</p>
+              <p class="book-author">{book.author}<span class="sr-only"> (opens in a new tab)</span></p>
+            </a>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   </section>
 </BaseLayout>
+
+
+<style>
+  .bookshelf-hero {
+    padding-block: clamp(4rem, 8vw, 7rem);
+  }
+
+  .bookshelf-hero .page-title {
+    font-size: clamp(3.5rem, 7vw, 6.5rem);
+  }
+
+  .bookshelf-hero .page-dek {
+    max-width: 46rem;
+  }
+
+  .bookshelf-grid {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .book-entry,
+  .book-card {
+    min-width: 0;
+  }
+
+  .book-card:focus-visible .book-cover {
+    border-color: var(--accent);
+    background: var(--bg-tertiary);
+  }
+
+  @media (max-width: 760px) {
+    .bookshelf-hero {
+      padding-block: 3.5rem;
+    }
+  }
+</style>

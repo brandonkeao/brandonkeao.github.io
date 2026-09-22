@@ -34,7 +34,7 @@ const serviceAreas = [
     <div class="container">
       <div class="v2-section-heading">
         <p class="kicker">Ways to work together</p>
-        <h2 class="v2-section-title">The engagement should match the problem.</h2>
+        <h2 class="v2-section-title">Let's figure out where I can help.</h2>
       </div>
 
       <div class="v2-engagements">
@@ -100,7 +100,11 @@ const serviceAreas = [
     <div class="container v2-about-grid">
       <div>
         <p class="kicker">What working together feels like</p>
-        <h2 class="v2-section-title">Clear expectations. Honest feedback. Shared ownership.</h2>
+        <h2 class="v2-section-title service-values-title">
+          <span>Clear expectations.</span>
+          <span>Honest feedback.</span>
+          <span>Shared ownership.</span>
+        </h2>
       </div>
       <div>
         <p class="v2-lead">I believe leadership comes from everywhere. My role is to help make the problem clear, create the conditions for good work, and support the people doing it.</p>
@@ -118,3 +122,15 @@ const serviceAreas = [
     </div>
   </section>
 </BaseLayout>
+
+
+<style>
+  .service-values-title {
+    font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+    line-height: 1.16;
+  }
+
+  .service-values-title span {
+    display: block;
+  }
+</style>

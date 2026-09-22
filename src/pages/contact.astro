@@ -2,8 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Contact" description="Get in touch with Brandon Keao. Let's talk about AI strategy, product leadership, or collaboration.">
-  <section class="page-hero">
+<BaseLayout title="Contact" description="Get in touch with Brandon Keao about product leadership, your team, or a project.">
+  <section class="page-hero contact-hero">
     <div class="container">
       <h1 class="page-title">Let's Talk</h1>
       <p class="page-dek">
@@ -37,3 +37,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 </BaseLayout>
+
+
+<style>
+  .contact-hero {
+    background: #a9432c;
+    border-bottom-color: #a9432c;
+  }
+
+  .contact-hero .page-dek {
+    color: var(--bg-primary);
+  }
+</style>

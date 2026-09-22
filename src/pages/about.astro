@@ -3,11 +3,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="About" description="Brandon Keao is a product leader and builder with 18+ years across consulting, product, design, research, strategy, and AI.">
-  <section class="page-hero">
-    <div class="container">
-      <p class="kicker">About Brandon</p>
-      <h1 class="page-title">Builder first.</h1>
-      <p class="page-dek">I've spent 18+ years building products, leading teams, and designing systems that work for real people in real organizations.</p>
+  <section class="page-hero about-hero">
+    <div class="container about-hero-grid">
+      <img
+        class="about-headshot"
+        src="/images/brandon-keao-headshot.jpg"
+        alt="Brandon Keao"
+        width="500"
+        height="500"
+        decoding="async"
+      />
+      <div>
+        <p class="kicker">About Brandon</p>
+        <h1 class="page-title">Builder first.</h1>
+        <p class="page-dek">I've spent 18+ years building products, leading teams, and designing systems that work for teams in complex organizations.</p>
+      </div>
     </div>
   </section>
 
@@ -44,7 +54,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
-  <section class="v2-section v2-about">
+  <section class="v2-section v2-dark about-values">
     <div class="container editorial-story">
       <div class="story-index"><span>04</span><strong>How I try to work</strong></div>
       <div class="story-copy">
@@ -56,7 +66,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
-  <section class="v2-section v2-contact">
+  <section class="v2-section v2-contact about-contact">
     <div class="container">
       <p class="kicker">Start a conversation</p>
       <h2>If the work needs a builder, let's talk.</h2>
@@ -64,3 +74,77 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 </BaseLayout>
+
+
+<style>
+  .about-hero {
+    padding-block: clamp(4rem, 8vw, 7rem);
+  }
+
+  .about-hero .page-title {
+    font-size: clamp(3.5rem, 7vw, 6.5rem);
+  }
+
+  .about-hero .page-dek {
+    max-width: 46rem;
+  }
+
+  .about-hero-grid {
+    display: grid;
+    grid-template-columns: clamp(12rem, 27vw, 20rem) minmax(0, 1fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: center;
+  }
+
+  .about-headshot {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border: 1px solid rgba(242, 238, 230, 0.25);
+  }
+
+  .about-values .story-index span,
+  .about-values .text-link:hover {
+    color: #df7659;
+  }
+
+  .about-values .text-link {
+    color: var(--bg-primary);
+  }
+
+  .about-contact {
+    background: #a9432c;
+    border-bottom-color: #a9432c;
+  }
+
+  .about-contact .kicker {
+    color: var(--bg-primary);
+  }
+
+  .about-contact .btn-primary {
+    color: #843323;
+    background: #fbf9f5;
+  }
+
+  .about-contact .btn-primary:hover {
+    color: #843323;
+    background: var(--bg-primary);
+  }
+
+  .about-values :focus-visible,
+  .about-contact :focus-visible {
+    outline-color: var(--bg-primary);
+    outline-offset: 5px;
+  }
+
+  @media (max-width: 720px) {
+    .about-hero-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .about-headshot {
+      max-width: 13rem;
+    }
+  }
+</style>

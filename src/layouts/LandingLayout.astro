@@ -1,0 +1,31 @@
+---
+import SiteHead from '../components/SiteHead.astro';
+import '../styles/consulting.css';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+}
+
+const { title, description, ogImage } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <SiteHead title={title} description={description} ogImage={ogImage} />
+  </head>
+  <body class="consulting-page">
+    <a class="skip" href="#main-content">Skip to content</a>
+    <header class="site-header wrap">
+      <a class="wordmark" href="/">
+        <span class="initials" aria-hidden="true">BK</span>
+        Brandon Keao
+      </a>
+    </header>
+    <main id="main-content">
+      <slot />
+    </main>
+  </body>
+</html>

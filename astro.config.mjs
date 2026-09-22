@@ -6,6 +6,11 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://brandonkeao.com',
+  // Local reviews must not reuse pages from an earlier build.
+  server: {
+    headers: { 'Cache-Control': 'no-store' }
+  },
+  devToolbar: { enabled: false },
   vite: {
     plugins: [tailwindcss()]
   },

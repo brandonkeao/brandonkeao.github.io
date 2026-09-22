@@ -1,17 +1,17 @@
 ---
 const navLinks = [
-  { href: '/#experience', label: 'Experience' },
-  { href: '/services', label: 'Work With Me' },
+  { href: '/services', label: 'Work with Me' },
+  { href: '/manager-readme', label: 'Manager Read Me' },
   { href: '/bookshelf', label: 'Bookshelf' },
-  { href: '/manager-readme', label: 'Manager README' },
   { href: '/about', label: 'About' },
 ];
 
 const currentPath = Astro.url.pathname;
+const isCurrent = (href: string) => currentPath === href || currentPath.startsWith(href + '/');
 ---
 
 <header class="site-header">
-  <nav class="container site-nav">
+  <nav class="container site-nav" aria-label="Primary navigation">
     <a
       href="/"
       class="site-brand"
@@ -21,15 +21,16 @@ const currentPath = Astro.url.pathname;
       <span>Brandon Keao</span>
     </a>
 
-    <div class="hidden md:flex items-center gap-8">
+    <div class="hidden lg:flex items-center gap-8">
       <ul class="flex items-center gap-10">
         {navLinks.map(link => (
           <li>
             <a
               href={link.href}
+            aria-current={isCurrent(link.href) ? 'page' : undefined}
               class:list={[
                 "text-xs font-medium uppercase tracking-widest transition-colors",
-                currentPath === link.href || currentPath.startsWith(link.href + '/')
+                isCurrent(link.href)
                   ? "text-[var(--text-primary)]"
                   : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
               ]}
@@ -39,12 +40,14 @@ const currentPath = Astro.url.pathname;
           </li>
         ))}
       </ul>
-      <a href="/contact" class="btn btn-primary nav-cta">Start a Conversation</a>
+      <a href="/contact" aria-current={isCurrent('/contact') ? 'page' : undefined} class="btn btn-primary nav-cta">Start a Conversation</a>
     </div>
 
-    <div class="flex items-center md:hidden">
+    <div class="flex items-center lg:hidden">
       <button
         id="mobile-menu-btn"
+        type="button"
+        aria-controls="mobile-menu"
         class="menu-button"
         aria-label="Toggle menu"
         aria-expanded="false"
@@ -54,15 +57,16 @@ const currentPath = Astro.url.pathname;
     </div>
   </nav>
 
-  <div id="mobile-menu" class="hidden md:hidden mobile-menu">
+  <div id="mobile-menu" class="hidden lg:hidden mobile-menu">
     <ul class="container py-6 flex flex-col gap-1">
       {navLinks.map(link => (
         <li>
           <a
             href={link.href}
+            aria-current={isCurrent(link.href) ? 'page' : undefined}
             class:list={[
               "block py-3 text-sm font-medium uppercase tracking-widest transition-colors",
-              currentPath === link.href || currentPath.startsWith(link.href + '/')
+              isCurrent(link.href)
                 ? "text-[var(--text-primary)]"
                 : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
             ]}
@@ -71,28 +75,53 @@ const currentPath = Astro.url.pathname;
           </a>
         </li>
       ))}
-      <li><a href="/contact" class="block mt-4 btn btn-primary">Start a Conversation</a></li>
+      <li><a href="/contact" aria-current={isCurrent('/contact') ? 'page' : undefined} class="block mt-4 btn btn-primary">Start a Conversation</a></li>
     </ul>
   </div>
+  <noscript>
+    <style is:inline>.menu-button { display: none; }</style>
+    <nav class="container py-4 flex flex-wrap gap-4 lg:hidden" aria-label="Mobile navigation">
+      {navLinks.map(link => <a href={link.href} aria-current={isCurrent(link.href) ? 'page' : undefined}>{link.label}</a>)}
+      <a href="/contact" aria-current={isCurrent('/contact') ? 'page' : undefined}>Start a Conversation</a>
+    </nav>
+  </noscript>
 </header>
 
 <script>
+  let disposeMobileMenu: (() => void) | undefined;
+
   function initMobileMenu() {
+    disposeMobileMenu?.();
     const btn = document.getElementById('mobile-menu-btn');
     const menu = document.getElementById('mobile-menu');
     const label = document.getElementById('menu-label');
+    if (!btn || !menu) return;
 
-    btn?.addEventListener('click', () => {
-      const isHidden = menu?.classList.toggle('hidden');
-      btn.setAttribute('aria-expanded', String(!isHidden));
+    const controller = new AbortController();
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    const options = { signal: controller.signal };
 
-      if (label) label.textContent = isHidden ? 'Menu' : 'Close';
-    });
+    function setOpen(open: boolean) {
+      menu!.classList.toggle('hidden', !open);
+      btn!.setAttribute('aria-expanded', String(open));
+      if (label) label.textContent = open ? 'Close' : 'Menu';
+    }
+
+    setOpen(false);
+    btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'), options);
+    menu.addEventListener('click', (event) => {
+      if ((event.target as Element).closest('a')) setOpen(false);
+    }, options);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        btn.focus();
+      }
+    }, options);
+    desktop.addEventListener('change', () => setOpen(false), options);
+    disposeMobileMenu = () => controller.abort();
   }
 
-  // Initialize on page load
-  initMobileMenu();
-
-  // Re-initialize after view transitions
-  document.addEventListener('astro:after-swap', initMobileMenu);
+  document.addEventListener('astro:page-load', initMobileMenu);
+  document.addEventListener('astro:before-swap', () => disposeMobileMenu?.());
 </script>
