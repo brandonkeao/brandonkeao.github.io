@@ -82,6 +82,7 @@
   --space-section-lg: 8rem;     /* 128px */
 
   /* V2 responsive rhythm - shared by the homepage and supporting routes */
+  --size-v2-hero: max(30rem, calc(100svh - 16rem));
   --space-v2-hero-top: clamp(2.5rem, 5vh, 4.5rem);
   --space-v2-hero-bottom: clamp(3rem, 5vh, 4.5rem);
   --space-v2-page-hero-top: clamp(3.5rem, 6.5vh, 5.5rem);
@@ -733,21 +734,21 @@ body {
   text-transform: uppercase;
 }
 
-.v2-intro {
-  min-height: calc(100svh - 5rem);
+/* One banner height across the main site; content may expand it when needed. */
+.v2-hero,
+.page-hero {
+  min-height: var(--size-v2-hero);
   display: flex;
-  flex-direction: column;
+  align-items: center;
 }
 
 .v2-hero {
-  flex: 1;
-  display: flex;
-  align-items: center;
   padding: var(--space-v2-hero-top) 0 var(--space-v2-hero-bottom);
   border-bottom: 1px solid var(--text-primary);
 }
 
-.v2-hero > .container {
+.v2-hero > .container,
+.page-hero > .container {
   width: 100%;
 }
 
@@ -1222,7 +1223,7 @@ body {
 }
 
 .page-hero {
-  padding: var(--space-v2-page-hero-top) 0 var(--space-v2-page-hero-bottom);
+  padding: var(--space-v2-hero-top) 0 var(--space-v2-hero-bottom);
   background: var(--text-primary);
   color: var(--bg-primary);
   border-bottom: 1px solid var(--text-primary);
@@ -1714,8 +1715,13 @@ body {
     padding-inline: 1.25rem;
   }
 
-  .v2-intro {
+  .v2-hero,
+  .page-hero {
     min-height: auto;
+  }
+
+  .page-hero {
+    padding-block: var(--space-v2-page-hero-top) var(--space-v2-page-hero-bottom);
   }
 
   .footer-grid,
