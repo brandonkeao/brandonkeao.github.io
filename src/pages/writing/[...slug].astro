@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, render } from 'astro:content';
+import HeroMotion from '../../components/HeroMotion.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('writing');
@@ -38,6 +39,7 @@ function formatDate(date: Date) {
             {formatDate(post.data.date)}
           </time>
           <h1 class="article-title">{post.data.title}</h1>
+          <HeroMotion kind="write" />
           {post.data.tags && (
             <div class="article-tags">
               {post.data.tags.map((tag: string) => <span>{tag}</span>)}

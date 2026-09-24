@@ -1,0 +1,134 @@
+/* Final states are the default. Motion only enhances decorative geometry. */
+.motion-mark {
+  display: block;
+  overflow: visible;
+  flex: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.motion-momentum {
+  max-width: 100%;
+  margin-top: 1rem;
+  color: var(--accent, #df7659);
+}
+
+.motion-track { opacity: 0.25; }
+.motion-trace { stroke-dasharray: 1; stroke-dashoffset: 0; }
+.motion-traveller { fill: currentColor; stroke: none; opacity: 0; }
+.motion-ring, .motion-core { transform-origin: center; }
+
+.motion-continuum { margin-top: 1.5rem; }
+.motion-continuum-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.motion-continuum-line {
+  position: relative;
+  height: 1px;
+  margin-top: 0.75rem;
+  background: currentColor;
+  color: var(--accent, #df7659);
+}
+.motion-continuum-point {
+  position: absolute;
+  top: -3px;
+  left: calc(50% - 3.5px);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.v2-principle[data-motion] { position: relative; }
+.v2-principle[data-motion]::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #df7659;
+  transform-origin: left;
+}
+.v2-principle[data-motion] > span { color: #df7659; }
+.v2-engagement-symbol .motion-mark { margin-left: auto; }
+
+/* Move each existing decorative arrow in the direction it points. */
+.readme-end a[href='#readme-title'] { --motion-arrow-x: 0px; }
+
+:is(.btn, .button, .text-link, .v2-link-list a, .contact-method) > span[aria-hidden='true'] {
+  display: inline-block;
+}
+:is(.v2-link-list a, .contact-method):focus-visible {
+  border-bottom-color: currentColor;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-motion-play] .motion-trace {
+    animation: motion-trace 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  [data-motion-play].motion-momentum .motion-trace {
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    animation-duration: 1100ms;
+  }
+  [data-motion-play] .motion-traveller {
+    animation: motion-travel 1100ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  [data-motion-play] .motion-arrowhead { animation: motion-resolve 1100ms ease-out both; }
+  [data-motion-play] .motion-ring { animation: motion-ring 700ms ease-out both; }
+  [data-motion-play] .motion-core { animation: motion-core 700ms ease-out both; }
+  [data-motion-play] .motion-vector { animation: motion-vector 700ms ease-out both; }
+  [data-motion-play] .motion-continuum-point { animation: motion-settle 1000ms ease-out both; }
+  .v2-principle[data-motion-play]::before {
+    animation: motion-connect 600ms ease-out var(--motion-delay, 0ms) both;
+  }
+  .v2-principle[data-motion-play] > span {
+    animation: motion-step 700ms ease-out var(--motion-delay, 0ms) both;
+  }
+
+  :is(.btn, .button, .text-link, .v2-link-list a, .contact-method) > span[aria-hidden='true'] {
+    transition: transform 180ms ease-out;
+  }
+  :is(.v2-link-list a, .contact-method) {
+    transition: transform 180ms ease-out, color 180ms ease-out, border-color 180ms ease-out;
+  }
+  :is(.btn, .button, .text-link, .v2-link-list a, .contact-method):focus-visible > span[aria-hidden='true'] {
+    transform: translate(var(--motion-arrow-x, 3px), -3px);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    :is(.btn, .button, .text-link, .v2-link-list a, .contact-method):hover > span[aria-hidden='true'] {
+      transform: translate(var(--motion-arrow-x, 3px), -3px);
+    }
+    :is(.v2-link-list a, .contact-method):hover {
+      transform: translateY(-1px);
+      border-bottom-color: currentColor;
+    }
+  }
+  @media (max-width: 900px) {
+    /* Each card enters separately as the grid collapses. */
+    .v2-principle[data-motion-play] { --motion-delay: 0ms !important; }
+  }
+}
+
+@keyframes motion-trace { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes motion-travel {
+  0% { transform: translateX(0); opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateX(224px); opacity: 0; }
+}
+@keyframes motion-resolve { 0%, 75% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes motion-ring { from { transform: scale(1.15); opacity: 0.4; } to { transform: scale(1); opacity: 1; } }
+@keyframes motion-core { from { transform: scale(0.5); } to { transform: scale(1); } }
+@keyframes motion-vector { from { transform: translate(-3px, 3px); } to { transform: translate(0, 0); } }
+@keyframes motion-settle { from { transform: translateX(-28px); } to { transform: translateX(0); } }
+@keyframes motion-connect { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes motion-step { from { color: #a9a297; } to { color: #df7659; } }

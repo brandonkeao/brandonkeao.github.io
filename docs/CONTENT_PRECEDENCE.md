@@ -3,13 +3,14 @@
 **Status:** Working rule for the `website-v2` branch
 **Owner:** Brandon
 **Established:** 2026-08-23
+**Audience guidance updated:** 2026-09-23 to reflect the accepted September 7 audience scope and September 22 release.
 
 ## The rule
 
 When two versions of the website say different things, use this order:
 
 1. **Original website content.** Preserve Brandon's earlier language, ideas, structure, and useful quirks when a reliable source survives.
-2. **Current goal and direction.** Add what the original site needs to serve the new purpose: consulting and fractional opportunities, with cross-functional product, growth, data, engineering, and operating range. Keep full-time-role positioning dormant while Brandon remains fully employed by Rebrandly unless he explicitly reactivates it.
+2. **Current goal and direction.** Support consulting/fractional opportunities and Staff/Principal product roles through one coherent professional story. Smaller-team Head of Product opportunities are selective, preferably beginning fractionally. The broad homepage and separate consulting landing page serve complementary purposes. This audience scope does not establish changed employment, availability, or new public claims.
 3. **Current website content.** Use the January 2026 Astro copy only when the first two layers do not answer the need or when Brandon explicitly prefers it.
 
 This is a content rule, not a requirement to reproduce the old visual design. The current editorial design direction can continue to evolve around the recovered writing.
@@ -53,7 +54,7 @@ Every material page should be built in three passes:
 
 ## Current page decisions
 
-- **Homepage:** use consulting and fractional work as the primary lens. The exact buyer/problem direction remains under review; use the original builder identity and management philosophy to make each proposal sound and feel like Brandon.
+- **Homepage:** preserve the approved broad professional homepage and the shared headline “Senior product leadership that makes work move.” Use the original builder identity and management philosophy to keep future refinements recognizably Brandon's. The September 22 release is the accepted design baseline; it does not need a new positioning decision before routine refinements.
 - **Manager README:** restore the full January 3 Squarespace copy as the baseline.
 - **Services:** recover the consultation, discovery and assessment, and Fractional Head of Product model; adapt the problems and outcomes to today's goals.
 - **About:** lead with product leadership and systems thinking; AI supports the story rather than replacing it.

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import HeroMotion from '../../components/HeroMotion.astro';
 
 const posts = await getCollection('writing');
 const sortedPosts = posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
@@ -18,6 +19,7 @@ function formatDate(date: Date) {
   <section class="page-hero">
     <div class="container">
       <h1 class="page-title">Writing</h1>
+      <HeroMotion kind="write" />
       <p class="page-dek">
         I write about context engineering, agentic systems, and how product work is changing. Most of this starts on <a href="https://linkedin.com/in/brandonkeao" target="_blank" rel="noopener noreferrer">LinkedIn</a> first.
       </p>

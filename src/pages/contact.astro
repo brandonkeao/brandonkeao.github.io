@@ -1,11 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroMotion from '../components/HeroMotion.astro';
+import EmailContact from '../components/EmailContact.astro';
 ---
 
 <BaseLayout title="Contact" description="Get in touch with Brandon Keao about product leadership, your team, or a project.">
   <section class="page-hero contact-hero">
     <div class="container">
-      <h1 class="page-title">Let's Talk</h1>
+      <h1 class="page-title">Let's talk</h1>
+      <HeroMotion kind="connect" />
       <p class="page-dek">
         Whether you have a specific project in mind or just want to explore fit, I'd like to hear from you.
       </p>
@@ -15,11 +18,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <section class="v2-section">
     <div class="container reveal">
       <div class="contact-methods">
-        <a class="contact-method" href="mailto:brandon.keao@gmail.com">
-          <span>Email</span>
-          <strong>brandon.keao@gmail.com</strong>
-          <span aria-hidden="true">↗</span>
-        </a>
+        <EmailContact />
         <a
           class="contact-method"
           href="https://linkedin.com/in/brandonkeao"
@@ -47,5 +46,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .contact-hero .page-dek {
     color: var(--bg-primary);
+  }
+
+  /* A short invitation needs less space than the longer page introductions. */
+  @media (min-width: 721px) {
+    .contact-hero {
+      min-height: 0;
+      padding-block: clamp(3.5rem, 8vh, 5rem);
+    }
   }
 </style>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroMotion from '../components/HeroMotion.astro';
 
 interface Book {
   title: string;
@@ -114,6 +115,7 @@ const categories: Category[] = [
     <div class="container">
       <p class="kicker">Bookshelf</p>
       <h1 class="page-title">On the shoulders of giants</h1>
+      <HeroMotion kind="books" />
       <p class="page-dek">I've learned a lot from people who took the time to write down what they've figured out. These books have shaped how I think about building products and leading teams. I hope you find something useful here, too.</p>
     </div>
   </section>

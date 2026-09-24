@@ -1,0 +1,60 @@
+---
+import '../styles/hero-motion.css';
+
+interface Props {
+  kind: 'map' | 'align' | 'books' | 'exchange' | 'connect' | 'converge' | 'build' | 'write';
+}
+
+const { kind } = Astro.props;
+---
+
+<svg class={`hero-motion hero-motion-${kind}`} data-motion aria-hidden="true" focusable="false" viewBox="0 0 234 40" width="234" height="40" fill="none">
+  {kind === 'map' && <>
+    <path class="hero-draw" pathLength="1" d="M22 26h34V10h42m16 0h38v20h54" />
+    <rect class="hero-arrive" x="8" y="20" width="14" height="12" rx="1" />
+    <rect class="hero-arrive hero-delay-1" x="98" y="4" width="16" height="12" rx="1" />
+    <rect class="hero-arrive hero-delay-2" x="206" y="24" width="16" height="12" rx="1" />
+  </>}
+  {kind === 'align' && <>
+    <path class="hero-draw hero-branch" pathLength="1" d="M8 6h48c25 0 25 14 52 14" />
+    <path class="hero-draw hero-delay-1" pathLength="1" d="M8 20h214m-6-6 6 6-6 6" />
+    <path class="hero-draw hero-branch hero-delay-2" pathLength="1" d="M8 34h48c25 0 25-14 52-14" />
+  </>}
+  {kind === 'books' && <>
+    <path class="hero-draw hero-shelf" pathLength="1" d="M4 36h222" />
+    <g class="hero-book"><rect x="14" y="10" width="22" height="26" rx="1" /><path d="M20 15h10" /></g>
+    <g class="hero-book hero-delay-1"><rect x="42" y="4" width="18" height="32" rx="1" /><path d="M48 10h6" /></g>
+    <g class="hero-book hero-delay-2"><rect x="66" y="8" width="26" height="28" rx="1" /><path d="M73 14h12" /></g>
+    <g class="hero-book hero-delay-3"><rect x="98" y="2" width="20" height="34" rx="1" /><path d="M104 9h8" /></g>
+    <g class="hero-book hero-delay-4"><rect x="124" y="12" width="28" height="24" rx="1" /><path d="M132 18h12" /></g>
+  </>}
+  {kind === 'exchange' && <>
+    <path class="hero-draw" pathLength="1" d="M8 12h170m-6-6 6 6-6 6" />
+    <path class="hero-draw hero-delay-2" pathLength="1" d="M226 28H56m6-6-6 6 6 6" />
+  </>}
+  {kind === 'connect' && <>
+    <path class="hero-draw" pathLength="1" d="M12 20h96" />
+    <path class="hero-draw" pathLength="1" d="M222 20h-96" />
+    <circle cx="8" cy="20" r="3" /><circle cx="226" cy="20" r="3" />
+    <circle class="hero-meeting" cx="117" cy="20" r="6" />
+  </>}
+  {kind === 'converge' && <>
+    <path class="hero-draw hero-delay-1" pathLength="1" d="M22 20h80m18 0h92" />
+    <g class="hero-team hero-team-first"><circle cx="14" cy="20" r="8" /><circle class="hero-dot" cx="14" cy="20" r="2" /></g>
+    <g class="hero-team hero-delay-1"><circle cx="111" cy="20" r="8" /><circle class="hero-dot" cx="111" cy="20" r="2" /></g>
+    <g class="hero-team hero-team-last hero-delay-2"><circle cx="220" cy="20" r="8" /><circle class="hero-dot" cx="220" cy="20" r="2" /></g>
+  </>}
+  {kind === 'build' && <>
+    <path class="hero-draw hero-shelf" pathLength="1" d="M4 36h222" />
+    <rect class="hero-piece" x="14" y="20" width="32" height="16" rx="1" />
+    <rect class="hero-piece hero-delay-1" x="52" y="20" width="32" height="16" rx="1" />
+    <rect class="hero-piece hero-delay-2" x="90" y="20" width="32" height="16" rx="1" />
+    <rect class="hero-piece hero-delay-3" x="33" y="2" width="32" height="12" rx="1" />
+    <rect class="hero-piece hero-delay-4" x="71" y="2" width="32" height="12" rx="1" />
+  </>}
+  {kind === 'write' && <>
+    <path class="hero-draw" pathLength="1" d="M8 9h160" />
+    <path class="hero-draw hero-delay-1" pathLength="1" d="M8 20h214" />
+    <path class="hero-draw hero-delay-2" pathLength="1" d="M8 31h116" />
+  </>}
+</svg>

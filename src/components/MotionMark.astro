@@ -1,0 +1,25 @@
+---
+interface Props {
+  kind: 'momentum' | 'diagnostic' | 'initiative' | 'continuity';
+}
+
+const { kind } = Astro.props;
+---
+
+{kind === 'momentum' ? (
+  <svg class="motion-mark motion-momentum" data-motion aria-hidden="true" focusable="false" viewBox="0 0 234 18" width="234" height="18" fill="none">
+    <path class="motion-track" d="M4 9H228" />
+    <path class="motion-trace" d="M4 9H228" pathLength="1" />
+    <circle class="motion-traveller" cx="4" cy="9" r="3" />
+    <path class="motion-arrowhead" d="m222 3 6 6-6 6" />
+  </svg>
+) : (
+  <svg class={`motion-mark motion-${kind}`} data-motion aria-hidden="true" focusable="false" viewBox="0 0 36 36" width="36" height="36" fill="none">
+    {kind === 'diagnostic' && <>
+      <circle class="motion-ring" cx="18" cy="18" r="13" />
+      <circle class="motion-core" cx="18" cy="18" r="4" />
+    </>}
+    {kind === 'initiative' && <path class="motion-vector" d="M8 28 28 8M12 8h16v16" />}
+    {kind === 'continuity' && <path class="motion-trace" pathLength="1" d="M18 18C12 7 3 7 3 18S12 29 18 18 33 7 33 18 24 29 18 18Z" />}
+  </svg>
+)}

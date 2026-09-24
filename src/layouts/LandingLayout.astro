@@ -1,6 +1,7 @@
 ---
 import SiteHead from '../components/SiteHead.astro';
 import '../styles/consulting.css';
+import MotionController from '../components/MotionController.astro';
 
 interface Props {
   title: string;
@@ -27,5 +28,6 @@ const { title, description, ogImage } = Astro.props;
     <main id="main-content">
       <slot />
     </main>
+    <MotionController />
   </body>
 </html>

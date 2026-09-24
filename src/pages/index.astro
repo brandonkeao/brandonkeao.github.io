@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import MotionMark from '../components/MotionMark.astro';
 
 const companies = [
   'Rebrandly',
@@ -45,19 +46,19 @@ const engagements = [
     meta: 'Diagnostic',
     title: 'Find the real problem',
     body: 'A focused assessment when leadership knows something is wrong but the team does not yet agree on the cause or the next move.',
-    symbol: '◎'
+    symbol: 'diagnostic' as const
   },
   {
     meta: 'Strategic initiative',
     title: 'Own the outcome',
     body: 'Time-bound leadership of an important initiative that needs one person to connect the problem, choices, teams, and delivery.',
-    symbol: '↗'
+    symbol: 'initiative' as const
   },
   {
     meta: 'Fractional leadership',
     title: 'Lead through the messy middle',
     body: 'Embedded senior product and growth leadership while the organization builds capability, navigates change, or searches for a permanent leader.',
-    symbol: '∞'
+    symbol: 'continuity' as const
   }
 ];
 ---
@@ -69,10 +70,11 @@ const engagements = [
   <div class="v2-intro">
     <section class="v2-hero">
       <div class="container v2-hero-grid">
-        <div class="v2-hero-copy reveal">
+        <div class="v2-hero-copy">
           <div>
             <p class="kicker">Senior product & growth operator</p>
             <h1 class="v2-display">Senior product leadership that <em>makes work move.</em></h1>
+            <MotionMark kind="momentum" />
           </div>
           <p class="v2-lead">
             I help teams build useful products and work better together. My background is in engineering, consulting, and product leadership. I like understanding how things fit together and working with the team to fix what’s getting in the way.
@@ -89,9 +91,13 @@ const engagements = [
             </a>
           </div>
         </div>
-        <aside class="v2-note reveal">
+        <aside class="v2-note">
           <strong>The role I play</strong>
           <p>Senior enough to shape the direction. Close enough to the work to help make it happen.</p>
+          <div class="motion-continuum" data-motion aria-hidden="true">
+            <div class="motion-continuum-labels"><span>Direction</span><span>Execution</span></div>
+            <div class="motion-continuum-line"><span class="motion-continuum-point"></span></div>
+          </div>
         </aside>
       </div>
     </section>
@@ -132,7 +138,7 @@ const engagements = [
       </div>
       <div>
         <p class="v2-lead">I have an engineering degree from Northwestern University and 18+ years in technology spanning consulting, product, design, research, and strategy.</p>
-        <p>My current work adds AI, data, and new ways of working to that foundation. The durable part is the same: understand the system, make a clear choice, build alongside the team, and be honest about what the evidence says next.</p>
+        <p>That foundation shapes how I work with AI and data today: understand the problem, decide what to try, build alongside the team, and check whether it helped.</p>
         <a class="text-link" href="/about">More about me <span aria-hidden="true">↗</span></a>
       </div>
     </div>
@@ -146,9 +152,9 @@ const engagements = [
           <h2 class="v2-section-title">The minimum process needed to be effective.</h2>
         </div>
       </div>
-      <div class="v2-principles reveal-stagger">
-        {principles.map(principle => (
-          <article class="v2-principle">
+      <div class="v2-principles">
+        {principles.map((principle, index) => (
+          <article class="v2-principle" data-motion style={`--motion-delay: ${index * 160}ms`}>
             <span>{principle.number}</span>
             <h3>{principle.title}</h3>
             <p>{principle.body}</p>
@@ -164,7 +170,7 @@ const engagements = [
         <p class="kicker">How to work together</p>
         <h2 class="v2-section-title">Start with what will help you move.</h2>
       </div>
-      <div class="v2-engagements reveal-stagger">
+      <div class="v2-engagements">
         {engagements.map((engagement, index) => (
           <article class="v2-engagement">
             <span class="v2-number">0{index + 1}</span>
@@ -173,7 +179,7 @@ const engagements = [
               <h3>{engagement.title}</h3>
             </div>
             <p>{engagement.body}</p>
-            <span class="v2-engagement-symbol" aria-hidden="true">{engagement.symbol}</span>
+            <span class="v2-engagement-symbol" aria-hidden="true"><MotionMark kind={engagement.symbol} /></span>
           </article>
         ))}
       </div>

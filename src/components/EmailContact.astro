@@ -1,0 +1,99 @@
+---
+const email = 'brandon.keao@gmail.com';
+---
+
+<email-contact data-email={email}>
+  <button class="contact-method contact-email" type="button" aria-label={`Copy email address: ${email}`} disabled>
+    <span data-copy-label>Email</span>
+    <strong>{email}</strong>
+    <span aria-hidden="true">↗</span>
+  </button>
+  <p class="copy-status sr-only" data-copy-status role="status" aria-atomic="true"></p>
+  <noscript><p class="copy-status">Select the email address to copy it.</p></noscript>
+</email-contact>
+
+<script>
+  class EmailContact extends HTMLElement {
+    private resetTimer: ReturnType<typeof setTimeout> | undefined;
+    private copying = false;
+
+    connectedCallback() {
+      const button = this.querySelector<HTMLButtonElement>('button');
+      if (!button) return;
+      this.resetFeedback();
+      button.disabled = false;
+      button.addEventListener('click', this.copyEmail);
+    }
+
+    disconnectedCallback() {
+      clearTimeout(this.resetTimer);
+      this.querySelector('button')?.removeEventListener('click', this.copyEmail);
+    }
+
+    private resetFeedback = () => {
+      const label = this.querySelector('[data-copy-label]');
+      const status = this.querySelector('[data-copy-status]');
+      if (label) label.textContent = 'Email';
+      if (status) {
+        status.textContent = '';
+        status.classList.add('sr-only');
+      }
+    };
+
+    private copyEmail = async () => {
+      const label = this.querySelector('[data-copy-label]');
+      const status = this.querySelector('[data-copy-status]');
+      const email = this.dataset.email;
+      if (this.copying || !label || !status || !email) return;
+
+      this.copying = true;
+      clearTimeout(this.resetTimer);
+      this.resetFeedback();
+
+      try {
+        // Run the clipboard write directly within the click/keyboard gesture.
+        await navigator.clipboard.writeText(email);
+        if (!this.isConnected) return;
+        label.textContent = 'Copied';
+        status.textContent = 'Email address copied.';
+        this.resetTimer = setTimeout(this.resetFeedback, 2500);
+      } catch {
+        if (!this.isConnected) return;
+        label.textContent = 'Copy failed';
+        status.classList.remove('sr-only');
+        status.textContent = 'Copy unavailable. Select the email address to copy it.';
+      } finally {
+        this.copying = false;
+      }
+    };
+  }
+
+  if (!customElements.get('email-contact')) {
+    customElements.define('email-contact', EmailContact);
+  }
+</script>
+
+<style>
+  email-contact { display: block; }
+
+  .contact-email {
+    width: 100%;
+    border-top: 0;
+    border-right: 0;
+    border-left: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .contact-email:disabled { cursor: text; }
+  .contact-email strong { user-select: text; }
+
+  .copy-status:not(.sr-only) {
+    margin: 0.75rem 0;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+</style>

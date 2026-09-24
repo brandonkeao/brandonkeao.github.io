@@ -1,0 +1,52 @@
+/* Page-specific marks share the homepage's scale, color and one-time rhythm. */
+.hero-motion {
+  display: block;
+  width: 234px;
+  max-width: 100%;
+  height: 40px;
+  margin-top: 1rem;
+  overflow: visible;
+  color: #df7659;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.contact-hero .hero-motion { color: #f2eee6; }
+.hero-draw { stroke-dasharray: 1; stroke-dashoffset: 0; }
+.hero-dot { fill: currentColor; stroke: none; }
+.hero-branch { opacity: 0.65; }
+.hero-shelf { opacity: 0.6; }
+.hero-meeting { transform-origin: 117px 20px; }
+.hero-delay-1 { --hero-delay: 100ms; }
+.hero-delay-2 { --hero-delay: 200ms; }
+.hero-delay-3 { --hero-delay: 300ms; }
+.hero-delay-4 { --hero-delay: 400ms; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-motion[data-motion-play] .hero-draw {
+    animation: hero-draw 850ms ease-out var(--hero-delay, 0ms) both;
+  }
+  .hero-motion[data-motion-play] .hero-arrive {
+    animation: hero-arrive 650ms ease-out var(--hero-delay, 0ms) both;
+  }
+  .hero-motion[data-motion-play] .hero-book,
+  .hero-motion[data-motion-play] .hero-piece {
+    animation: hero-place 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--hero-delay, 0ms) both;
+  }
+  .hero-motion[data-motion-play] .hero-meeting {
+    animation: hero-meet 950ms ease-out both;
+  }
+  .hero-motion[data-motion-play] .hero-team {
+    animation: hero-align 850ms ease-out var(--hero-delay, 0ms) both;
+  }
+  .hero-team-first { --hero-offset: -5px; }
+  .hero-team-last { --hero-offset: 5px; }
+}
+
+@keyframes hero-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes hero-arrive { from { opacity: 0.45; } to { opacity: 1; } }
+@keyframes hero-place { from { transform: translateY(-4px); } to { transform: translateY(0); } }
+@keyframes hero-meet { from { transform: scale(0.6); opacity: 0.45; } to { transform: scale(1); opacity: 1; } }
+@keyframes hero-align { from { transform: translateY(var(--hero-offset, 0px)); } to { transform: translateY(0); } }
