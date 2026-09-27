@@ -54,7 +54,7 @@ Every material page should be built in three passes:
 
 ## Current page decisions
 
-- **Homepage:** preserve the approved broad professional homepage and the shared headline “Senior product leadership that makes work move.” Use the original builder identity and management philosophy to keep future refinements recognizably Brandon's. The September 22 release is the accepted design baseline; it does not need a new positioning decision before routine refinements.
+- **Homepage:** preserve the approved broad professional homepage and the shared headline “Senior product leadership that makes outcomes move.” Brandon explicitly superseded “makes work move” on September 27, 2026: work felt vague and execution-focused, while outcomes name what businesses need from senior product leadership that builds momentum. Use the original builder identity and management philosophy to keep future refinements recognizably Brandon's. The September 22 release remains the accepted design baseline; it does not need a new positioning decision before routine refinements.
 - **Manager README:** restore the full January 3 Squarespace copy as the baseline.
 - **Services:** recover the consultation, discovery and assessment, and Fractional Head of Product model; adapt the problems and outcomes to today's goals.
 - **About:** lead with product leadership and systems thinking; AI supports the story rather than replacing it.
