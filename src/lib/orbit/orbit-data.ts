@@ -4,7 +4,7 @@
 export type CategoryId = 'portfolio' | 'playbooks' | 'approach';
 // `href` is where a step leads; `cta` names that destination on the step's label.
 // Until public playbook pages exist, steps link to the nearest existing page
-// (Brandon, 2026-10-06: "Link to existing pages for now").
+// (Brandon, 2026-10-06: "Link to existing pages for now"; Writing is off the site for now).
 export type ContentItem = { id: string; title: string; description: string; href: string; cta: string; locked?: boolean; placeholder?: boolean };
 export type Category = { id: CategoryId; name: string; noun: string; singular: string; summary: string; items: ContentItem[] };
 export type OrbitSet = 'home' | 'work';
@@ -15,18 +15,18 @@ const way = (id: CategoryId, name: string, summary: string, items: ContentItem[]
 export const SETS: Record<OrbitSet, Category[]> = {
   home: [
     way('portfolio', 'Find the real problem', 'A focused assessment when leadership knows something is wrong but the team does not yet agree on the cause or the next move.', [
-      step('understand', 'Understand the customer', 'Start with customer and market needs.', '/writing/a-quest-for-shared-understanding/', "Read the article"),
+      step('understand', 'Understand the customer', 'Start with customer and market needs.', '/services/', "Work with me"),
       step('map', 'Map the system', 'Understand how the work really happens across product, engineering, finance, and operations.', '/services/#system', "Work with me"),
-      step('constraint', 'Name the constraint', 'Make the problem clear enough to act on, and leave the team with a clear direction and next move.', '/writing/outcomes-over-outputs/', "Read the article"),
+      step('constraint', 'Name the constraint', 'Make the problem clear enough to act on, and leave the team with a clear direction and next move.', '/consulting/#the-work', "Consulting"),
     ]),
     way('playbooks', 'Own the outcome', 'Time-bound leadership of an important initiative that needs one person to connect the problem, choices, teams, and delivery.', [
       step('connect', 'Connect the choices', 'One person connects the problem, choices, teams, and delivery.', '/consulting/#the-work', "Consulting"),
-      step('align', 'Align the teams', 'Make the problem clear, build alignment, and help the team move together.', '/writing/retros-rumbles-and-trust/', "Read the article"),
-      step('deliver', 'See it through', 'From the first difficult decision through delivery.', '/writing/the-hard-thing-about-hard-things-about-product-management/', "Read the article"),
+      step('align', 'Align the teams', 'Make the problem clear, build alignment, and help the team move together.', '/manager-readme/#philosophy', "Manager README"),
+      step('deliver', 'See it through', 'From the first difficult decision through delivery.', '/contact/', "Let's talk"),
     ]),
     way('approach', 'Lead through the change', 'Embedded senior product and growth leadership while the organization goes through a change or looks for a permanent leader.', [
       step('capability', 'Build capability', 'Embedded senior product and growth leadership while the organization builds capability.', '/manager-readme/#coaching', "Manager README"),
-      step('change', 'Navigate change', 'Hands-on leadership for a critical initiative or transition.', '/writing/learning-to-fly-ai-rocket-ship/', "Read the article"),
+      step('change', 'Navigate change', 'Hands-on leadership for a critical initiative or transition.', '/about/', "About"),
       step('bridge', 'Bridge to a leader', 'Lead while the organization searches for a permanent leader.', '/consulting/#fit', "Consulting"),
     ]),
   ],
@@ -38,7 +38,7 @@ export const SETS: Record<OrbitSet, Category[]> = {
     ]),
     way('playbooks', 'Focused diagnostic', 'A focused engagement to understand the system and test the competing explanations. You finish with a clear direction and a next move.', [
       step('connect', 'Understand the system', 'A focused engagement to understand the system.', '/services/#system', "Where I can help"),
-      step('align', 'Test the explanations', 'Test the competing explanations.', '/writing/outcomes-over-outputs/', "Read the article"),
+      step('align', 'Test the explanations', 'Test the competing explanations.', '/consulting/#the-work', "Consulting"),
       step('deliver', 'A clear next move', 'You finish with a clear direction and a next move.', '/contact/', "Let's talk"),
     ]),
     way('approach', 'Embedded product leadership', 'Hands-on senior leadership for a critical initiative or transition. I connect the decisions, teams, and delivery so the change actually happens.', [
