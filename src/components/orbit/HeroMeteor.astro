@@ -100,17 +100,17 @@
   .orbit-hero { position: relative; }
   .meteor {
     position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none;
-    width: 72px; height: 2px; border-radius: 2px;
+    width: 130px; height: 3px; border-radius: 3px;
     offset-rotate: auto; offset-anchor: 100% 50%; transform-origin: 100% 50%;
     background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent-on-ground) 70%, transparent));
   }
   .meteor::after {
-    content: ''; position: absolute; right: -3px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%;
-    background: #ffd9d6; box-shadow: 0 0 6px 2px var(--accent-on-ground), 0 0 18px 4px color-mix(in srgb, var(--accent-on-ground) 45%, transparent);
+    content: ''; position: absolute; right: -5px; top: 50%; width: 11px; height: 11px; margin-top: -5.5px; border-radius: 50%;
+    background: #ffe1de; box-shadow: 0 0 10px 3px var(--accent-on-ground), 0 0 30px 8px color-mix(in srgb, var(--accent-on-ground) 45%, transparent);
   }
   .meteor-ripple {
-    position: absolute; z-index: 6; pointer-events: none; width: 28px; height: 28px; border-radius: 50%;
-    border: 1.5px solid var(--accent-on-ground); box-shadow: 0 0 12px color-mix(in srgb, var(--accent-on-ground) 50%, transparent);
+    position: absolute; z-index: 6; pointer-events: none; width: 44px; height: 44px; border-radius: 50%;
+    border: 2px solid var(--accent-on-ground); box-shadow: 0 0 12px color-mix(in srgb, var(--accent-on-ground) 50%, transparent);
   }
   /* The meteor replaces the momentum line's travelling dot. */
   .motion-line-momentum .ml-traveller { display: none; }
