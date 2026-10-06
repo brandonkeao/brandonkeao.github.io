@@ -6,12 +6,13 @@
 //
 // Slots: `headline` (the h1) and the default slot (lead, actions, proof line).
 // On narrow screens the order becomes headline, orbit, then the rest.
+// `still`: the stage starts paused with no Pause control; choosing a way in still flies.
 // `sheet`: the id of a sheet holding [data-orbit-title], [data-orbit-body] and
 // [data-orbit-steps], which follows the selected way in.
 import { SETS, type OrbitSet } from '../../lib/orbit/orbit-data';
 
-interface Props { set?: OrbitSet; size?: 'large' | 'small'; sheet?: string }
-const { set = 'home', size = 'large', sheet } = Astro.props;
+interface Props { set?: OrbitSet; size?: 'large' | 'small'; sheet?: string; still?: boolean }
+const { set = 'home', size = 'large', sheet, still = false } = Astro.props;
 const ways = SETS[set];
 const poster = set === 'home'
   ? { desktop: '/images/orbit/home-desktop.jpg', mobile: '/images/orbit/home-mobile.jpg' }
@@ -23,7 +24,7 @@ const poster = set === 'home'
     <div class="hero-headline"><slot name="headline" /></div>
     <div class="hero-rest"><slot /></div>
   </div>
-  <div class="map-stage" data-orbit={set} data-sheet={sheet} data-mode="overview">
+  <div class="map-stage" data-orbit={set} data-sheet={sheet} data-still={still ? '' : undefined} data-mode="overview">
     <picture class="stage-poster">
       <source media="(max-width: 860px)" srcset={poster.mobile} />
       <img src={poster.desktop} alt="" width="840" height="700" decoding="async" fetchpriority={size === 'large' ? 'high' : 'auto'} />
@@ -82,7 +83,8 @@ const poster = set === 'home'
     let current: CategoryId | null = null;
     let pending: CategoryId | null = null;
     let token = 0;
-    let paused = reduced;
+    const still = stage.hasAttribute('data-still');
+    let paused = reduced || still;
     let map: MapController | null = null;
     let disposed = false;
 
@@ -174,7 +176,7 @@ const poster = set === 'home'
           onReady() {
             if (disposed) return;
             stage.classList.add('is-ready');
-            pauseBtn.hidden = false;
+            pauseBtn.hidden = still;
             render();
           },
           onFailure: fail,

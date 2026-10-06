@@ -3,35 +3,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import OrbitStage from '../components/orbit/OrbitStage.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import WayRow from '../components/orbit/WayRow.astro';
-import ServiceArea from '../components/orbit/ServiceArea.astro';
 import Closing from '../components/orbit/Closing.astro';
 import TextLink from '../components/orbit/TextLink.astro';
 
 const ways = [
-  { meta: 'Explore the problem', title: 'Initial conversation', description: 'Tell me what you are trying to accomplish and where the work is getting stuck. I will give you an honest view of whether I can help and what a useful next step could be.' },
-  { meta: 'Find the constraint', title: 'Focused diagnostic', description: 'A focused engagement to understand the system and test the competing explanations. You finish with a clear direction and a next move.' },
-  { meta: 'Own the outcome', title: 'Embedded product leadership', description: 'Hands-on senior leadership for a critical initiative or transition. I connect the decisions, teams, and delivery so the change actually happens.' },
+  { title: 'Initial conversation', description: 'Tell me what you are trying to accomplish and where the work is getting stuck.' },
+  { title: 'Focused diagnostic', description: 'A focused engagement to understand the system and test the competing explanations.' },
+  { title: 'Embedded product leadership', description: 'Hands-on senior leadership for a critical initiative or transition.' },
 ];
 
 const areas = [
-  { title: 'Product vision, strategy and positioning', tags: ['Vision development', 'Strategic planning', 'Positioning', 'Roadmapping', 'Go-to-market strategy', 'Strategy summits'] },
-  { title: 'Product design and user research', tags: ['User personas', 'Experience research', 'Customer journeys', 'Interviews', 'Usability testing', 'Opportunity mapping'] },
-  { title: 'Product operations and organization design', tags: ['Organizational assessments', 'Team structure', 'Competency frameworks', 'Analytics reviews', 'Decision practices', 'Operating cadence'] },
-  { title: 'Coaching and mentoring', tags: ['Product coaching', 'Team hiring', 'Communication', 'Prioritization', 'Functional training', 'Leadership development'] },
+  'Product vision, strategy and positioning',
+  'Product design and user research',
+  'Product operations and organization design',
+  'Coaching and mentoring',
 ];
 ---
 
 <BaseLayout title="Work With Me" description="Product strategy, discovery, assessment, and fractional product leadership with Brandon Keao.">
-  <OrbitStage set="work" size="small">
+  <OrbitStage set="work" size="small" still>
     <h1 slot="headline" class="t-page-title">Get unstuck.<br />Build momentum.</h1>
-    <p class="t-lead muted-g" style="max-width:560px">I work with leadership teams when an important product or growth problem is not moving. The cause may be unclear, the data may not settle the debate, or the work may need several teams to move together. I help the team find what is getting in the way, decide what to do next, and see it through.</p>
+    <p class="t-lead muted-g" style="max-width:560px">I work with leadership teams when an important product or growth problem is not moving.</p>
   </OrbitStage>
 
   <Sheet label="Ways to work together">
     <p class="crumb">Ways to work together</p>
     <h2 class="t-section" style="margin-top:10px">Start with the problem.</h2>
     <div style="margin-top:28px">
-      {ways.map((w) => <WayRow meta={w.meta} title={w.title} description={w.description} href="/contact" linkLabel="Let's talk" />)}
+      {ways.map((w) => <WayRow title={w.title} description={w.description} href="/contact" linkLabel="Let's talk" />)}
     </div>
   </Sheet>
 
@@ -41,7 +40,7 @@ const areas = [
       <p class="t-lead muted-g col">I work across teams to solve customer and business problems.</p>
     </div>
     <div class="grid-4" style="margin-top:40px">
-      {areas.map((a) => <ServiceArea title={a.title} tags={a.tags} />)}
+      {areas.map((a) => <div class="area"><h3 class="t-item">{a}</h3></div>)}
     </div>
   </section>
 
@@ -50,7 +49,6 @@ const areas = [
       <div class="col"><h2 class="t-section">Clear expectations and honest feedback.</h2></div>
       <div class="col">
         <p class="t-lead">I believe leadership comes from everywhere. My job is to make the problem clear, remove what is in the way, and support the people doing the work.</p>
-        <p class="t-body muted-s" style="margin-top:14px">The full version includes how I run one-on-ones, give feedback, think about development, and hold myself accountable when my behavior does not match the values on the page.</p>
         <p style="margin-top:24px"><TextLink href="/manager-readme">Read my Manager README</TextLink></p>
       </div>
     </div>
