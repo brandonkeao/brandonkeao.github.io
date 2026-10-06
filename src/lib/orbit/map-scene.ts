@@ -116,6 +116,21 @@ function traceMaterial(opacity: number) {
 }
 
 /**
+ * Planets sit on top of orbit lines (Brandon, 2026-10-06). three.js draws opaque objects
+ * before transparent ones whatever their renderOrder, so a body joins the transparent pass
+ * (still fully opaque and depth-writing) and sorts after the traces (2) and dust (3).
+ * Additive glows keep their own order.
+ */
+function drawOverTraces(root: THREE.Object3D) {
+  root.traverse((o) => {
+    const m = (o as THREE.Mesh).material as THREE.Material | undefined;
+    if (!m || Array.isArray(m) || m.blending === THREE.AdditiveBlending) return;
+    m.transparent = true;
+    o.renderOrder = 4;
+  });
+}
+
+/**
  * Dust wake: fine points strung along the last ~12% of a moon's own orbit,
  * fading with age. Positions are written on the CPU each frame from the same
  * Kepler clock; `age` (0 at the body, 1 at the tail) and `glint` are static.
@@ -276,6 +291,7 @@ export function createMap(host: HTMLElement, hooks: Hooks, clearColor = 0x0a0b0a
   });
   const planet = planetBody.body;
   const atmosphere = planetBody.glow;
+  drawOverTraces(planet);
   scene.add(planetBody.group);
   let planetT = 0;
 
@@ -465,6 +481,7 @@ export function createMap(host: HTMLElement, hooks: Hooks, clearColor = 0x0a0b0a
   const moons = CATEGORIES.map((c, i) => {
     const b = body(i);
     b.userData.category = c.id;
+    drawOverTraces(b);
     scene.add(b);
     return b;
   });
@@ -529,6 +546,7 @@ export function createMap(host: HTMLElement, hooks: Hooks, clearColor = 0x0a0b0a
   });
   const children = [0, 1, 2].map((i) => {
     const b = body(i, CHILD_SCALE);
+    drawOverTraces(b);
     childGroup.add(b);
     return b;
   });
