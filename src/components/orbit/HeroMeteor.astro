@@ -32,9 +32,12 @@
     const target = () => {
       const s = stage.getBoundingClientRect();
       const cs = getComputedStyle(stage);
-      const cx = parseFloat(cs.getPropertyValue('--center-x')) || s.width / 2;
-      const cy = parseFloat(cs.getPropertyValue('--center-y')) || s.height / 2;
-      const r = parseFloat(cs.getPropertyValue('--center-r')) || Math.min(s.width, s.height) / 6;
+      // Without a live scene, aim where the close-up poster's planet sits (right-anchored,
+      // about 78% across and 47% down, radius about 36% of the stage height), never at the copy.
+      const closeup = stage.hasAttribute('data-closeup');
+      const cx = parseFloat(cs.getPropertyValue('--center-x')) || (closeup ? s.width * 0.78 : s.width / 2);
+      const cy = parseFloat(cs.getPropertyValue('--center-y')) || (closeup ? s.height * 0.47 : s.height / 2);
+      const r = parseFloat(cs.getPropertyValue('--center-r')) || (closeup ? s.height * 0.36 : Math.min(s.width, s.height) / 6);
       return { x: s.left + cx - r * 0.92, y: s.top + cy - r * 0.38 };
     };
 
@@ -117,18 +120,28 @@
         if (cancelled) return;
         const at = (n: HTMLElement) => { n.style.left = `${tx}px`; n.style.top = `${ty}px`; hero.appendChild(n); made.push(n); return n; };
         const flash = at(Object.assign(document.createElement('div'), { className: 'meteor-flash' }));
+        // The splash (Brandon: "2 or 3x more prominent"): a big glow, three ripples, and a burst of sparks.
         flash.animate([
-          { transform: 'translate(-50%, -50%) scale(0.4)', opacity: 0 },
-          { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.75, offset: 0.25 },
-          { transform: 'translate(-50%, -50%) scale(1.3)', opacity: 0 },
-        ], { duration: 700, easing: 'ease-out', fill: 'forwards' }).finished.then(() => flash.remove());
-        [0, 180].forEach((delay, i) => {
+          { transform: 'translate(-50%, -50%) scale(0.3)', opacity: 0 },
+          { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.95, offset: 0.2 },
+          { transform: 'translate(-50%, -50%) scale(1.35)', opacity: 0 },
+        ], { duration: 1100, easing: 'ease-out', fill: 'forwards' }).finished.then(() => flash.remove());
+        [0, 160, 340].forEach((delay, i) => {
           const ring = at(Object.assign(document.createElement('div'), { className: 'meteor-ripple' }));
           ring.animate([
-            { transform: 'translate(-50%, -50%) scale(0.2)', opacity: i ? 0.6 : 0.9 },
-            { transform: `translate(-50%, -50%) scale(${i ? 3.4 : 2.6})`, opacity: 0 },
-          ], { duration: 1000, delay, easing: 'ease-out', fill: 'both' }).finished.then(() => ring.remove());
+            { transform: 'translate(-50%, -50%) scale(0.15)', opacity: [1, 0.75, 0.5][i] },
+            { transform: `translate(-50%, -50%) scale(${[2.4, 3.2, 4][i]})`, opacity: 0 },
+          ], { duration: 1300, delay, easing: 'cubic-bezier(0.2, 0.6, 0.3, 1)', fill: 'both' }).finished.then(() => ring.remove());
         });
+        for (let k = 0; k < 14; k++) {
+          const spark = at(Object.assign(document.createElement('div'), { className: 'meteor-ember meteor-spark' }));
+          const a = (k / 14) * Math.PI * 2 + Math.random() * 0.4;
+          const d = (70 + Math.random() * 90) * (matchMedia('(max-width: 860px)').matches ? 0.45 : 1);
+          spark.animate([
+            { transform: 'translate(-50%, -50%) scale(1.4)', opacity: 1 },
+            { transform: `translate(calc(-50% + ${Math.cos(a) * d}px), calc(-50% + ${Math.sin(a) * d}px)) scale(0.2)`, opacity: 0 },
+          ], { duration: 800 + Math.random() * 500, easing: 'cubic-bezier(0.1, 0.7, 0.3, 1)', fill: 'forwards' }).finished.then(() => spark.remove());
+        }
       }).catch(() => {});
     };
 
@@ -165,10 +178,19 @@
     background: #ffe1de; box-shadow: 0 0 10px 3px var(--accent-on-ground), 0 0 30px 8px color-mix(in srgb, var(--accent-on-ground) 45%, transparent);
   }
   .meteor-core { position: absolute; left: 0; top: 0; width: 2px; height: 2px; offset-anchor: 50% 50%; pointer-events: none; visibility: hidden; }
+  /* The splash sits under the copy (z 2) and over the scene, so text always reads on top. */
+  .meteor-flash, .meteor-ripple, .meteor-spark { z-index: 1 !important; }
+  .meteor-spark { width: 7px; height: 7px; }
+  /* Phones: the planet sits behind the headline, so the splash stays planet-sized. */
+  @media (max-width: 860px) {
+    .meteor-flash { width: 200px; height: 200px; }
+    .meteor-ripple { width: 52px; height: 52px; border-width: 3px; }
+    .meteor-spark { width: 5px; height: 5px; }
+  }
   .meteor-ember { position: absolute; z-index: 6; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; background: #ffd0cb; box-shadow: 0 0 6px 1px var(--accent-on-ground); }
-  .meteor-flash { position: absolute; z-index: 5; pointer-events: none; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--accent-on-ground) 55%, transparent) 0%, transparent 65%); }
+  .meteor-flash { position: absolute; z-index: 5; pointer-events: none; width: 450px; height: 450px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, #ffe1de 60%, transparent) 0%, color-mix(in srgb, var(--accent-on-ground) 55%, transparent) 22%, transparent 66%); }
   .meteor-ripple {
-    position: absolute; z-index: 6; pointer-events: none; width: 44px; height: 44px; border-radius: 50%;
-    border: 2px solid var(--accent-on-ground); box-shadow: 0 0 12px color-mix(in srgb, var(--accent-on-ground) 50%, transparent);
+    position: absolute; z-index: 6; pointer-events: none; width: 110px; height: 110px; border-radius: 50%;
+    border: 4px solid var(--accent-on-ground); box-shadow: 0 0 24px color-mix(in srgb, var(--accent-on-ground) 60%, transparent), inset 0 0 18px color-mix(in srgb, var(--accent-on-ground) 40%, transparent);
   }
 </style>
