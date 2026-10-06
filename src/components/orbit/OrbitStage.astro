@@ -14,7 +14,7 @@
 // [data-orbit-steps], which follows the selected way in.
 import { SETS, type OrbitSet } from '../../lib/orbit/orbit-data';
 
-interface Props { set?: OrbitSet; size?: 'large' | 'small'; sheet?: string; still?: boolean; controls?: 'none' | 'stage' | 'copy'; speed?: number }
+interface Props { set?: OrbitSet; size?: 'xl' | 'large' | 'small'; sheet?: string; still?: boolean; controls?: 'none' | 'stage' | 'copy'; speed?: number }
 const { set = 'home', size = 'large', sheet, still = false, controls = 'stage', speed = 1 } = Astro.props;
 const ways = SETS[set];
 const poster = set === 'home'
@@ -277,6 +277,11 @@ const poster = set === 'home'
 <style is:global>
   .orbit-hero { display: grid; grid-template-columns: minmax(360px, 520px) minmax(0, 1fr); gap: 8px; align-items: center; padding: 8px 0 0 var(--gutter); }
   .orbit-hero--small { grid-template-columns: minmax(0, 1fr) minmax(0, 760px); padding-bottom: 24px; }
+  /* Home: a compact copy column so the orbit takes more of the hero. */
+  .orbit-hero--xl { grid-template-columns: minmax(320px, 480px) minmax(0, 1fr); }
+  .orbit-hero--xl .t-display br { display: block; }
+  .orbit-hero--xl .t-display { font-size: clamp(36px, 4.2vw, 56px); }
+  .orbit-hero--xl .map-stage { height: 780px; }
   .hero-rest > :first-child { margin-top: 26px; }
 
   .map-stage { position: relative; height: 700px; isolation: isolate; overflow: hidden; background: var(--ground); }
@@ -320,11 +325,11 @@ const poster = set === 'home'
   .engagement-dock--copy .dock-context { justify-content: flex-start; }
 
   @media (max-width: 860px) {
-    .orbit-hero, .orbit-hero--small { grid-template-columns: minmax(0, 1fr); padding: 8px 0 0; }
+    .orbit-hero, .orbit-hero--small, .orbit-hero--xl { grid-template-columns: minmax(0, 1fr); padding: 8px 0 0; }
     .hero-copy { display: contents; }
     .hero-headline { order: 1; padding: 8px var(--gutter) 0; }
     /* On phones the scene keeps its own 400px and the control row sits below it, so chips never cover a moon. */
-    .map-stage, .orbit-hero--small .map-stage { order: 2; height: auto; margin-top: 4px; }
+    .map-stage, .orbit-hero--small .map-stage, .orbit-hero--xl .map-stage { order: 2; height: auto; margin-top: 4px; }
     .scene-host { position: relative; inset: auto; height: 400px; }
     .stage-poster img { bottom: auto; height: 400px; }
     .hero-rest { order: 3; padding: 0 var(--gutter) 32px; }
