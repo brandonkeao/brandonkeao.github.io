@@ -5,27 +5,30 @@ interface Props { minimal?: boolean }
 const { minimal = false } = Astro.props;
 
 const navLinks = [
-  { href: '/services', label: 'Work with me' },
-  { href: '/manager-readme', label: 'Manager README' },
-  { href: '/bookshelf', label: 'Bookshelf' },
-  { href: '/about', label: 'About' },
+  { href: '/services/', label: 'Work with me' },
+  { href: '/manager-readme/', label: 'Manager README' },
+  { href: '/bookshelf/', label: 'Bookshelf' },
+  { href: '/about/', label: 'About' },
 ];
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
-const current = (href: string) => (path === href || path.startsWith(href + '/') ? 'page' : undefined);
+const current = (href: string) => {
+  const h = href.replace(/\/$/, '') || '/';
+  return path === h || path.startsWith(h + '/') ? 'page' : undefined;
+};
 ---
 
 <header class="site-header">
   <nav class="nav" aria-label="Primary navigation">
     <a href="/" class="brand" aria-label="Brandon Keao, home"><span class="mark" aria-hidden="true">bk</span>Brandon Keao</a>
     {minimal ? (
-      <a href="/contact" class="btn btn-ground btn-sm">Let's talk</a>
+      <a href="/contact/" class="btn btn-ground btn-sm">Let's talk</a>
     ) : (
       <>
         <div class="nav-desktop">
           <ul class="nav-links">
             {navLinks.map((l) => <li><a href={l.href} aria-current={current(l.href)}>{l.label}</a></li>)}
           </ul>
-          <a href="/contact" class="btn btn-ground btn-sm" aria-current={current('/contact')}>Let's talk</a>
+          <a href="/contact/" class="btn btn-ground btn-sm" aria-current={current('/contact/')}>Let's talk</a>
         </div>
         <button class="menu-btn" type="button" aria-controls="mobile-menu" aria-expanded="false" data-menu-toggle>Menu</button>
       </>
@@ -36,7 +39,7 @@ const current = (href: string) => (path === href || path.startsWith(href + '/') 
       <ul class="t-title">
         {navLinks.map((l) => <li><a href={l.href} aria-current={current(l.href)}>{l.label}</a></li>)}
       </ul>
-      <a href="/contact" class="btn btn-ground">Let's talk</a>
+      <a href="/contact/" class="btn btn-ground">Let's talk</a>
     </div>
   )}
 </header>
