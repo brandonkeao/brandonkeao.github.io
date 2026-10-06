@@ -32,6 +32,11 @@
   --gutter: clamp(16px, 5vw, 72px);
   --inset: 12px;
   --content-max: 1440px;
+  /* band spacing (Home v2 review): ground bands and the bands inside a sheet, desktop and phone */
+  --space-band: 112px;
+  --space-band-sm: 56px;
+  --space-sheet-band: 96px;
+  --space-sheet-band-sm: 48px;
 
   --font: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: dark;
@@ -118,7 +123,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 @media (max-width: 860px) {
   .page-header { padding: 16px var(--gutter) 28px; }
   .section-ground { padding: 72px var(--gutter); }
-  .sheet { padding: 28px 16px; }
+  /* Sheet content sits on the ground's left edge (Home v2 review DS-1, AD-13). */
+  .sheet { padding: 28px calc(var(--gutter) - var(--inset)); }
   .row { flex-direction: column; gap: 24px; }
   .grid-4 { grid-template-columns: 1fr; gap: 24px; }
 }
@@ -171,7 +177,15 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .link-ground { font-size: 15px; color: var(--on-ground-muted); border-bottom: 1px solid var(--control-line-on-ground); padding-bottom: 3px; }
 .link-ground:hover { color: var(--on-ground); border-color: var(--on-ground); }
 .link-sheet { font-size: 16px; font-weight: 600; color: var(--on-sheet); border-bottom: 1.5px solid var(--on-sheet); padding-bottom: 3px; }
-.link-sheet:hover { color: var(--accent); border-color: var(--accent); }
+.link-sheet:hover { border-color: var(--accent); }
+
+/* Hit areas of at least 44 x 44 that leave the visible size and the layout alone (Home v2
+   review DS-4, UX-05): an invisible box centred on the control. */
+.link-ground, .link-sheet, .brand, .menu-btn, .nav .btn-sm, .nav-links a, .footer .flinks a, .engagement-chip, .steps li strong a { position: relative; }
+.link-ground::after, .link-sheet::after, .brand::after, .menu-btn::after, .nav .btn-sm::after, .nav-links a::after, .footer .flinks a::after, .engagement-chip::after, .steps li strong a::after {
+  content: ''; position: absolute; left: 50%; top: 50%;
+  width: max(100%, 44px); height: max(100%, 44px); transform: translate(-50%, -50%);
+}
 
 /* ---- breadcrumb ----------------------------------------------------------- */
 .crumb { font-size: 14px; color: var(--on-sheet-muted); }

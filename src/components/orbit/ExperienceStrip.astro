@@ -1,22 +1,27 @@
 ---
 // Experience block: the production site's "18+ years" strip in Orbit form (Brandon, 2026-10-06).
-// A white sheet with the figure on the left and the employers and clients on the right.
-interface Props { years?: string; note?: string; caption?: string; names: string[] }
+// surface="sheet" (default): a white sheet with the figure on the left and the employers and
+// clients on the right. surface="ground": the same content on the deep stone ground as the close
+// of the hero's field, on the 12-column grid (figure in columns 1-4, names in 6-12), with no
+// hairline (Home v2 review AD-03, DS-5). A name never breaks across lines.
+interface Props { years?: string; note?: string; caption?: string; names: string[]; surface?: 'sheet' | 'ground' }
 const {
   years = '18+',
   note = 'years building products, teams, and complex systems',
   caption = 'Experience includes · Employers and clients',
   names,
+  surface = 'sheet',
 } = Astro.props;
+const ground = surface === 'ground';
 ---
 
-<section class="sheet experience" aria-label="Experience">
+<section class:list={['experience', ground ? 'experience--ground ground-pad' : 'sheet']} aria-label="Experience">
   <div class="experience-figure">
     <p class="experience-years">{years}</p>
-    <p class="t-small muted-s experience-note">{note}</p>
+    <p class:list={['t-small experience-note', ground ? 'muted-g' : 'muted-s']}>{note}</p>
   </div>
   <div class="experience-names">
-    <p class="t-caption muted-s">{caption}</p>
+    <p class:list={['t-caption experience-caption', ground ? 'muted-g' : 'muted-s']}>{caption}</p>
     <ul>
       {names.map((n) => <li>{n}</li>)}
     </ul>
@@ -30,12 +35,34 @@ const {
   .experience-note { max-width: 240px; }
   .experience-names { border-left: 1px solid var(--line-on-sheet); padding-left: 48px; }
   .experience-names ul { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 32px; }
-  .experience-names li { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; color: var(--on-sheet); }
+  .experience-names li { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; color: var(--on-sheet); white-space: nowrap; }
+
+  /* Ground: the close of the hero's field. */
+  .experience--ground { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; align-items: start; padding-top: 40px; padding-bottom: 96px; }
+  .experience--ground .experience-figure { grid-column: 1 / span 4; padding-right: 0; gap: 16px; }
+  .experience--ground .experience-years { font-size: clamp(40px, 4vw, 56px); color: var(--on-ground); }
+  .experience--ground .experience-note { max-width: 220px; }
+  .experience--ground .experience-names { grid-column: 6 / -1; border-left: 0; padding-left: 0; }
+  .experience--ground .experience-caption { font-weight: 500; }
+  .experience--ground .experience-names ul { margin-top: 12px; gap: 8px 28px; }
+  .experience--ground .experience-names li { font-size: 20px; font-weight: 500; color: var(--on-ground); }
+
+  @media (max-width: 1100px) {
+    .experience--ground .experience-figure { grid-column: 1 / span 5; }
+    .experience--ground .experience-names { grid-column: 7 / -1; }
+  }
   @media (max-width: 860px) {
     .experience { grid-template-columns: minmax(0, 1fr); gap: 20px; }
     .experience-figure { padding-right: 0; }
     .experience-names { border-left: 0; border-top: 1px solid var(--line-on-sheet); padding-left: 0; padding-top: 20px; }
     .experience-names ul { gap: 6px 20px; }
     .experience-names li { font-size: 18px; }
+
+    .experience--ground { padding-top: 32px; padding-bottom: 56px; row-gap: 24px; }
+    .experience--ground .experience-figure, .experience--ground .experience-names { grid-column: 1 / -1; }
+    .experience--ground .experience-years { font-size: 40px; }
+    .experience--ground .experience-names { border-top: 0; padding-top: 0; }
+    .experience--ground .experience-names ul { gap: 4px 20px; }
+    .experience--ground .experience-names li { font-size: 17px; }
   }
 </style>
