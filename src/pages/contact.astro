@@ -6,17 +6,30 @@ import MotionLine from '../components/orbit/MotionLine.astro';
 ---
 
 <BaseLayout title="Contact" description="Get in touch with Brandon Keao about product leadership, your team, or a project.">
-  <header class="page-header">
-    <h1 class="t-page-title">Let's talk</h1>
-    <MotionLine kind="connect" />
-    <p class="t-lead muted-g" style="margin-top:20px;max-width:520px">Whether you have a specific project in mind or just want to explore fit, I'd like to hear from you.</p>
-  </header>
+  <div class="contact-layout">
+    <header class="contact-intro">
+      <h1 class="t-page-title">Let's talk</h1>
+      <MotionLine kind="connect" />
+      <p class="t-lead muted-g" style="margin-top:20px;max-width:520px">Whether you have a specific project in mind or just want to explore fit, I'd like to hear from you.</p>
+    </header>
 
-  <Sheet label="Contact methods">
-    <div class="row">
-      <ContactCard kind="email" label="Email" value="brandon.keao@gmail.com" />
-      <ContactCard kind="link" label="LinkedIn" value="/in/brandonkeao" href="https://www.linkedin.com/in/brandonkeao/" action="Open LinkedIn" />
-    </div>
-    <p class="t-body muted-s" style="margin-top:24px">I typically respond within 48 hours. If we're a good fit, we'll set up a discovery call.</p>
-  </Sheet>
+    <Sheet label="Contact methods" class="contact-sheet">
+      <div class="stack" style="gap:12px">
+        <ContactCard kind="email" label="Email" value="brandon.keao@gmail.com" />
+        <ContactCard kind="link" label="LinkedIn" value="/in/brandonkeao" href="https://www.linkedin.com/in/brandonkeao/" action="Open LinkedIn" />
+      </div>
+      <p class="t-body muted-s" style="margin-top:20px">I typically respond within 48 hours. If we're a good fit, we'll set up a discovery call.</p>
+    </Sheet>
+  </div>
 </BaseLayout>
+
+<style>
+  /* Brandon, 2026-10-06: "Let's talk" on the left, the contact card in the column on the right. */
+  .contact-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 600px); gap: 56px; align-items: start; padding: 40px var(--gutter) 136px; }
+  .contact-layout :global(.contact-sheet) { margin: 0; padding: 32px; }
+  @media (max-width: 860px) {
+    .contact-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 16px 0 var(--inset); }
+    .contact-intro { padding: 0 var(--gutter); }
+    .contact-layout :global(.contact-sheet) { margin: 0 var(--inset); padding: 20px 16px; }
+  }
+</style>
