@@ -88,10 +88,13 @@ const RIM_DIR = new THREE.Vector3(2.6, 1.8, -6).normalize();
  * the far side (about 0.9 px). Depth-tested against the planet, additive,
  * brighter in front, soft at the silhouette, and stronger just behind its body.
  */
+/** Orbit lines and dust in the brand red on ground, matching the motion lines (Brandon, 2026-10-06). */
+const ORBIT_RED = 0xf16b65;
+
 function traceMaterial(opacity: number) {
   return new THREE.ShaderMaterial({
     uniforms: {
-      uColor: { value: new THREE.Color(0xd08a52) },
+      uColor: { value: new THREE.Color(ORBIT_RED) },
       uOpacity: { value: opacity },
       uBody: { value: new THREE.Vector3() },
       uNear: { value: 8 },
@@ -138,7 +141,7 @@ function drawOverTraces(root: THREE.Object3D) {
 function wakeMaterial() {
   return new THREE.ShaderMaterial({
     uniforms: {
-      uColor: { value: new THREE.Color(0xe39a5f) },
+      uColor: { value: new THREE.Color(ORBIT_RED) },
       uAlpha: { value: 0.5 },
       uSize: { value: 2 },
     },
