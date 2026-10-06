@@ -70,6 +70,8 @@ const { kind } = Astro.props;
     observer = new IntersectionObserver((entries) => {
       for (const e of entries) {
         if (!e.isIntersecting) continue;
+        // A mark another animation drives (the Home meteor) is started by that animation.
+        if (e.target.hasAttribute('data-motion-hold')) continue;
         observer?.unobserve(e.target);
         played.add(e.target);
         e.target.setAttribute('data-motion-play', '');

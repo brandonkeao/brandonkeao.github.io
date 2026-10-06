@@ -1,0 +1,117 @@
+---
+// Home only: a meteor draws the red momentum line, then lifts off the arrowhead and
+// arcs into the orbit, where a faint ripple marks its arrival (Brandon, 2026-10-06:
+// "maybe a meteor trajectory? Something subtle but engaging at first and then fits
+// into the page"). Plays once per page view; never with reduced motion. The line
+// itself (MotionLine kind="momentum") stays as the resting state.
+---
+
+<script>
+  let cleanup: (() => void) | undefined;
+
+  function launch() {
+    cleanup?.();
+    cleanup = undefined;
+    const line = document.querySelector<SVGSVGElement>('.motion-line-momentum');
+    const hero = document.querySelector<HTMLElement>('.orbit-hero');
+    const stage = hero?.querySelector<HTMLElement>('.map-stage');
+    if (!line || !hero || !stage) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!('offsetPath' in document.documentElement.style)) return;
+
+    // Hold the line's own draw so the meteor draws it.
+    line.setAttribute('data-motion-hold', '');
+    const release = () => { line.removeAttribute('data-motion-hold'); line.setAttribute('data-motion-armed', ''); line.setAttribute('data-motion-play', ''); };
+    let cancelled = false;
+    const made: HTMLElement[] = [];
+    cleanup = () => { cancelled = true; made.forEach((n) => n.remove()); if (line.hasAttribute('data-motion-hold')) release(); };
+
+    // Aim at the planet's upper-left limb once the renderer publishes its centre;
+    // fall back to the stage centre if the scene is slow or unavailable.
+    const target = () => {
+      const s = stage.getBoundingClientRect();
+      const cs = getComputedStyle(stage);
+      const cx = parseFloat(cs.getPropertyValue('--center-x')) || s.width / 2;
+      const cy = parseFloat(cs.getPropertyValue('--center-y')) || s.height / 2;
+      const r = parseFloat(cs.getPropertyValue('--center-r')) || Math.min(s.width, s.height) / 6;
+      return { x: s.left + cx - r * 0.92, y: s.top + cy - r * 0.38 };
+    };
+
+    const go = () => {
+      if (cancelled) return;
+      release();
+      const h = hero.getBoundingClientRect();
+      const l = line.getBoundingClientRect();
+      const y = l.top + l.height / 2 - h.top;
+      const x0 = l.left - h.left + 4;
+      const x1 = l.left - h.left + l.width * (228 / 234);
+      const t = target();
+      const tx = t.x - h.left, ty = t.y - h.top;
+      // Leave the arrowhead level, then bend toward the planet.
+      const c1x = Math.min(x1 + Math.max(60, (tx - x1) * 0.45), h.width - 8);
+      const path = `M ${x0} ${y} L ${x1} ${y} C ${c1x} ${y} ${tx - 40} ${ty + 30} ${tx} ${ty}`;
+
+      const meteor = document.createElement('div');
+      meteor.className = 'meteor';
+      meteor.style.offsetPath = `path('${path}')`;
+      hero.appendChild(meteor);
+      made.push(meteor);
+
+      // The straight run matches the line's draw (850ms); the arc eases into orbit.
+      const lineShare = (x1 - x0) / ((x1 - x0) + Math.hypot(tx - x1, ty - y) * 1.15);
+      const run = meteor.animate([
+        { offsetDistance: '0%', opacity: 0, transform: 'scaleX(0.4)' },
+        { offsetDistance: '2%', opacity: 1, transform: 'scaleX(0.6)', offset: 0.04 },
+        { offsetDistance: `${lineShare * 100}%`, opacity: 1, transform: 'scaleX(1)', offset: 0.36 },
+        { offsetDistance: '88%', opacity: 1, transform: 'scaleX(1.5)', offset: 0.8 },
+        { offsetDistance: '100%', opacity: 0, transform: 'scaleX(0.3)' },
+      ], { duration: 2400, easing: 'cubic-bezier(0.45, 0.05, 0.35, 1)', fill: 'forwards' });
+
+      run.finished.then(() => {
+        meteor.remove();
+        if (cancelled) return;
+        const ring = document.createElement('div');
+        ring.className = 'meteor-ripple';
+        ring.style.left = `${tx}px`;
+        ring.style.top = `${ty}px`;
+        hero.appendChild(ring);
+        made.push(ring);
+        ring.animate([
+          { transform: 'translate(-50%, -50%) scale(0.2)', opacity: 0.9 },
+          { transform: 'translate(-50%, -50%) scale(2.6)', opacity: 0 },
+        ], { duration: 900, easing: 'ease-out', fill: 'forwards' }).finished.then(() => ring.remove());
+      }).catch(() => {});
+    };
+
+    // Start when the scene is ready (so the target is the real planet), within 2.5s.
+    if (stage.classList.contains('is-ready')) { setTimeout(go, 150); return; }
+    const mo = new MutationObserver(() => { if (stage.classList.contains('is-ready')) { mo.disconnect(); clearTimeout(fallback); setTimeout(go, 150); } });
+    mo.observe(stage, { attributes: true, attributeFilter: ['class'] });
+    const fallback = setTimeout(() => { mo.disconnect(); go(); }, 2500);
+    const prev = cleanup;
+    cleanup = () => { prev(); mo.disconnect(); clearTimeout(fallback); };
+  }
+
+  document.addEventListener('astro:page-load', launch);
+  document.addEventListener('astro:before-swap', () => { cleanup?.(); cleanup = undefined; });
+</script>
+
+<style is:global>
+  .orbit-hero { position: relative; }
+  .meteor {
+    position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none;
+    width: 72px; height: 2px; border-radius: 2px;
+    offset-rotate: auto; offset-anchor: 100% 50%; transform-origin: 100% 50%;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent-on-ground) 70%, transparent));
+  }
+  .meteor::after {
+    content: ''; position: absolute; right: -3px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%;
+    background: #ffd9d6; box-shadow: 0 0 6px 2px var(--accent-on-ground), 0 0 18px 4px color-mix(in srgb, var(--accent-on-ground) 45%, transparent);
+  }
+  .meteor-ripple {
+    position: absolute; z-index: 6; pointer-events: none; width: 28px; height: 28px; border-radius: 50%;
+    border: 1.5px solid var(--accent-on-ground); box-shadow: 0 0 12px color-mix(in srgb, var(--accent-on-ground) 50%, transparent);
+  }
+  /* The meteor replaces the momentum line's travelling dot. */
+  .motion-line-momentum .ml-traveller { display: none; }
+</style>

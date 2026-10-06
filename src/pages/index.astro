@@ -23,6 +23,7 @@ const process = [
   { title: 'Improve', body: 'Give honest, timely feedback and keep fixing small things. The small fixes add up.' },
 ];
 import MotionLine from '../components/orbit/MotionLine.astro';
+import HeroMeteor from '../components/orbit/HeroMeteor.astro';
 ---
 
 <BaseLayout
@@ -35,6 +36,7 @@ import MotionLine from '../components/orbit/MotionLine.astro';
     <p class="t-lead muted-g" style="max-width:470px">I work with leadership teams when an important product or growth problem is not moving. Pick the one that sounds like yours.</p>
     <p class="t-small faint-g hero-proof" style="margin-top:40px;max-width:440px">18+ years with teams at Rebrandly, Bitly, Pie Insurance, Bloomberg, Goldman Sachs, and Thomson Reuters.</p>
   </OrbitStage>
+  <HeroMeteor />
 
   <Sheet id="way-in" label="Selected way in">
     <p class="crumb">Your outcome › <b data-orbit-title>{first.name}</b></p>
