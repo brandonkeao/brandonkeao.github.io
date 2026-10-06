@@ -5,12 +5,15 @@ interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  /** Proposal pages: keep out of search results. */
+  noindex?: boolean;
 }
 
 const {
   title,
   description = "Brandon Keao is a product leader, builder, and advisor helping teams build useful products, stronger systems, and lasting growth.",
-  ogImage
+  ogImage,
+  noindex = false
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -37,6 +40,7 @@ const resolvedOgImage = ogImage ? new URL(ogImage, Astro.site).toString() : unde
 <!-- SEO -->
 <title>{title} | Brandon Keao</title>
 <meta name="description" content={description} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
 <link rel="canonical" href={canonicalURL} />
 
 <!-- Open Graph -->
