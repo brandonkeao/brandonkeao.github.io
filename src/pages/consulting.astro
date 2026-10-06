@@ -1,11 +1,19 @@
 ---
-import LandingLayout from '../layouts/LandingLayout.astro';
-import ConsultingPage from '../components/ConsultingPage.astro';
+// The Consulting landing page is decommissioned (Brandon, 2026-10-06: "focus on just
+// the main site and not landing pages"). The old URL forwards to Work with me so
+// existing links keep working; it is kept out of search and the sitemap.
 ---
 
-<LandingLayout
-  title="Senior product leadership making outcomes move."
-  description="I help product teams build momentum toward better customer and business outcomes by untangling difficult problems, aligning people across functions, and putting AI to practical use."
->
-  <ConsultingPage />
-</LandingLayout>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Work with me | Brandon Keao</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href="https://brandonkeao.com/services/" />
+    <meta http-equiv="refresh" content="0; url=/services/" />
+  </head>
+  <body>
+    <p>This page has moved to <a href="/services/">Work with me</a>.</p>
+  </body>
+</html>

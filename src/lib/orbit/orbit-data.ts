@@ -17,17 +17,17 @@ export const SETS: Record<OrbitSet, Category[]> = {
     way('portfolio', 'Find the real problem', 'A focused assessment when leadership knows something is wrong but the team does not yet agree on the cause or the next move.', [
       step('understand', 'Understand the customer', 'Start with customer and market needs.', '/services/', "Work with me"),
       step('map', 'Map the system', 'Understand how the work really happens across product, engineering, finance, and operations.', '/services/#system', "Work with me"),
-      step('constraint', 'Name the constraint', 'Make the problem clear enough to act on, and leave the team with a clear direction and next move.', '/consulting/#the-work', "Consulting"),
+      step('constraint', 'Name the constraint', 'Make the problem clear enough to act on, and leave the team with a clear direction and next move.', '/services/#system', "Work with me"),
     ]),
     way('playbooks', 'Own the outcome', 'Time-bound leadership of an important initiative that needs one person to connect the problem, choices, teams, and delivery.', [
-      step('connect', 'Connect the choices', 'One person connects the problem, choices, teams, and delivery.', '/consulting/#the-work', "Consulting"),
+      step('connect', 'Connect the choices', 'One person connects the problem, choices, teams, and delivery.', '/services/', "Work with me"),
       step('align', 'Align the teams', 'Make the problem clear, build alignment, and help the team move together.', '/manager-readme/#philosophy', "Manager README"),
       step('deliver', 'See it through', 'From the first difficult decision through delivery.', '/contact/', "Let's talk"),
     ]),
     way('approach', 'Lead through the change', 'Embedded senior product and growth leadership while the organization goes through a change or looks for a permanent leader.', [
       step('capability', 'Build capability', 'Embedded senior product and growth leadership while the organization builds capability.', '/manager-readme/#coaching', "Manager README"),
       step('change', 'Navigate change', 'Hands-on leadership for a critical initiative or transition.', '/about/', "About"),
-      step('bridge', 'Bridge to a leader', 'Lead while the organization searches for a permanent leader.', '/consulting/#fit', "Consulting"),
+      step('bridge', 'Bridge to a leader', 'Lead while the organization searches for a permanent leader.', '/contact/', "Let's talk"),
     ]),
   ],
   work: [
@@ -38,12 +38,12 @@ export const SETS: Record<OrbitSet, Category[]> = {
     ]),
     way('playbooks', 'Focused diagnostic', 'A focused engagement to understand the system and test the competing explanations. You finish with a clear direction and a next move.', [
       step('connect', 'Understand the system', 'A focused engagement to understand the system.', '/services/#system', "Where I can help"),
-      step('align', 'Test the explanations', 'Test the competing explanations.', '/consulting/#the-work', "Consulting"),
+      step('align', 'Test the explanations', 'Test the competing explanations.', '/about/', "About"),
       step('deliver', 'A clear next move', 'You finish with a clear direction and a next move.', '/contact/', "Let's talk"),
     ]),
     way('approach', 'Embedded product leadership', 'Hands-on senior leadership for a critical initiative or transition. I connect the decisions, teams, and delivery so the change actually happens.', [
-      step('capability', 'Connect the decisions', 'I connect the decisions, teams, and delivery.', '/consulting/#the-work', "Consulting"),
-      step('change', 'Lead the initiative', 'Hands-on senior leadership for a critical initiative or transition.', '/consulting/#fit', "Consulting"),
+      step('capability', 'Connect the decisions', 'I connect the decisions, teams, and delivery.', '/manager-readme/#role', "Manager README"),
+      step('change', 'Lead the initiative', 'Hands-on senior leadership for a critical initiative or transition.', '/contact/', "Let's talk"),
       step('bridge', 'Make the change happen', 'So the change actually happens.', '/contact/', "Let's talk"),
     ]),
   ],
