@@ -95,7 +95,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ---- surfaces and layout -------------------------------------------------- */
 .ground-pad { padding-left: var(--gutter); padding-right: var(--gutter); }
 .page-header { padding: 40px var(--gutter) 64px; }
-.section-ground { padding: 88px var(--gutter); }
+.section-ground { padding: 136px var(--gutter); }
 .sheet {
   background: var(--sheet);
   color: var(--on-sheet);
@@ -114,7 +114,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 @media (max-width: 860px) {
   .page-header { padding: 16px var(--gutter) 28px; }
-  .section-ground { padding: 48px var(--gutter); }
+  .section-ground { padding: 72px var(--gutter); }
   .sheet { padding: 28px 16px; }
   .row { flex-direction: column; gap: 24px; }
   .grid-4 { grid-template-columns: 1fr; gap: 24px; }
