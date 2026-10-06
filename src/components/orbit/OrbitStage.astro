@@ -30,11 +30,13 @@ const poster = set === 'home'
       <img src={poster.desktop} alt="" width="840" height="700" decoding="async" fetchpriority={size === 'large' ? 'high' : 'auto'} />
     </picture>
     <div class="scene-host"></div>
-    <div class="center-copy" aria-live="polite">
+    <!-- No visible text over the planet (Brandon, 2026-10-06); the title stays for screen readers. -->
+    <div class="sr-only" aria-live="polite">
       <h2 id="map-current-title" tabindex="-1" data-title>Your outcome</h2>
     </div>
     <!-- The one control row (Brandon, 2026-10-06): ways in, or Back and the chosen way's steps; Pause sits here too. -->
     <div class="engagement-dock" role="group" aria-label="Ways to work together" data-dock>
+      <p class="dock-context" data-context hidden></p>
       <button class="engagement-chip" type="button" data-back hidden>← Back</button>
       {ways.map((w, i) => (
         <button class="engagement-chip" type="button" data-id={w.id} aria-pressed="false">
@@ -70,6 +72,7 @@ const poster = set === 'home'
     const back = q<HTMLButtonElement>('[data-back]');
     const pauseBtn = q<HTMLButtonElement>('[data-pause]');
     const stepsEl = q('[data-steps]');
+    const context = q('[data-context]');
     const chips = [...stage.querySelectorAll<HTMLButtonElement>('.engagement-chip[data-id]')];
     let stepsFor: CategoryId | null = null;
     const sheet = stage.dataset.sheet ? document.getElementById(stage.dataset.sheet) : null;
@@ -138,6 +141,18 @@ const poster = set === 'home'
       back.hidden = !inWay;
       stepsEl.hidden = !inWay;
       if (inWay && w) renderSteps(w.id);
+      // Where the visitor is, once a moon is chosen (no text sits on the planet).
+      context.hidden = !inWay;
+      if (inWay && w) {
+        const dot = document.createElement('i');
+        dot.className = `dot dot-${ways.indexOf(w) + 1}`;
+        dot.setAttribute('aria-hidden', 'true');
+        const name = document.createElement('strong');
+        name.textContent = w.name;
+        const count = document.createElement('span');
+        count.textContent = ` · ${w.items.length} steps`;
+        context.replaceChildren(dot, name, count);
+      }
       dock.setAttribute('aria-label', inWay && w ? `${w.name}: steps` : 'Ways to work together');
       pauseBtn.hidden = !map || still || !stage.classList.contains('is-ready');
       pauseBtn.setAttribute('aria-pressed', String(paused));
@@ -252,10 +267,6 @@ const poster = set === 'home'
   [data-pause] i { width: 8px; height: 10px; border-left: 2.5px solid currentColor; border-right: 2.5px solid currentColor; }
   [data-pause][aria-pressed='true'] i { width: 0; height: 0; border: 0; border-left: 9px solid currentColor; border-top: 5.5px solid transparent; border-bottom: 5.5px solid transparent; }
 
-  .center-copy { position: absolute; left: var(--center-x, 50%); top: var(--center-y, 50%); transform: translate(-50%, -50%); text-align: center; z-index: 2; pointer-events: none; max-width: 210px; width: 100%; transition: opacity 0.22s; opacity: 0; }
-  .map-stage.is-ready .center-copy { opacity: 1; }
-  .map-stage[data-mode='entering'] .center-copy, .map-stage[data-mode='leaving'] .center-copy { opacity: 0; }
-  .center-copy h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; color: #fff; text-shadow: 0 2px 18px #000a; outline: none; }
 
   /* Moon labels and leaders are created by the renderer (src/lib/orbit/map-scene.ts). */
   .scene-labels { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
@@ -274,17 +285,21 @@ const poster = set === 'home'
   .engagement-chip:hover { color: var(--on-ground); }
   .engagement-chip[aria-pressed='true'] { color: var(--on-ground); border-color: var(--accent-on-ground); }
   .dock-steps { display: contents; }
+  .dock-context { flex-basis: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 4px; font-size: 15px; color: var(--on-ground-faint); }
+  .dock-context strong { color: var(--on-ground); font-weight: 600; }
   .dock-pause { gap: 8px; }
 
   @media (max-width: 860px) {
     .orbit-hero, .orbit-hero--small { grid-template-columns: minmax(0, 1fr); padding: 8px 0 0; }
     .hero-copy { display: contents; }
     .hero-headline { order: 1; padding: 8px var(--gutter) 0; }
-    .map-stage { order: 2; height: 440px; margin-top: 4px; }
-    .orbit-hero--small .map-stage { height: 440px; }
+    /* On phones the scene keeps its own 400px and the control row sits below it, so chips never cover a moon. */
+    .map-stage, .orbit-hero--small .map-stage { order: 2; height: auto; margin-top: 4px; }
+    .scene-host { position: relative; inset: auto; height: 400px; }
+    .stage-poster img { bottom: auto; height: 400px; }
     .hero-rest { order: 3; padding: 0 var(--gutter) 32px; }
     .hero-rest > :first-child { margin-top: 8px; }
-    .engagement-dock { left: 12px; right: 12px; }
+    .engagement-dock { position: relative; left: auto; right: auto; bottom: auto; padding: 8px 12px 4px; }
     .scene-labels, .label-leaders { display: none; }
     .engagement-chip { font-size: 13px; padding: 8px 12px; }
     .hero-proof { display: none; }
