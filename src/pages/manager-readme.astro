@@ -68,9 +68,11 @@ const toc = [
           <h3 id="coaching" class="t-item">Coaching and Delegation</h3>
           <p class="t-body">The best way for a team or company to grow is for every individual to grow. Everyone on the team will be working to develop skills in one area or another, including me. It's my responsibility to help identify those growth areas that are not only beneficial to the company, but also to your own professional development.</p>
 
-          <p class="t-lead quote-line">CFO asks CEO, “What happens if we invest in developing our people and then they leave us?”</p>
-          <p class="t-lead quote-line">CEO: “What happens if we don't, and they stay?”</p>
-          <p class="t-title" style="margin-top:12px">BAM!</p>
+          <figure class="exchange">
+            <p><span class="speaker">CFO asks CEO,</span> “What happens if we invest in developing our people and then they leave us?”</p>
+            <p><span class="speaker">CEO:</span> “What happens if we don't, and they stay?”</p>
+            <p class="punch">BAM!</p>
+          </figure>
         </section>
 
         <section id="values" aria-labelledby="values-title">
@@ -109,9 +111,14 @@ const toc = [
   .dots li::before { content: ''; position: absolute; left: 0; top: 19px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
   .time-cards { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; max-width: 760px; }
   .time-cards li { padding: 18px; border: 1px solid var(--line-on-sheet); border-radius: var(--r-sheet); }
-  .quote-line { padding-left: 20px; border-left: 2px solid var(--on-sheet); margin-top: 16px; }
-  .readme-body .quote-line:first-of-type { margin-top: 32px; }
+  .exchange { margin: 28px 0 0; max-width: 760px; padding: 24px 28px; border: 1px solid var(--line-on-sheet); border-radius: var(--r-sheet); }
+  .exchange p { font-size: 19px; line-height: 1.5; letter-spacing: -0.005em; }
+  .exchange p + p { margin-top: 10px; }
+  .exchange .speaker { color: var(--on-sheet-muted); }
+  .exchange .punch { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-on-sheet); font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
   @media (max-width: 860px) {
+    .exchange { padding: 18px 16px; }
+    .exchange p { font-size: 17px; }
     .readme-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
     .readme-toc { position: static; border-bottom: 1px solid var(--line-on-sheet); padding-bottom: 12px; }
     .time-cards { grid-template-columns: minmax(0, 1fr); gap: 10px; }
