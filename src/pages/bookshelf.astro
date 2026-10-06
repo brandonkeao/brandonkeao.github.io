@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HeroMotion from '../components/HeroMotion.astro';
+import Sheet from '../components/orbit/Sheet.astro';
+import BookCover from '../components/orbit/BookCover.astro';
 
 interface Book {
   title: string;
@@ -108,74 +109,30 @@ const categories: Category[] = [
     ]
   }
 ];
+const books = categories.flatMap(category => category.books);
 ---
 
 <BaseLayout title="Bookshelf" description="Books that have shaped Brandon Keao's thinking on product, strategy, leadership, and decision-making.">
-  <section class="page-hero bookshelf-hero">
-    <div class="container">
-      <p class="kicker">Bookshelf</p>
-      <h1 class="page-title">On the shoulders of giants</h1>
-      <HeroMotion kind="books" />
-      <p class="page-dek">I've learned a lot from people who took the time to write down what they've figured out. These books have shaped how I think about building products and leading teams. I hope you find something useful here, too.</p>
-    </div>
-  </section>
+  <header class="page-header">
+    <h1 class="t-page-title">On the shoulders of giants</h1>
+    <p class="t-lead muted-g" style="margin-top:18px;max-width:720px">I've learned a lot from people who took the time to write down what they've figured out. These books have shaped how I think about building products and leading teams.</p>
+  </header>
 
-  <section class="v2-section">
-    <div class="container">
-      <ul class="bookshelf-grid" aria-label="Books">
-        {categories.flatMap(category => category.books).map(book => (
-          <li class="book-entry">
-            <a
-              href={book.amazonUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="book-card"
-            >
-              <div class="book-cover">
-                <img
-                  src={book.cover}
-                  alt=""
-                  width="2"
-                  height="3"
-                  loading="lazy"
-                  decoding="async"
-                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                />
-                <div class="book-fallback" aria-hidden="true">{book.title}</div>
-              </div>
-              <p class="book-title">{book.title}</p>
-              <p class="book-author">{book.author}<span class="sr-only"> (opens in a new tab)</span></p>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  </section>
+  <Sheet label="Books">
+    <p class="crumb">{books.length} books</p>
+    <ul class="shelf-grid" aria-label="Books">
+      {books.map(book => (
+        <li><BookCover src={book.cover} title={book.title} author={book.author} href={book.amazonUrl} /></li>
+      ))}
+    </ul>
+  </Sheet>
 </BaseLayout>
 
-
 <style>
-  .bookshelf-hero .page-title {
-    font-size: clamp(3.5rem, 7vw, 6.5rem);
-  }
-
-  .bookshelf-hero .page-dek {
-    max-width: 46rem;
-  }
-
-  .bookshelf-grid {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .book-entry,
-  .book-card {
-    min-width: 0;
-  }
-
-  .book-card:focus-visible .book-cover {
-    border-color: var(--accent);
-    background: var(--bg-tertiary);
-  }
+  .shelf-grid { list-style: none; margin: 20px 0 0; padding: 0; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 32px 24px; }
+  .shelf-grid li { min-width: 0; }
+  .shelf-grid :global(figure) { margin: 0; }
+  @media (max-width: 1280px) { .shelf-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+  @media (max-width: 1000px) { .shelf-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (max-width: 640px) { .shelf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; } }
 </style>

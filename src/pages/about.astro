@@ -1,148 +1,77 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HeroMotion from '../components/HeroMotion.astro';
+import Sheet from '../components/orbit/Sheet.astro';
+import Clause from '../components/orbit/Clause.astro';
+import Closing from '../components/orbit/Closing.astro';
+import TextLink from '../components/orbit/TextLink.astro';
+
+const about = [
+  {
+    title: 'Startups to enterprise',
+    lead: "I've seen early-stage startups figuring out what to build, scaling companies improving what they built, and enterprises working through years of accumulated complexity.",
+    body: [
+      'That work has included user research, product strategy, design systems, and team development.',
+      'I care about things that actually work: useful tools that solve problems for the people using them.',
+    ],
+  },
+  {
+    title: 'Systems thinking',
+    lead: 'Building useful things means understanding how information flows, how decisions get made, and how teams coordinate.',
+    body: [
+      'Product work is systems design. I tend to reduce complex things into flowcharts. If I cannot map the problem, I probably do not understand it yet.',
+      'That habit started with my engineering degree at Northwestern University and has carried through consulting, product, design, research, strategy, and leadership roles.',
+    ],
+  },
+  {
+    title: "What I'm building now",
+    lead: 'Right now I work across product, growth, data, engineering, operations, and AI.',
+    body: [
+      'I am building tools that help people use AI in their day-to-day work: keeping useful information at hand, recording decisions, and checking the results. I want those tools to make the work easier to pick up and continue.',
+      'The work is familiar: understand the customer, find what is getting in the way, build something useful, and learn from what happens next.',
+    ],
+  },
+  {
+    title: 'How I try to work',
+    lead: 'I build instead of speculating, start simple, and use evidence. I give people room to lead and keep fixing small things.',
+    body: [
+      'I value transparency, trust, respect, and ownership. I try to state what I know, what I do not know, and what I think we should do next. I move fast, sometimes too fast, so I am continually working on sharing context and bringing people along.',
+      'The longer version is my Manager README. It covers one-on-ones, feedback, development, ownership, and how I try to serve the team.',
+    ],
+  },
+];
 ---
 
-<BaseLayout title="About" description="Brandon Keao is a product leader and builder with 18+ years across consulting, product, design, research, strategy, and AI.">
-  <section class="page-hero about-hero">
-    <div class="container about-hero-grid">
-      <img
-        class="about-headshot"
-        src="/images/brandon-keao-headshot.jpg"
-        alt="Brandon Keao"
-        width="500"
-        height="500"
-        decoding="async"
-      />
-      <div>
-        <p class="kicker">About Brandon</p>
-        <h1 class="page-title">Builder first</h1>
-        <HeroMotion kind="map" />
-        <p class="page-dek">I've spent 18+ years building products, leading teams, and designing systems that work for teams in complex organizations.</p>
-      </div>
+<BaseLayout title="About" description="Brandon Keao is a product leader and builder with 18+ years in technology across consulting, product, design, research, and strategy.">
+  <header class="page-header about-head">
+    <img class="portrait" src="/images/brandon-keao-headshot.jpg" alt="Brandon Keao" width="260" height="260" />
+    <div>
+      <h1 class="t-page-title">Product leader and builder</h1>
+      <p class="t-lead muted-g" style="margin-top:20px;max-width:640px">I've spent 18+ years building products, leading teams, and designing systems in complex organizations.</p>
     </div>
-  </section>
+  </header>
 
-  <section class="v2-section">
-    <div class="container editorial-story">
-      <div class="story-index"><span>01</span><strong>The durable thread</strong></div>
-      <div class="story-copy">
-        <p class="v2-lead">From early-stage startups figuring out what to build, to scaling companies improving what they built, to enterprise organizations working through years of accumulated complexity, I've seen the full cycle.</p>
-        <p>User research. Product strategy. Design systems. Team development. The messy reality of shipping things that matter.</p>
-        <p>The common thread across all of it: I care about things that actually work. Not features for the sake of roadmap completeness. Not technology for the sake of appearing innovative. Useful tools that solve real problems for real people.</p>
-      </div>
+  <Sheet label="About">
+    <div class="divider-list">
+      {about.map((a) => (
+        <Clause title={a.title} as="h2">
+          <p class="t-lead">{a.lead}</p>
+          {a.body.map((b) => <p class="t-body muted-s" style="margin-top:12px">{b}</p>)}
+        </Clause>
+      ))}
     </div>
-  </section>
+    <p class="about-link"><TextLink href="/manager-readme">Read my Manager README</TextLink></p>
+  </Sheet>
 
-  <section class="v2-section v2-dark">
-    <div class="container editorial-story">
-      <div class="story-index"><span>02</span><strong>Systems thinking</strong></div>
-      <div class="story-copy">
-        <p class="v2-lead">Building useful things requires understanding systems: how information flows, how decisions get made, and how teams coordinate under uncertainty.</p>
-        <p>Product work, at its core, is systems design. I tend to reduce complex things into flowcharts. If I cannot map the problem, I probably do not understand it yet.</p>
-        <p>That instinct has followed me from an engineering education at Northwestern University through consulting, product, design, research, strategy, and leadership roles over my career.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="v2-section">
-    <div class="container editorial-story">
-      <div class="story-index"><span>03</span><strong>The current chapter</strong></div>
-      <div class="story-copy">
-        <p class="v2-lead">My current work is expanding that foundation across product, growth, data, engineering, operations, and AI.</p>
-        <p>I am building tools that help people use AI in their day-to-day work: keeping useful information at hand, recording decisions, and checking the results. I want those tools to make the work easier to pick up and continue.</p>
-        <p>The tools are changing, but the work is familiar: understand the customer, find what is getting in the way, build something useful, and learn from what happens next.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="v2-section v2-dark about-values">
-    <div class="container editorial-story">
-      <div class="story-index"><span>04</span><strong>How I try to work</strong></div>
-      <div class="story-copy">
-        <p class="v2-lead">Build, do not speculate. Start simple. Use evidence. Give people room to lead. Keep fixing small things.</p>
-        <p>I value transparency, trust, respect, and ownership. I try to state what I know, what I do not know, and what I think we should do next. I move fast, sometimes too fast, so I am continually working on sharing context and bringing people along.</p>
-        <p>I have written the longer version as a Manager README. It explains how I think about one-on-ones, feedback, development, ownership, positive intent, systems, and service to the team.</p>
-        <a class="text-link" href="/manager-readme">Read my Manager README <span aria-hidden="true">↗</span></a>
-      </div>
-    </div>
-  </section>
-
-  <section class="v2-section v2-contact about-contact">
-    <div class="container">
-      <p class="kicker">Start a conversation</p>
-      <h2>If the work needs a builder, let's talk.</h2>
-      <a class="btn btn-primary" href="/contact">Get in touch <span aria-hidden="true">↗</span></a>
-    </div>
-  </section>
+  <Closing title="If the work needs a builder, let's talk." />
 </BaseLayout>
 
-
 <style>
-  .about-hero .page-title {
-    font-size: clamp(3.5rem, 7vw, 6.5rem);
-  }
-
-  .about-hero .page-dek {
-    max-width: 46rem;
-  }
-
-  .about-hero-grid {
-    display: grid;
-    grid-template-columns: clamp(12rem, 27vw, 20rem) minmax(0, 1fr);
-    gap: clamp(2rem, 6vw, 6rem);
-    align-items: center;
-  }
-
-  .about-headshot {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1;
-    border: 1px solid rgba(242, 238, 230, 0.25);
-  }
-
-  .about-values .story-index span,
-  .about-values .text-link:hover {
-    color: #df7659;
-  }
-
-  .about-values .text-link {
-    color: var(--bg-primary);
-  }
-
-  .about-contact {
-    background: #a9432c;
-    border-bottom-color: #a9432c;
-  }
-
-  .about-contact .kicker {
-    color: var(--bg-primary);
-  }
-
-  .about-contact .btn-primary {
-    color: #843323;
-    background: #fbf9f5;
-  }
-
-  .about-contact .btn-primary:hover {
-    color: #843323;
-    background: var(--bg-primary);
-  }
-
-  .about-values :focus-visible,
-  .about-contact :focus-visible {
-    outline-color: var(--bg-primary);
-    outline-offset: 5px;
-  }
-
-  @media (max-width: 720px) {
-    .about-hero-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .about-headshot {
-      max-width: 13rem;
-    }
+  .about-head { display: flex; gap: 56px; align-items: center; }
+  .about-head .portrait { width: 260px; height: 260px; flex: none; }
+  .about-link { margin-top: 24px; padding-left: 320px; }
+  @media (max-width: 860px) {
+    .about-head { display: block; }
+    .about-head .portrait { width: 120px; height: 120px; margin-bottom: 20px; }
+    .about-link { padding-left: 0; }
   }
 </style>

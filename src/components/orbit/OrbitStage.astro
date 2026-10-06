@@ -1,0 +1,273 @@
+---
+// Orbit hero: the accepted living-map renderer (src/lib/orbit) behind page copy.
+// The planet is the outcome; three moons are the ways in, each with three steps.
+// Server-rendered markup works without JavaScript: poster image, chips and copy.
+// The renderer loads lazily once the stage is visible and the browser is idle.
+//
+// Slots: `headline` (the h1) and the default slot (lead, actions, proof line).
+// On narrow screens the order becomes headline, orbit, then the rest.
+// `sheet`: the id of a sheet holding [data-orbit-title], [data-orbit-body] and
+// [data-orbit-steps], which follows the selected way in.
+import { SETS, type OrbitSet } from '../../lib/orbit/orbit-data';
+
+interface Props { set?: OrbitSet; size?: 'large' | 'small'; sheet?: string }
+const { set = 'home', size = 'large', sheet } = Astro.props;
+const ways = SETS[set];
+const poster = set === 'home'
+  ? { desktop: '/images/orbit/home-desktop.jpg', mobile: '/images/orbit/home-mobile.jpg' }
+  : { desktop: '/images/orbit/work-desktop.jpg', mobile: '/images/orbit/work-desktop.jpg' };
+---
+
+<section class:list={['orbit-hero', `orbit-hero--${size}`]}>
+  <div class="hero-copy">
+    <div class="hero-headline"><slot name="headline" /></div>
+    <div class="hero-rest"><slot /></div>
+  </div>
+  <div class="map-stage" data-orbit={set} data-sheet={sheet} data-mode="overview">
+    <picture class="stage-poster">
+      <source media="(max-width: 860px)" srcset={poster.mobile} />
+      <img src={poster.desktop} alt="" width="840" height="700" decoding="async" fetchpriority={size === 'large' ? 'high' : 'auto'} />
+    </picture>
+    <div class="stage-toolbar">
+      <p class="breadcrumb"><span>Your outcome</span><span class="crumb-slash" aria-hidden="true">/</span><span class="crumb-current" data-crumb>Three ways in</span></p>
+      <div class="toolbar-actions">
+        <button class="stage-pill" type="button" data-back hidden>← Back</button>
+        <button class="stage-pill" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
+      </div>
+    </div>
+    <div class="scene-host"></div>
+    <div class="center-copy" aria-live="polite">
+      <h2 id="map-current-title" tabindex="-1" data-title>Your outcome</h2>
+      <p data-sub>Choose where you are stuck</p>
+    </div>
+    <div class="engagement-dock" role="group" aria-label="Ways to work together">
+      {ways.map((w, i) => (
+        <button class="engagement-chip" type="button" data-id={w.id} aria-pressed="false">
+          <i class={`dot dot-${i + 1}`} aria-hidden="true"></i>{w.name}
+        </button>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { SETS, useSet, type CategoryId, type OrbitSet } from '../../lib/orbit/orbit-data';
+  import type { MapController } from '../../lib/orbit/map-scene';
+
+  type Mode = 'overview' | 'entering' | 'collection' | 'leaving';
+  let teardown: (() => void) | undefined;
+
+  function init() {
+    teardown?.();
+    teardown = undefined;
+    const stage = document.querySelector<HTMLElement>('.map-stage[data-orbit]');
+    if (!stage) return;
+
+    const set = (stage.dataset.orbit as OrbitSet) || 'home';
+    const ways = SETS[set];
+    const q = <T extends HTMLElement>(s: string, root: ParentNode = stage) => root.querySelector<T>(s)!;
+    const host = q('.scene-host');
+    const title = q('[data-title]');
+    const sub = q('[data-sub]');
+    const crumb = q('[data-crumb]');
+    const back = q<HTMLButtonElement>('[data-back]');
+    const pauseBtn = q<HTMLButtonElement>('[data-pause]');
+    const chips = [...stage.querySelectorAll<HTMLButtonElement>('.engagement-chip')];
+    const sheet = stage.dataset.sheet ? document.getElementById(stage.dataset.sheet) : null;
+
+    const ctl = new AbortController();
+    const opts = { signal: ctl.signal };
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let mode: Mode = 'overview';
+    let current: CategoryId | null = null;
+    let pending: CategoryId | null = null;
+    let token = 0;
+    let paused = reduced;
+    let map: MapController | null = null;
+    let disposed = false;
+
+    function renderSheet(id: CategoryId) {
+      if (!sheet) return;
+      const w = ways.find((x) => x.id === id)!;
+      const t = sheet.querySelector('[data-orbit-title]');
+      const b = sheet.querySelector('[data-orbit-body]');
+      const list = sheet.querySelector('[data-orbit-steps]');
+      if (t) t.textContent = w.name;
+      if (b) b.textContent = w.summary;
+      list?.replaceChildren(...w.items.map((it, i) => {
+        const li = document.createElement('li');
+        const n = document.createElement('span');
+        n.textContent = String(i + 1).padStart(2, '0');
+        const s = document.createElement('strong');
+        s.textContent = it.title;
+        const p = document.createElement('p');
+        p.textContent = it.description;
+        li.append(n, s, p);
+        return li;
+      }));
+    }
+
+    function render() {
+      const w = ways.find((x) => x.id === current);
+      stage.dataset.mode = mode;
+      title.textContent = w && mode === 'collection' ? w.name : 'Your outcome';
+      sub.textContent = w && mode === 'collection' ? 'Three steps orbit it' : 'Choose where you are stuck';
+      crumb.textContent = w ? w.name : 'Three ways in';
+      back.hidden = !(map && (mode === 'collection' || mode === 'entering'));
+      chips.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.id === current)));
+      pauseBtn.setAttribute('aria-pressed', String(paused));
+      pauseBtn.querySelector('span')!.textContent = paused ? 'Resume motion' : 'Pause motion';
+      if (current) renderSheet(current);
+    }
+
+    function select(id: CategoryId) {
+      if (!map) { current = id; render(); return; }
+      if (mode === 'overview') {
+        current = id; mode = 'entering'; token++;
+        map.enter(id, { token, instant: reduced, phase: map.getPhase() });
+      } else if (mode === 'collection' && id !== current) {
+        pending = id; goBack();
+      }
+      render();
+    }
+
+    function goBack() {
+      if (!map || (mode !== 'collection' && mode !== 'entering')) return;
+      if (mode === 'entering') map.completeTransition();
+      map.hideChildren();
+      mode = 'leaving'; token++;
+      map.leave({ token, instant: reduced });
+      render();
+    }
+
+    back.addEventListener('click', () => { pending = null; goBack(); }, opts);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && (mode === 'collection' || mode === 'entering')) { pending = null; goBack(); }
+    }, opts);
+    pauseBtn.addEventListener('click', () => { paused = !paused; map?.pause(paused); render(); }, opts);
+    chips.forEach((b) => b.addEventListener('click', () => select(b.dataset.id as CategoryId), opts));
+    render();
+
+    const fail = () => { stage.classList.add('is-fallback'); stage.classList.remove('is-ready'); };
+
+    async function load() {
+      if (disposed) return;
+      const probe = document.createElement('canvas');
+      if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) { fail(); return; }
+      try {
+        const { createMap } = await import('../../lib/orbit/map-scene');
+        if (disposed) return;
+        useSet(set);
+        map = createMap(host, {
+          onCategoryRequest: select,
+          onItem: () => sheet?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }),
+          onSettled(t) {
+            if (t !== token || !map) return;
+            if (mode === 'entering') { mode = 'collection'; map.showChildren(); }
+            else if (mode === 'leaving') {
+              mode = 'overview'; current = null;
+              if (pending) { const p = pending; pending = null; render(); select(p); return; }
+            }
+            render();
+          },
+          onVisibility() {},
+          onReady() {
+            if (disposed) return;
+            stage.classList.add('is-ready');
+            pauseBtn.hidden = false;
+            render();
+          },
+          onFailure: fail,
+        });
+        map.pause(paused);
+        map.reduceMotion(reduced);
+        // A choice made before the renderer arrived flies in now.
+        if (current) { const c = current; current = null; select(c); }
+      } catch {
+        fail();
+      }
+    }
+
+    // Load when the stage is on screen and the browser is idle.
+    const idle = (fn: () => void) =>
+      'requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 200);
+    const seen = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { seen.disconnect(); idle(load); }
+    });
+    seen.observe(stage);
+
+    teardown = () => {
+      disposed = true;
+      ctl.abort();
+      seen.disconnect();
+      map?.dispose();
+      map = null;
+    };
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => { teardown?.(); teardown = undefined; });
+</script>
+
+<style is:global>
+  .orbit-hero { display: grid; grid-template-columns: minmax(360px, 520px) minmax(0, 1fr); gap: 8px; align-items: center; padding: 8px 0 0 var(--gutter); }
+  .orbit-hero--small { grid-template-columns: minmax(0, 1fr) minmax(0, 760px); padding-bottom: 24px; }
+  .hero-rest > :first-child { margin-top: 26px; }
+
+  .map-stage { position: relative; height: 700px; isolation: isolate; overflow: hidden; background: var(--ground); }
+  .orbit-hero--small .map-stage { height: 520px; }
+  .stage-poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transition: opacity 0.4s; }
+  .map-stage.is-ready .stage-poster img { opacity: 0; }
+  .scene-host { position: absolute; inset: 0; z-index: 1; }
+  .scene-host canvas { display: block; width: 100%; height: 100%; }
+  .map-stage:not(.is-ready) .scene-host canvas { opacity: 0; }
+
+  .stage-toolbar { position: absolute; z-index: 4; left: 24px; right: var(--gutter); top: 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; pointer-events: none; }
+  .stage-toolbar button { pointer-events: auto; }
+  .breadcrumb { display: flex; gap: 10px; font-size: 13px; color: var(--on-ground-faint); }
+  .crumb-current { color: var(--on-ground); }
+  .crumb-slash { opacity: 0.5; }
+  .toolbar-actions { display: flex; gap: 8px; }
+  .stage-pill { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 14px; border-radius: var(--r-pill); border: 1px solid var(--control-line-on-ground); background: #2b2d29cc; font-size: 13px; color: var(--on-ground-muted); }
+  .stage-pill:hover { color: var(--on-ground); border-color: var(--on-ground-muted); }
+  [data-pause] i { width: 8px; height: 10px; border-left: 2.5px solid currentColor; border-right: 2.5px solid currentColor; }
+  [data-pause][aria-pressed='true'] i { width: 0; height: 0; border: 0; border-left: 9px solid currentColor; border-top: 5.5px solid transparent; border-bottom: 5.5px solid transparent; }
+
+  .center-copy { position: absolute; left: var(--center-x, 50%); top: var(--center-y, 50%); transform: translate(-50%, -50%); text-align: center; z-index: 2; pointer-events: none; max-width: 210px; width: 100%; transition: opacity 0.22s; opacity: 0; }
+  .map-stage.is-ready .center-copy { opacity: 1; }
+  .map-stage[data-mode='entering'] .center-copy, .map-stage[data-mode='leaving'] .center-copy { opacity: 0; }
+  .center-copy h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; color: #fff; text-shadow: 0 2px 18px #000a; outline: none; }
+  .center-copy p { font-size: 12px; color: #e8e2d6; margin-top: 6px; text-shadow: 0 1px 10px #000c; }
+
+  /* Moon labels and leaders are created by the renderer (src/lib/orbit/map-scene.ts). */
+  .scene-labels { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+  .scene-labels .moon-label { pointer-events: auto; }
+  .label-leaders { position: absolute; inset: 0; z-index: 2; pointer-events: none; width: 100%; height: 100%; }
+  .label-leaders line { stroke: #c9cbc355; stroke-width: 1; }
+  .moon-label { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); padding: 9px 13px 9px 26px; background: #232521e6; border: 1px solid #ffffff1f; border-radius: var(--r-control); white-space: nowrap; text-align: left; color: var(--on-ground); font-family: var(--font); box-shadow: 0 6px 22px #0004; transition: opacity 0.15s, border-color 0.15s; }
+  .moon-label::before { content: ''; position: absolute; left: 12px; top: 15px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent-on-ground); }
+  .moon-label strong { display: block; font-size: 13px; font-weight: 600; }
+  .moon-label span { display: block; font-size: 11px; color: var(--on-ground-faint); margin-top: 2px; }
+  .moon-label:hover { border-color: #f16b6599; background: #2f322d; }
+  .moon-label.is-compact span { display: none; }
+
+  .engagement-dock { position: absolute; z-index: 4; left: 24px; right: var(--gutter); bottom: 18px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .engagement-chip { display: inline-flex; align-items: center; gap: 9px; padding: 10px 14px; border-radius: var(--r-pill); border: 1px solid var(--control-line-on-ground); background: #2b2d29d9; font-size: 14px; color: var(--on-ground-muted); }
+  .engagement-chip:hover { color: var(--on-ground); }
+  .engagement-chip[aria-pressed='true'] { color: var(--on-ground); border-color: var(--accent-on-ground); }
+
+  @media (max-width: 860px) {
+    .orbit-hero, .orbit-hero--small { grid-template-columns: minmax(0, 1fr); padding: 8px 0 0; }
+    .hero-copy { display: contents; }
+    .hero-headline { order: 1; padding: 8px var(--gutter) 0; }
+    .map-stage { order: 2; height: 440px; margin-top: 4px; }
+    .orbit-hero--small .map-stage { height: 440px; }
+    .hero-rest { order: 3; padding: 0 var(--gutter) 32px; }
+    .hero-rest > :first-child { margin-top: 8px; }
+    .stage-toolbar { left: 16px; right: 16px; }
+    .engagement-dock { left: 12px; right: 12px; }
+    .scene-labels, .label-leaders { display: none; }
+    .engagement-chip { font-size: 13px; padding: 8px 12px; }
+    .hero-proof { display: none; }
+  }
+</style>

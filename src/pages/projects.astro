@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HeroMotion from '../components/HeroMotion.astro';
+import Sheet from '../components/orbit/Sheet.astro';
+import TextLink from '../components/orbit/TextLink.astro';
 
 const projects = [
   {
@@ -45,88 +46,69 @@ const projects = [
 ---
 
 <BaseLayout title="Projects" description="Projects and work by Brandon Keao - context engineering, agentic AI systems, and product leadership.">
-  <section class="page-hero">
-    <div class="container">
-      <h1 class="page-title">Projects</h1>
-      <HeroMotion kind="build" />
-      <p class="page-dek">
-        I'm rebuilding how I work, from personal workflows to professional systems, into an Agentic Ecosystem.
-      </p>
-    </div>
-  </section>
+  <header class="page-header">
+    <h1 class="t-page-title">Projects</h1>
+    <p class="t-lead muted-g" style="margin-top:18px;max-width:720px">I'm rebuilding how I work, from personal workflows to professional systems, into an Agentic Ecosystem.</p>
+  </header>
 
-  <section class="v2-section v2-dark">
-    <div class="container project-featured-grid reveal">
-      <div class="project-featured-copy">
-        <p class="kicker">Featured</p>
-        <h2 class="v2-section-title">Jane - AI Chief of Staff</h2>
-        <p>
+  <Sheet label="Featured project">
+    <p class="crumb">Projects › <b>Featured</b></p>
+    <div class="row" style="margin-top:20px">
+      <div class="col">
+        <h2 class="t-section">Jane - AI Chief of Staff</h2>
+        <p class="t-lead" style="margin-top:18px">
           Jane is an AI Agent persona that helps manage a team of specialized agents. I'm applying the same techniques we use for non-deterministic humans to non-deterministic AI: feedback, coaching, delegation, quality controls.
         </p>
-        <p>
+        <p class="t-body muted-s" style="margin-top:12px">
           The goal is practical: AI that understands the <em>context</em> of your work, not just the content. Jane is where I'm testing whether context engineering matters more than prompt engineering.
         </p>
-        <p class="project-built-with">
+        <p class="t-body muted-s" style="margin-top:12px">
           <strong>Built with:</strong> Claude Code, TypeScript, custom context architecture, session persistence, multi-agent coordination.
         </p>
       </div>
-
-      <aside class="project-capabilities">
-        <h3>Key capabilities</h3>
-        <ul>
-          {projects[0].details?.map(detail => <li>{detail}</li>)}
+      <aside class="col">
+        <h3 class="t-item">Key capabilities</h3>
+        <ul class="divider-list" style="list-style:none;margin:14px 0 0;padding:0">
+          {projects[0].details?.map(detail => <li class="t-body" style="padding:12px 0">{detail}</li>)}
         </ul>
       </aside>
     </div>
-  </section>
+  </Sheet>
 
-  <section class="v2-section">
-    <div class="container">
-      <div class="v2-section-heading">
-        <p class="kicker">In progress</p>
-        <h2 class="v2-section-title">Active Projects</h2>
-      </div>
-      <div class="v2-work-grid reveal-stagger">
-        {projects.slice(1).map(project => (
-          <article class="v2-work-card">
-            <div class="v2-work-meta">
-              <span>Active</span>
-              <span>{project.tags.join(' · ')}</span>
-            </div>
-            <h3>{project.title}</h3>
-            <p>{project.description}</p>
+  <Sheet label="Active projects">
+    <p class="crumb">Projects › <b>In progress</b></p>
+    <h2 class="t-section" style="margin-top:12px">Active Projects</h2>
+    <div class="divider-list" style="margin-top:24px">
+      {projects.slice(1).map(project => (
+        <article class="way">
+          <div>
+            <p class="meta">Active · {project.tags.join(' · ')}</p>
+            <h3 class="t-item">{project.title}</h3>
+          </div>
+          <div>
+            <p class="t-body muted-s">{project.description}</p>
             {project.details && (
-              <div class="v2-work-card-details">
-                {project.details.map(detail => <span>{detail}</span>)}
-              </div>
+              <ul style="list-style:none;margin:14px 0 0;padding:0">
+                {project.details.map(detail => <li class="tag">{detail}</li>)}
+              </ul>
             )}
-          </article>
-        ))}
-      </div>
+          </div>
+        </article>
+      ))}
     </div>
-  </section>
+  </Sheet>
 
-  <section class="v2-section v2-about">
-    <div class="container v2-about-grid reveal">
-      <div>
-        <h2 class="v2-section-title">Building in Public</h2>
+  <Sheet label="Building in public">
+    <div class="row">
+      <div class="col">
+        <h2 class="t-section">Building in Public</h2>
       </div>
-      <div>
-        <p class="v2-lead">
+      <div class="col">
+        <p class="t-lead">
           I share the journey as I go: what's working, what's broken, what I'm learning. The best insights come from building real things, mistakes included.
         </p>
-        <div class="v2-actions">
-          <a
-            href="https://www.linkedin.com/in/brandonkeao/"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-primary"
-          >
-            Follow on LinkedIn
-          </a>
-        </div>
+        <p style="margin-top:24px"><TextLink href="https://www.linkedin.com/in/brandonkeao/" external>Follow on LinkedIn</TextLink></p>
       </div>
     </div>
-  </section>
-
+  </Sheet>
 </BaseLayout>
