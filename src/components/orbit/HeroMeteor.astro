@@ -67,6 +67,43 @@
         { offsetDistance: '100%', opacity: 0, transform: 'scaleX(0.3)' },
       ], { duration: 2400, easing: 'cubic-bezier(0.45, 0.05, 0.35, 1)', fill: 'forwards' });
 
+      // Embers: a hidden core follows the head; small sparks are shed from it and fade.
+      const core = document.createElement('div');
+      core.className = 'meteor-core';
+      core.style.offsetPath = meteor.style.offsetPath;
+      hero.appendChild(core);
+      made.push(core);
+      const coreRun = core.animate([
+        { offsetDistance: '0%' },
+        { offsetDistance: '2%', offset: 0.04 },
+        { offsetDistance: `${lineShare * 100}%`, offset: 0.36 },
+        { offsetDistance: '88%', offset: 0.8 },
+        { offsetDistance: '100%' },
+      ], { duration: 2400, easing: 'cubic-bezier(0.45, 0.05, 0.35, 1)', fill: 'forwards' });
+      let lastEmber = 0;
+      const shed = (now: number) => {
+        if (cancelled || coreRun.playState === 'finished') return;
+        const p = (coreRun.currentTime as number ?? 0) / 2400;
+        if (p > 0.05 && p < 0.92 && now - lastEmber > 45) {
+          lastEmber = now;
+          const c = core.getBoundingClientRect();
+          const hr = hero.getBoundingClientRect();
+          const e = document.createElement('div');
+          e.className = 'meteor-ember';
+          e.style.left = `${c.left + c.width / 2 - hr.left}px`;
+          e.style.top = `${c.top + c.height / 2 - hr.top}px`;
+          hero.appendChild(e);
+          const dx = (Math.random() - 0.5) * 22, dy = 6 + Math.random() * 16;
+          const size = 0.6 + Math.random() * 0.8;
+          e.animate([
+            { transform: `translate(-50%, -50%) scale(${size})`, opacity: 0.95 },
+            { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.15)`, opacity: 0 },
+          ], { duration: 650 + Math.random() * 350, easing: 'cubic-bezier(0.2, 0.6, 0.4, 1)', fill: 'forwards' }).finished.then(() => e.remove()).catch(() => e.remove());
+        }
+        requestAnimationFrame(shed);
+      };
+      requestAnimationFrame(shed);
+
       // The meteor pulls its line into orbit: once it leaves the arrowhead, the line
       // erases from the left after it and the arrowhead fades, so nothing is left behind.
       const leave = 2400 * 0.36;
@@ -78,17 +115,22 @@
 
       run.finished.then(() => {
         meteor.remove();
+        core.remove();
         if (cancelled) return;
-        const ring = document.createElement('div');
-        ring.className = 'meteor-ripple';
-        ring.style.left = `${tx}px`;
-        ring.style.top = `${ty}px`;
-        hero.appendChild(ring);
-        made.push(ring);
-        ring.animate([
-          { transform: 'translate(-50%, -50%) scale(0.2)', opacity: 0.9 },
-          { transform: 'translate(-50%, -50%) scale(2.6)', opacity: 0 },
-        ], { duration: 900, easing: 'ease-out', fill: 'forwards' }).finished.then(() => ring.remove());
+        const at = (n: HTMLElement) => { n.style.left = `${tx}px`; n.style.top = `${ty}px`; hero.appendChild(n); made.push(n); return n; };
+        const flash = at(Object.assign(document.createElement('div'), { className: 'meteor-flash' }));
+        flash.animate([
+          { transform: 'translate(-50%, -50%) scale(0.4)', opacity: 0 },
+          { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.75, offset: 0.25 },
+          { transform: 'translate(-50%, -50%) scale(1.3)', opacity: 0 },
+        ], { duration: 700, easing: 'ease-out', fill: 'forwards' }).finished.then(() => flash.remove());
+        [0, 180].forEach((delay, i) => {
+          const ring = at(Object.assign(document.createElement('div'), { className: 'meteor-ripple' }));
+          ring.animate([
+            { transform: 'translate(-50%, -50%) scale(0.2)', opacity: i ? 0.6 : 0.9 },
+            { transform: `translate(-50%, -50%) scale(${i ? 3.4 : 2.6})`, opacity: 0 },
+          ], { duration: 1000, delay, easing: 'ease-out', fill: 'both' }).finished.then(() => ring.remove());
+        });
       }).catch(() => {});
     };
 
@@ -109,18 +151,24 @@
   .orbit-hero { position: relative; }
   .meteor {
     position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none;
-    width: 130px; height: 3px; border-radius: 3px;
+    width: 140px; height: 9px;
+    clip-path: polygon(0 50%, 100% 0, 100% 100%);
     offset-rotate: auto; offset-anchor: 100% 50%; transform-origin: 100% 50%;
     background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent-on-ground) 70%, transparent));
   }
   .meteor::after {
-    content: ''; position: absolute; right: -5px; top: 50%; width: 11px; height: 11px; margin-top: -5.5px; border-radius: 50%;
+    content: ''; position: absolute; right: -7px; top: 50%; width: 15px; height: 15px; margin-top: -7.5px; border-radius: 50%;
     background: #ffe1de; box-shadow: 0 0 10px 3px var(--accent-on-ground), 0 0 30px 8px color-mix(in srgb, var(--accent-on-ground) 45%, transparent);
   }
   .meteor-ripple {
     position: absolute; z-index: 6; pointer-events: none; width: 44px; height: 44px; border-radius: 50%;
     border: 2px solid var(--accent-on-ground); box-shadow: 0 0 12px color-mix(in srgb, var(--accent-on-ground) 50%, transparent);
   }
+  .meteor-core { position: absolute; left: 0; top: 0; width: 2px; height: 2px; offset-anchor: 50% 50%; pointer-events: none; visibility: hidden; }
+  .meteor-ember { position: absolute; z-index: 6; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; background: #ffd0cb; box-shadow: 0 0 6px 1px var(--accent-on-ground); }
+  .meteor-flash { position: absolute; z-index: 5; pointer-events: none; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--accent-on-ground) 55%, transparent) 0%, transparent 65%); }
+  /* The line the meteor draws carries the same weight as its trail (Brandon: 3x). */
+  .motion-line-momentum { stroke-width: 4.5; }
   /* The meteor replaces the momentum line's travelling dot. */
   .motion-line-momentum .ml-traveller { display: none; }
 </style>
