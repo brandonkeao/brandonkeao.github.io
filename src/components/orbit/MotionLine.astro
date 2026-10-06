@@ -4,10 +4,23 @@
 // The final drawing is plain SVG, so reduced motion and no-JS readers see it still.
 interface Props {
   kind: 'momentum' | 'map' | 'align' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
+  /** align only: run the straight line to the full width of its column (Brandon, 2026-10-06). */
+  stretch?: boolean;
 }
-const { kind } = Astro.props;
+const { kind, stretch = false } = Astro.props;
 ---
 
+{stretch && kind === 'align' ? (
+  <div class="motion-line motion-line-align motion-line-stretch" data-motion aria-hidden="true">
+    <svg viewBox="0 0 120 40" width="120" height="40" fill="none" focusable="false">
+      <path class="ml-draw ml-soft" pathLength="1" d="M8 6h48c25 0 25 14 52 14" />
+      <path class="ml-draw ml-d1" pathLength="1" d="M8 20h112" />
+      <path class="ml-draw ml-soft ml-d2" pathLength="1" d="M8 34h48c25 0 25-14 52-14" />
+    </svg>
+    <span class="ml-stretch"></span>
+    <svg class="ml-arrow" viewBox="0 0 10 40" width="10" height="40" fill="none" focusable="false"><path d="M2 14l6 6-6 6" /></svg>
+  </div>
+) : (
 <svg class={`motion-line motion-line-${kind}`} data-motion aria-hidden="true" focusable="false" viewBox="0 0 234 40" width="234" height="40" fill="none">
   {kind === 'momentum' && <>
     <path class="ml-track" d="M4 20H228" />
@@ -59,6 +72,7 @@ const { kind } = Astro.props;
     <rect class="ml-place ml-d4" x="71" y="2" width="32" height="12" rx="1" />
   </>}
 </svg>
+)}
 
 <script>
   const played = new WeakSet<Element>();
@@ -92,6 +106,10 @@ const { kind } = Astro.props;
 <style is:global>
   .motion-line { display: block; width: 234px; max-width: 100%; height: 40px; margin-top: 20px; overflow: visible; color: var(--accent-on-ground); stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .ml-draw { stroke-dasharray: 1; stroke-dashoffset: 0; }
+  /* Stretched align mark: fork, a line that fills the column, then the arrowhead. */
+  .motion-line-stretch { display: flex; align-items: center; width: 100%; height: 40px; }
+  .motion-line-stretch svg { flex: none; overflow: visible; }
+  .ml-stretch { flex: 1; height: 1.5px; margin-left: -1px; background: currentColor; transform-origin: 0 50%; }
   .ml-dot { fill: currentColor; stroke: none; }
   .ml-soft { opacity: 0.65; }
   .ml-track { opacity: 0.25; }
@@ -103,6 +121,10 @@ const { kind } = Astro.props;
     /* Armed marks wait hidden for their one play; unarmed (no JS) marks show final. */
     .motion-line[data-motion-armed]:not([data-motion-play]) .ml-draw { stroke-dashoffset: 1; }
     .motion-line[data-motion-play] .ml-draw { animation: ml-draw 850ms ease-out var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-stretch { transform: scaleX(0); }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-arrow { opacity: 0; }
+    .motion-line[data-motion-play] .ml-stretch { animation: ml-stretch 750ms cubic-bezier(0.3, 0, 0.2, 1) 550ms both; }
+    .motion-line[data-motion-play] .ml-arrow { animation: ml-fade 300ms ease-out 1250ms both; }
     .motion-line[data-motion-play] .ml-arrive { animation: ml-arrive 650ms ease-out var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-place { animation: ml-place 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-meet { animation: ml-meet 950ms ease-out both; }
@@ -111,6 +133,8 @@ const { kind } = Astro.props;
     .motion-line[data-motion-play] .ml-resolve { animation: ml-resolve 1100ms ease-out both; }
   }
 
+  @keyframes ml-stretch { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes ml-fade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes ml-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
   @keyframes ml-arrive { from { opacity: 0.45; } to { opacity: 1; } }
   @keyframes ml-place { from { transform: translateY(-4px); } to { transform: translateY(0); } }
