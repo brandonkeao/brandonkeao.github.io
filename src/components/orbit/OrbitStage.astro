@@ -16,7 +16,7 @@ const { set = 'home', size = 'large', sheet, still = false } = Astro.props;
 const ways = SETS[set];
 const poster = set === 'home'
   ? { desktop: '/images/orbit/home-desktop.jpg', mobile: '/images/orbit/home-mobile.jpg' }
-  : { desktop: '/images/orbit/work-desktop.jpg', mobile: '/images/orbit/work-desktop.jpg' };
+  : { desktop: '/images/orbit/work-desktop.jpg', mobile: '/images/orbit/work-mobile.jpg' };
 ---
 
 <section class:list={['orbit-hero', `orbit-hero--${size}`]}>
