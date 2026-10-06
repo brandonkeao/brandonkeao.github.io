@@ -6,13 +6,14 @@ import StepList from '../components/orbit/StepList.astro';
 import WayRow from '../components/orbit/WayRow.astro';
 import Quote from '../components/orbit/Quote.astro';
 import Closing from '../components/orbit/Closing.astro';
+import ExperienceStrip from '../components/orbit/ExperienceStrip.astro';
 import { SETS } from '../lib/orbit/orbit-data';
 
 const ways = SETS.home;
 const meta = ['Diagnostic', 'Strategic initiative', 'Fractional leadership'];
 const first = ways[0];
 
-const clients = 'Rebrandly, Pie Insurance, Bitly, PAIRIN, Ora Interactive, Sears, Bridgewater, Bloomberg, Goldman Sachs, Deutsche Bank, Capital Group, Thomson Reuters, Saxo Bank';
+const clients = ['Rebrandly', 'Pie Insurance', 'Bitly', 'PAIRIN', 'Ora Interactive', 'Sears', 'Bridgewater', 'Bloomberg', 'Goldman Sachs', 'Deutsche Bank', 'Capital Group', 'Thomson Reuters', 'Saxo Bank'];
 
 const covers = ['inspired', 'empowered', 'continuous-discovery-habits', 'escaping-the-build-trap', 'high-output-management'];
 
@@ -38,9 +39,10 @@ import HeroMeteor from '../components/orbit/HeroMeteor.astro';
       <a href="/services/" class="btn btn-ground">Work with me</a>
       <a href="/contact/" class="link-ground">Let's talk</a>
     </div>
-    <p class="t-small faint-g hero-proof" style="margin-top:40px;max-width:440px">18+ years with teams at Rebrandly, Bitly, Pie Insurance, Bloomberg, Goldman Sachs, and Thomson Reuters.</p>
   </OrbitStage>
   <HeroMeteor />
+
+  <ExperienceStrip names={clients} />
 
   <Sheet id="way-in" label="Selected way in">
     <p class="crumb">Your outcome › <b data-orbit-title>{first.name}</b></p>
@@ -53,14 +55,12 @@ import HeroMeteor from '../components/orbit/HeroMeteor.astro';
     </div>
   </Sheet>
 
-  <section class="section-ground" aria-label="Proof" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:72px" data-proof>
-    <Quote
-      quote="“Finding someone who can translate business objectives into technical requirements is difficult. Finding someone who can also own the project, teams, and client relationship is rare.”"
-      cite="Andre Sugai, CTO and Partner, Ora Interactive"
-    />
-    <div>
-      <p class="t-caption faint-g" style="margin-bottom:10px">Teams I have worked with</p>
-      <p class="clients">{clients}</p>
+  <section class="section-ground" aria-label="Proof" data-proof>
+    <div style="max-width:960px">
+      <Quote
+        quote="“Finding someone who can translate business objectives into technical requirements is difficult. Finding someone who can also own the project, teams, and client relationship is rare.”"
+        cite="Andre Sugai, CTO and Partner, Ora Interactive"
+      />
     </div>
   </section>
 
@@ -124,9 +124,3 @@ import HeroMeteor from '../components/orbit/HeroMeteor.astro';
 
   <Closing title="If you're stuck, let's talk about what to try first." />
 </BaseLayout>
-
-<style>
-  @media (max-width: 860px) {
-    [data-proof] { grid-template-columns: minmax(0, 1fr) !important; gap: 32px !important; }
-  }
-</style>
