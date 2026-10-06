@@ -7,14 +7,15 @@
 // Slots: `headline` (the h1) and the default slot (lead, actions, proof line).
 // On narrow screens the order becomes headline, orbit, then the rest.
 // `still`: the stage starts paused with no Pause control; choosing a way in still flies.
-// `controls`: "stage" overlays the chip row on the orbit; "copy" puts it in the left
+// `controls`: "none" makes the orbit decorative (no chips, no Pause, moons not clickable:
+// Home and Consulting, Brandon 2026-10-06); "stage" overlays the chip row on the orbit; "copy" puts it in the left
 // column under the text, where it still drives the orbit (Work with me).
 // `sheet`: the id of a sheet holding [data-orbit-title], [data-orbit-body] and
 // [data-orbit-steps], which follows the selected way in.
 import { SETS, type OrbitSet } from '../../lib/orbit/orbit-data';
 
-interface Props { set?: OrbitSet; size?: 'large' | 'small'; sheet?: string; still?: boolean; controls?: 'stage' | 'copy' }
-const { set = 'home', size = 'large', sheet, still = false, controls = 'stage' } = Astro.props;
+interface Props { set?: OrbitSet; size?: 'large' | 'small'; sheet?: string; still?: boolean; controls?: 'none' | 'stage' | 'copy'; speed?: number }
+const { set = 'home', size = 'large', sheet, still = false, controls = 'stage', speed = 1 } = Astro.props;
 const ways = SETS[set];
 const poster = set === 'home'
   ? { desktop: '/images/orbit/home-desktop.jpg', mobile: '/images/orbit/home-mobile.jpg' }
@@ -42,7 +43,7 @@ const poster = set === 'home'
       )}
     </div>
   </div>
-  <div class="map-stage" data-orbit={set} data-sheet={sheet} data-still={still ? '' : undefined} data-mode="overview">
+  <div class="map-stage" data-orbit={set} data-sheet={sheet} data-still={still ? '' : undefined} data-static={controls === 'none' ? '' : undefined} data-speed={speed} data-mode="overview">
     <picture class="stage-poster">
       <source media="(max-width: 860px)" srcset={poster.mobile} />
       <img src={poster.desktop} alt="" width="840" height="700" decoding="async" fetchpriority={size === 'large' ? 'high' : 'auto'} />
@@ -53,8 +54,8 @@ const poster = set === 'home'
       <h2 id="map-current-title" tabindex="-1" data-title>Your outcome</h2>
     </div>
     <!-- The one control row (Brandon, 2026-10-06): ways in, or Back and the chosen way's steps; Pause sits here too. -->
-    {controls === 'stage' && (
-    <div class="engagement-dock" role="group" aria-label="Ways to work together" data-dock>
+    {(controls === 'stage' || controls === 'none') && (
+    <div class="engagement-dock" role="group" aria-label="Ways to work together" data-dock hidden={controls === 'none'}>
       <p class="dock-context" data-context hidden></p>
       <button class="engagement-chip" type="button" data-back hidden>← Back</button>
       {ways.map((w, i) => (
@@ -106,6 +107,7 @@ const poster = set === 'home'
     let pending: CategoryId | null = null;
     let token = 0;
     const still = stage.hasAttribute('data-still');
+    const decorative = stage.hasAttribute('data-static');
     let paused = reduced || still;
     let map: MapController | null = null;
     let disposed = false;
@@ -205,7 +207,7 @@ const poster = set === 'home'
 
     back.addEventListener('click', () => { pending = null; goBack(); }, opts);
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && (mode === 'collection' || mode === 'entering')) { pending = null; goBack(); }
+      if (!decorative && e.key === 'Escape' && (mode === 'collection' || mode === 'entering')) { pending = null; goBack(); }
     }, opts);
     pauseBtn.addEventListener('click', () => { paused = !paused; map?.pause(paused); render(); }, opts);
     chips.forEach((b) => b.addEventListener('click', () => select(b.dataset.id as CategoryId), opts));
@@ -222,7 +224,7 @@ const poster = set === 'home'
         if (disposed) return;
         useSet(set);
         map = createMap(host, {
-          onCategoryRequest: select,
+          onCategoryRequest: (id) => { if (!decorative) select(id); },
           onItem: (item) => navigate(item.href),
           onSettled(t) {
             if (t !== token || !map) return;
@@ -241,7 +243,7 @@ const poster = set === 'home'
             queueMicrotask(render);
           },
           onFailure: fail,
-        });
+        }, undefined, Number(stage.dataset.speed) || 1);
         map.pause(paused);
         map.reduceMotion(reduced);
         // A choice made before the renderer arrived flies in now.
@@ -292,6 +294,8 @@ const poster = set === 'home'
   /* Moon labels and leaders are created by the renderer (src/lib/orbit/map-scene.ts).
      Hidden everywhere (Brandon, 2026-10-06): the chip row names the ways and steps. */
   .map-stage .scene-labels, .map-stage .label-leaders { display: none; }
+  /* Decorative orbit: nothing to click. */
+  .map-stage[data-static] .scene-host { pointer-events: none; }
   .scene-labels { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
   .scene-labels .moon-label { pointer-events: auto; }
   .label-leaders { position: absolute; inset: 0; z-index: 2; pointer-events: none; width: 100%; height: 100%; }

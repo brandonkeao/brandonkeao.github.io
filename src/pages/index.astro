@@ -30,11 +30,15 @@ import HeroMeteor from '../components/orbit/HeroMeteor.astro';
   title="Senior product leadership making outcomes move."
   description="I work with leadership teams when an important product or growth problem is not moving. Background in engineering, consulting, and product leadership."
 >
-  <OrbitStage set="home" size="large" sheet="way-in">
+  <OrbitStage set="home" size="large" controls="none" speed={1.5}>
     <h1 slot="headline" class="t-display">Senior product leadership making outcomes move.</h1>
     <MotionLine slot="headline" kind="momentum" />
     <p class="t-lead muted-g" style="max-width:470px">I work with leadership teams when an important product or growth problem is not moving. Pick the one that sounds like yours.</p>
-    <p class="t-small faint-g hero-proof" style="margin-top:40px;max-width:440px">18+ years with teams at Rebrandly, Bitly, Pie Insurance, Bloomberg, Goldman Sachs, and Thomson Reuters.</p>
+    <div style="display:flex;gap:20px;align-items:center;margin-top:34px;flex-wrap:wrap">
+      <a href="/services/" class="btn btn-ground">Work with me</a>
+      <a href="/contact/" class="link-ground">Let's talk</a>
+    </div>
+    <p class="t-small faint-g hero-proof" style="margin-top:56px;max-width:440px">18+ years with teams at Rebrandly, Bitly, Pie Insurance, Bloomberg, Goldman Sachs, and Thomson Reuters.</p>
   </OrbitStage>
   <HeroMeteor />
 

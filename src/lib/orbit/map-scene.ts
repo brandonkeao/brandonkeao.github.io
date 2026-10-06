@@ -239,7 +239,8 @@ function rustTexture() {
   });
 }
 
-export function createMap(host: HTMLElement, hooks: Hooks, clearColor = 0x0a0b0a): MapController {
+/** `speed` scales the ambient motion (orbits, steps, planet surface); flights keep their timing. */
+export function createMap(host: HTMLElement, hooks: Hooks, clearColor = 0x0a0b0a, speed = 1): MapController {
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
     alpha: false,
@@ -1060,8 +1061,8 @@ export function createMap(host: HTMLElement, hooks: Hooks, clearColor = 0x0a0b0a
     const moving =
       !paused && !reduced && !held && !meshHeld && visible && !offscreen && !fallback;
     if (moving && !transition) {
-      if (category) childT += dt;
-      else simT += dt;
+      if (category) childT += dt * speed;
+      else simT += dt * speed;
     }
     if (transition) {
       const t =
@@ -1087,7 +1088,7 @@ export function createMap(host: HTMLElement, hooks: Hooks, clearColor = 0x0a0b0a
     planet.scale.setScalar(systemScale);
     atmosphere.scale.copy(planet.scale);
     atmosphere.position.copy(planet.position);
-    if (!paused && !reduced) planetT += dt;
+    if (!paused && !reduced) planetT += dt * speed;
     planetBody.update(planetT, speechEnvelope * (1 - blend), 0, 1 - blend * 0.55, 1 - blend);
     dust.visible = blend < 0.99;
     dust.position.copy(planet.position);
