@@ -18,6 +18,8 @@ const resolvedOgImage = ogImage ? new URL(ogImage, Astro.site).toString() : unde
 ---
 
 <meta charset="utf-8" />
+<!-- Lets CSS hold animated marks until their script runs; without JS they show as drawn. -->
+<script is:inline>document.documentElement.classList.add('js');</script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#2b2d29" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

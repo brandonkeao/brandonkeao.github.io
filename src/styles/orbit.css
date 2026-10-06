@@ -159,6 +159,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .btn-ground { background: var(--action-on-ground); color: var(--on-action-on-ground); }
 .btn-ground:hover { background: var(--on-ground-muted); }
 .btn-action { background: var(--action); color: var(--on-action); }
+/* Brand red primary (Brandon, 2026-10-06: the Home hero's primary CTA). White on logo red is about 7:1. */
+.btn-brand { background: var(--accent); color: #fff; }
+.btn-brand:hover { background: color-mix(in srgb, var(--accent) 86%, #fff); }
 .btn-action:hover { background: var(--ground-raised); }
 .btn-outline-ground { border-color: var(--control-line-on-ground); color: var(--on-ground); }
 .btn-outline-ground:hover { border-color: var(--on-ground); }

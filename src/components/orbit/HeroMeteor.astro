@@ -1,30 +1,31 @@
 ---
-// Home only: a meteor draws the red momentum line, then lifts off the arrowhead and
-// arcs into the orbit, where a faint ripple marks its arrival (Brandon, 2026-10-06:
-// "maybe a meteor trajectory? Something subtle but engaging at first and then fits
-// into the page"). Plays once per page view; never with reduced motion. The line
-// itself (MotionLine kind="momentum") stays as the resting state.
+// Home only: a meteor streaks across under the headline and leaves a solid red line the
+// full width of the copy column, then arcs into the planet, shedding embers, and lands
+// with a flash and two ripples (Brandon, 2026-10-06). The line stays as the resting
+// state. Plays once per page view; with reduced motion or no JavaScript the line is
+// simply there.
 ---
+
+<span class="hero-streak" aria-hidden="true"></span>
 
 <script>
   let cleanup: (() => void) | undefined;
+  const DURATION = 2400;
+  const EASING = 'cubic-bezier(0.45, 0.05, 0.35, 1)';
 
   function launch() {
     cleanup?.();
     cleanup = undefined;
-    const line = document.querySelector<SVGSVGElement>('.motion-line-momentum');
+    const line = document.querySelector<HTMLElement>('.hero-streak');
     const hero = document.querySelector<HTMLElement>('.orbit-hero');
     const stage = hero?.querySelector<HTMLElement>('.map-stage');
     if (!line || !hero || !stage) return;
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (!('offsetPath' in document.documentElement.style)) return;
+    const show = () => line.setAttribute('data-drawn', '');
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('offsetPath' in document.documentElement.style)) { show(); return; }
 
-    // Hold the line's own draw so the meteor draws it.
-    line.setAttribute('data-motion-hold', '');
-    const release = () => { line.removeAttribute('data-motion-hold'); line.setAttribute('data-motion-armed', ''); line.setAttribute('data-motion-play', ''); };
     let cancelled = false;
     const made: HTMLElement[] = [];
-    cleanup = () => { cancelled = true; made.forEach((n) => n.remove()); if (line.hasAttribute('data-motion-hold')) release(); };
+    cleanup = () => { cancelled = true; made.forEach((n) => n.remove()); show(); };
 
     // Aim at the planet's upper-left limb once the renderer publishes its centre;
     // fall back to the stage centre if the scene is slow or unavailable.
@@ -39,33 +40,45 @@
 
     const go = () => {
       if (cancelled) return;
-      release();
       const h = hero.getBoundingClientRect();
       const l = line.getBoundingClientRect();
       const y = l.top + l.height / 2 - h.top;
-      const x0 = l.left - h.left + 4;
-      const x1 = l.left - h.left + l.width * (228 / 234);
+      // The line is still scaled to 0 here, so take its layout width, not its painted box.
+      const x0 = l.left - h.left;
+      const x1 = x0 + line.offsetWidth;
       const t = target();
       const tx = t.x - h.left, ty = t.y - h.top;
-      // Leave the arrowhead level, then bend toward the planet.
+      // Run the full line, then bend toward the planet.
       const c1x = Math.min(x1 + Math.max(60, (tx - x1) * 0.45), h.width - 8);
       const path = `M ${x0} ${y} L ${x1} ${y} C ${c1x} ${y} ${tx - 40} ${ty + 30} ${tx} ${ty}`;
+      const lineLen = x1 - x0;
+      const total = lineLen + Math.hypot(tx - x1, ty - y) * 1.15;
+      const lineShare = lineLen / total;
+
+      const ride = (scale?: [number, number, number, number]) => [
+        { offsetDistance: '0%', opacity: 0, ...(scale && { transform: `scaleX(${scale[0]})` }) },
+        { offsetDistance: '2%', opacity: 1, offset: 0.04, ...(scale && { transform: `scaleX(${scale[1]})` }) },
+        { offsetDistance: `${lineShare * 100}%`, opacity: 1, offset: 0.36, ...(scale && { transform: `scaleX(${scale[2]})` }) },
+        { offsetDistance: '88%', opacity: 1, offset: 0.8, ...(scale && { transform: `scaleX(${scale[3]})` }) },
+        { offsetDistance: '100%', opacity: 0, ...(scale && { transform: 'scaleX(0.3)' }) },
+      ];
 
       const meteor = document.createElement('div');
       meteor.className = 'meteor';
       meteor.style.offsetPath = `path('${path}')`;
       hero.appendChild(meteor);
       made.push(meteor);
+      const run = meteor.animate(ride([0.4, 0.6, 1, 1.5]), { duration: DURATION, easing: EASING, fill: 'forwards' });
 
-      // The straight run matches the line's draw (850ms); the arc eases into orbit.
-      const lineShare = (x1 - x0) / ((x1 - x0) + Math.hypot(tx - x1, ty - y) * 1.15);
-      const run = meteor.animate([
-        { offsetDistance: '0%', opacity: 0, transform: 'scaleX(0.4)' },
-        { offsetDistance: '2%', opacity: 1, transform: 'scaleX(0.6)', offset: 0.04 },
-        { offsetDistance: `${lineShare * 100}%`, opacity: 1, transform: 'scaleX(1)', offset: 0.36 },
-        { offsetDistance: '88%', opacity: 1, transform: 'scaleX(1.5)', offset: 0.8 },
-        { offsetDistance: '100%', opacity: 0, transform: 'scaleX(0.3)' },
-      ], { duration: 2400, easing: 'cubic-bezier(0.45, 0.05, 0.35, 1)', fill: 'forwards' });
+      // The line is laid down behind the head: its right edge tracks the meteor exactly,
+      // because both use the same keyframe offsets and easing.
+      const at2 = (0.02 * total) / lineLen;
+      line.animate([
+        { transform: 'scaleX(0)' },
+        { transform: `scaleX(${Math.min(at2, 1)})`, offset: 0.04 },
+        { transform: 'scaleX(1)', offset: 0.36 },
+        { transform: 'scaleX(1)' },
+      ], { duration: DURATION, easing: EASING, fill: 'forwards' }).finished.then(show).catch(show);
 
       // Embers: a hidden core follows the head; small sparks are shed from it and fade.
       const core = document.createElement('div');
@@ -73,17 +86,11 @@
       core.style.offsetPath = meteor.style.offsetPath;
       hero.appendChild(core);
       made.push(core);
-      const coreRun = core.animate([
-        { offsetDistance: '0%' },
-        { offsetDistance: '2%', offset: 0.04 },
-        { offsetDistance: `${lineShare * 100}%`, offset: 0.36 },
-        { offsetDistance: '88%', offset: 0.8 },
-        { offsetDistance: '100%' },
-      ], { duration: 2400, easing: 'cubic-bezier(0.45, 0.05, 0.35, 1)', fill: 'forwards' });
+      const coreRun = core.animate(ride(), { duration: DURATION, easing: EASING, fill: 'forwards' });
       let lastEmber = 0;
       const shed = (now: number) => {
         if (cancelled || coreRun.playState === 'finished') return;
-        const p = (coreRun.currentTime as number ?? 0) / 2400;
+        const p = ((coreRun.currentTime as number) ?? 0) / DURATION;
         if (p > 0.05 && p < 0.92 && now - lastEmber > 45) {
           lastEmber = now;
           const c = core.getBoundingClientRect();
@@ -103,15 +110,6 @@
         requestAnimationFrame(shed);
       };
       requestAnimationFrame(shed);
-
-      // The meteor pulls its line into orbit: once it leaves the arrowhead, the line
-      // erases from the left after it and the arrowhead fades, so nothing is left behind.
-      const leave = 2400 * 0.36;
-      const pulled = { duration: 1000, delay: leave, easing: 'cubic-bezier(0.55, 0, 0.75, 0.4)', fill: 'forwards' as FillMode };
-      line.querySelectorAll('.ml-draw').forEach((el) => el.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: -1 }], pulled));
-      line.querySelectorAll('.ml-resolve, .ml-track').forEach((el) => el.animate([{ opacity: 1 }, { opacity: 0 }], { ...pulled, duration: 700, delay: leave + 300 }));
-      // Then the empty slot closes, so the lead sits under the headline.
-      line.animate([{ height: '40px', marginTop: '20px' }, { height: '0px', marginTop: '0px' }], { duration: 450, delay: leave + 1000, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' });
 
       run.finished.then(() => {
         meteor.remove();
@@ -149,6 +147,12 @@
 
 <style is:global>
   .orbit-hero { position: relative; }
+  /* The line the meteor leaves: solid brand red on the ground, the full width of the copy column. */
+  .hero-streak { display: block; width: 100%; height: 4.5px; margin-top: 28px; border-radius: 3px; background: var(--accent-on-ground); transform-origin: 0 50%; }
+  /* Hidden until the meteor lays it down; shown at once without JS or with reduced motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    .js .hero-streak:not([data-drawn]) { transform: scaleX(0); }
+  }
   .meteor {
     position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none;
     width: 140px; height: 9px;
@@ -160,15 +164,11 @@
     content: ''; position: absolute; right: -7px; top: 50%; width: 15px; height: 15px; margin-top: -7.5px; border-radius: 50%;
     background: #ffe1de; box-shadow: 0 0 10px 3px var(--accent-on-ground), 0 0 30px 8px color-mix(in srgb, var(--accent-on-ground) 45%, transparent);
   }
+  .meteor-core { position: absolute; left: 0; top: 0; width: 2px; height: 2px; offset-anchor: 50% 50%; pointer-events: none; visibility: hidden; }
+  .meteor-ember { position: absolute; z-index: 6; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; background: #ffd0cb; box-shadow: 0 0 6px 1px var(--accent-on-ground); }
+  .meteor-flash { position: absolute; z-index: 5; pointer-events: none; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--accent-on-ground) 55%, transparent) 0%, transparent 65%); }
   .meteor-ripple {
     position: absolute; z-index: 6; pointer-events: none; width: 44px; height: 44px; border-radius: 50%;
     border: 2px solid var(--accent-on-ground); box-shadow: 0 0 12px color-mix(in srgb, var(--accent-on-ground) 50%, transparent);
   }
-  .meteor-core { position: absolute; left: 0; top: 0; width: 2px; height: 2px; offset-anchor: 50% 50%; pointer-events: none; visibility: hidden; }
-  .meteor-ember { position: absolute; z-index: 6; pointer-events: none; width: 5px; height: 5px; border-radius: 50%; background: #ffd0cb; box-shadow: 0 0 6px 1px var(--accent-on-ground); }
-  .meteor-flash { position: absolute; z-index: 5; pointer-events: none; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--accent-on-ground) 55%, transparent) 0%, transparent 65%); }
-  /* The line the meteor draws carries the same weight as its trail (Brandon: 3x). */
-  .motion-line-momentum { stroke-width: 4.5; }
-  /* The meteor replaces the momentum line's travelling dot. */
-  .motion-line-momentum .ml-traveller { display: none; }
 </style>

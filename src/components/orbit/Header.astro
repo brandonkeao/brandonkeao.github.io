@@ -17,21 +17,19 @@ const current = (href: string) => {
 <header class="site-header">
   <nav class="nav" aria-label="Primary navigation">
     <a href="/" class="brand" aria-label="Brandon Keao, home"><span class="mark" aria-hidden="true">bk</span>Brandon Keao</a>
-    <>
-        <div class="nav-desktop">
-          <ul class="nav-links">
-            {navLinks.map((l) => <li><a href={l.href} aria-current={current(l.href)}>{l.label}</a></li>)}
-          </ul>
-          <a href="/contact/" class="btn btn-ground btn-sm" aria-current={current('/contact/')}>Let's talk</a>
-        </div>
-        <button class="menu-btn" type="button" aria-controls="mobile-menu" aria-expanded="false" data-menu-toggle>Menu</button>
-    </>
-  </nav>
-  <div id="mobile-menu" class="mobile-menu" hidden>
-      <ul class="t-title">
+    <div class="nav-desktop">
+      <ul class="nav-links">
         {navLinks.map((l) => <li><a href={l.href} aria-current={current(l.href)}>{l.label}</a></li>)}
       </ul>
-      <a href="/contact/" class="btn btn-ground">Let's talk</a>
+      <a href="/contact/" class="btn btn-ground btn-sm" aria-current={current('/contact/')}>Let's talk</a>
+    </div>
+    <button class="menu-btn" type="button" aria-controls="mobile-menu" aria-expanded="false" data-menu-toggle>Menu</button>
+  </nav>
+  <div id="mobile-menu" class="mobile-menu" hidden>
+    <ul class="t-title">
+      {navLinks.map((l) => <li><a href={l.href} aria-current={current(l.href)}>{l.label}</a></li>)}
+    </ul>
+    <a href="/contact/" class="btn btn-ground">Let's talk</a>
   </div>
 </header>
 

@@ -23,7 +23,6 @@ const process = [
   { title: 'Own', body: 'Leadership comes from everywhere. Own the problems in your world and make it easier for other people to lead.' },
   { title: 'Improve', body: 'Give honest, timely feedback and keep fixing small things. The small fixes add up.' },
 ];
-import MotionLine from '../components/orbit/MotionLine.astro';
 import HeroMeteor from '../components/orbit/HeroMeteor.astro';
 ---
 
@@ -33,14 +32,13 @@ import HeroMeteor from '../components/orbit/HeroMeteor.astro';
 >
   <OrbitStage set="home" size="closeup" controls="none" speed={2}>
     <h1 slot="headline" class="t-display">Senior product<br /> leadership making<br /> outcomes move.</h1>
-    <MotionLine slot="headline" kind="momentum" />
-    <p class="t-lead muted-g" style="max-width:440px">Senior enough to shape the direction. Close enough to the work to help make it happen.</p>
+    <HeroMeteor slot="headline" />
+    <p class="t-lead muted-g">Senior enough to shape the direction. Close enough to the work to help make it happen.</p>
     <div style="display:flex;gap:20px;align-items:center;margin-top:28px;flex-wrap:wrap">
-      <a href="/services/" class="btn btn-ground">Work with me</a>
+      <a href="/services/" class="btn btn-brand">Work with me</a>
       <a href="/contact/" class="link-ground">Let's talk</a>
     </div>
   </OrbitStage>
-  <HeroMeteor />
 
   <ExperienceStrip names={clients} />
 
