@@ -179,6 +179,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .steps li { display: grid; grid-template-columns: 40px 1fr; column-gap: 8px; padding: 16px 0; border-top: 1px solid var(--line-on-sheet); }
 .steps li > span { font-size: 13px; color: var(--on-sheet-muted); padding-top: 4px; }
 .steps li strong { font-size: 17px; font-weight: 600; }
+.steps li strong a { border-bottom: 1.5px solid var(--line-on-sheet); transition: border-color 0.15s, color 0.15s; }
+.steps li strong a:hover { color: var(--accent); border-color: var(--accent); }
 .steps li p { grid-column: 2; font-size: 15px; line-height: 1.5; color: var(--on-sheet-muted); margin-top: 4px; }
 
 .way { display: grid; grid-template-columns: 300px 1fr 180px; gap: 40px; padding: 28px 0; border-top: 1px solid var(--line-on-sheet); align-items: start; }

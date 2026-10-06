@@ -54,6 +54,7 @@ const poster = set === 'home'
 <script>
   import { SETS, useSet, type CategoryId, type OrbitSet } from '../../lib/orbit/orbit-data';
   import type { MapController } from '../../lib/orbit/map-scene';
+  import { navigate } from 'astro:transitions/client';
 
   type Mode = 'overview' | 'entering' | 'collection' | 'leaving';
   let teardown: (() => void) | undefined;
@@ -101,7 +102,10 @@ const poster = set === 'home'
         const n = document.createElement('span');
         n.textContent = String(i + 1).padStart(2, '0');
         const s = document.createElement('strong');
-        s.textContent = it.title;
+        const a = document.createElement('a');
+        a.href = it.href;
+        a.textContent = it.title;
+        s.append(a);
         const p = document.createElement('p');
         p.textContent = it.description;
         li.append(n, s, p);
@@ -162,7 +166,7 @@ const poster = set === 'home'
         useSet(set);
         map = createMap(host, {
           onCategoryRequest: select,
-          onItem: () => sheet?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }),
+          onItem: (item) => navigate(item.href),
           onSettled(t) {
             if (t !== token || !map) return;
             if (mode === 'entering') { mode = 'collection'; map.showChildren(); }

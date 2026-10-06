@@ -641,7 +641,7 @@ export function createMap(host: HTMLElement, hooks: Hooks, clearColor = 0x0a0b0a
               ? 'Additional access'
               : c.items[index].placeholder
                 ? 'Placeholder'
-                : `Explore ${c.singular}`,
+                : (c.items[index].cta ?? `Explore ${c.singular}`),
           ]
         : [
             CATEGORIES[index].name,
