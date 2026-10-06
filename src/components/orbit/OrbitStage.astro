@@ -144,7 +144,7 @@ const poster = set === 'home'
       pauseBtn.querySelector('span')!.textContent = paused ? 'Resume motion' : 'Pause motion';
       if (current) renderSheet(current);
       // Keep keyboard focus in the row when the chip that had it is swapped out.
-      if (hadFocus && focused && (focused.hidden || !focused.isConnected)) (inWay ? back : chips.find((c) => c.dataset.id === stepsFor) ?? chips[0]).focus();
+      if (hadFocus && focused && (focused.hidden || !focused.isConnected || focused.offsetParent === null)) (inWay ? back : chips.find((c) => c.dataset.id === stepsFor) ?? chips[0]).focus();
     }
 
     function select(id: CategoryId) {
