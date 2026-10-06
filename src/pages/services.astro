@@ -23,8 +23,10 @@ import MotionLine from '../components/orbit/MotionLine.astro';
 
 <BaseLayout title="Work With Me" description="Product strategy, discovery, assessment, and fractional product leadership with Brandon Keao.">
   <OrbitStage set="work" size="large" still controls="copy">
-    <h1 slot="headline" class="t-page-title">Get unstuck.<br />Build momentum.</h1>
-    <MotionLine slot="headline" kind="align" stretch />
+    <div slot="headline" style="width:fit-content;max-width:100%">
+      <h1 class="t-page-title">Get unstuck.<br />Build momentum.</h1>
+      <MotionLine kind="align" stretch />
+    </div>
     <p class="t-lead muted-g" style="max-width:560px">I work with leadership teams when an important product or growth problem is not moving.</p>
   </OrbitStage>
 
