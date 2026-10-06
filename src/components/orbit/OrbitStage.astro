@@ -29,24 +29,20 @@ const poster = set === 'home'
       <source media="(max-width: 860px)" srcset={poster.mobile} />
       <img src={poster.desktop} alt="" width="840" height="700" decoding="async" fetchpriority={size === 'large' ? 'high' : 'auto'} />
     </picture>
-    <div class="stage-toolbar">
-      <p class="breadcrumb"><span>Your outcome</span><span class="crumb-slash" aria-hidden="true">/</span><span class="crumb-current" data-crumb>Three ways in</span></p>
-      <div class="toolbar-actions">
-        <button class="stage-pill" type="button" data-back hidden>← Back</button>
-        <button class="stage-pill" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
-      </div>
-    </div>
     <div class="scene-host"></div>
     <div class="center-copy" aria-live="polite">
       <h2 id="map-current-title" tabindex="-1" data-title>Your outcome</h2>
-      <p data-sub>Choose where you are stuck</p>
     </div>
-    <div class="engagement-dock" role="group" aria-label="Ways to work together">
+    <!-- The one control row (Brandon, 2026-10-06): ways in, or Back and the chosen way's steps; Pause sits here too. -->
+    <div class="engagement-dock" role="group" aria-label="Ways to work together" data-dock>
+      <button class="engagement-chip" type="button" data-back hidden>← Back</button>
       {ways.map((w, i) => (
         <button class="engagement-chip" type="button" data-id={w.id} aria-pressed="false">
           <i class={`dot dot-${i + 1}`} aria-hidden="true"></i>{w.name}
         </button>
       ))}
+      <span class="dock-steps" data-steps hidden></span>
+      <button class="engagement-chip dock-pause" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
     </div>
   </div>
 </section>
@@ -70,11 +66,12 @@ const poster = set === 'home'
     const q = <T extends HTMLElement>(s: string, root: ParentNode = stage) => root.querySelector<T>(s)!;
     const host = q('.scene-host');
     const title = q('[data-title]');
-    const sub = q('[data-sub]');
-    const crumb = q('[data-crumb]');
+    const dock = q('[data-dock]');
     const back = q<HTMLButtonElement>('[data-back]');
     const pauseBtn = q<HTMLButtonElement>('[data-pause]');
-    const chips = [...stage.querySelectorAll<HTMLButtonElement>('.engagement-chip')];
+    const stepsEl = q('[data-steps]');
+    const chips = [...stage.querySelectorAll<HTMLButtonElement>('.engagement-chip[data-id]')];
+    let stepsFor: CategoryId | null = null;
     const sheet = stage.dataset.sheet ? document.getElementById(stage.dataset.sheet) : null;
 
     const ctl = new AbortController();
@@ -113,17 +110,41 @@ const poster = set === 'home'
       }));
     }
 
+    // The chosen way's steps as chips; each opens the step's page, like its moon label.
+    function renderSteps(id: CategoryId) {
+      if (stepsFor === id) return;
+      stepsFor = id;
+      const i = ways.findIndex((x) => x.id === id);
+      stepsEl.replaceChildren(...ways[i].items.map((it) => {
+        const a = document.createElement('a');
+        a.className = 'engagement-chip';
+        a.href = it.href;
+        const dot = document.createElement('i');
+        dot.className = `dot dot-${i + 1}`;
+        dot.setAttribute('aria-hidden', 'true');
+        a.append(dot, it.title);
+        return a;
+      }));
+    }
+
     function render() {
       const w = ways.find((x) => x.id === current);
+      const inWay = !!(w && map && (mode === 'collection' || mode === 'entering'));
+      const focused = document.activeElement as HTMLElement | null;
+      const hadFocus = !!focused && dock.contains(focused);
       stage.dataset.mode = mode;
       title.textContent = w && mode === 'collection' ? w.name : 'Your outcome';
-      sub.textContent = w && mode === 'collection' ? 'Three steps orbit it' : 'Choose where you are stuck';
-      crumb.textContent = w ? w.name : 'Three ways in';
-      back.hidden = !(map && (mode === 'collection' || mode === 'entering'));
-      chips.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.id === current)));
+      chips.forEach((b) => { b.hidden = inWay; b.setAttribute('aria-pressed', String(b.dataset.id === current)); });
+      back.hidden = !inWay;
+      stepsEl.hidden = !inWay;
+      if (inWay && w) renderSteps(w.id);
+      dock.setAttribute('aria-label', inWay && w ? `${w.name}: steps` : 'Ways to work together');
+      pauseBtn.hidden = !map || still || !stage.classList.contains('is-ready');
       pauseBtn.setAttribute('aria-pressed', String(paused));
       pauseBtn.querySelector('span')!.textContent = paused ? 'Resume motion' : 'Pause motion';
       if (current) renderSheet(current);
+      // Keep keyboard focus in the row when the chip that had it is swapped out.
+      if (hadFocus && focused && (focused.hidden || !focused.isConnected)) (inWay ? back : chips.find((c) => c.dataset.id === stepsFor) ?? chips[0]).focus();
     }
 
     function select(id: CategoryId) {
@@ -180,8 +201,8 @@ const poster = set === 'home'
           onReady() {
             if (disposed) return;
             stage.classList.add('is-ready');
-            pauseBtn.hidden = still;
-            render();
+            // onReady can fire inside createMap, before `map` is assigned.
+            queueMicrotask(render);
           },
           onFailure: fail,
         });
@@ -228,14 +249,6 @@ const poster = set === 'home'
   .scene-host canvas { display: block; width: 100%; height: 100%; }
   .map-stage:not(.is-ready) .scene-host canvas { opacity: 0; }
 
-  .stage-toolbar { position: absolute; z-index: 4; left: 24px; right: var(--gutter); top: 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; pointer-events: none; }
-  .stage-toolbar button { pointer-events: auto; }
-  .breadcrumb { display: flex; gap: 10px; font-size: 13px; color: var(--on-ground-faint); }
-  .crumb-current { color: var(--on-ground); }
-  .crumb-slash { opacity: 0.5; }
-  .toolbar-actions { display: flex; gap: 8px; }
-  .stage-pill { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 14px; border-radius: var(--r-pill); border: 1px solid var(--control-line-on-ground); background: #2b2d29cc; font-size: 13px; color: var(--on-ground-muted); }
-  .stage-pill:hover { color: var(--on-ground); border-color: var(--on-ground-muted); }
   [data-pause] i { width: 8px; height: 10px; border-left: 2.5px solid currentColor; border-right: 2.5px solid currentColor; }
   [data-pause][aria-pressed='true'] i { width: 0; height: 0; border: 0; border-left: 9px solid currentColor; border-top: 5.5px solid transparent; border-bottom: 5.5px solid transparent; }
 
@@ -243,7 +256,6 @@ const poster = set === 'home'
   .map-stage.is-ready .center-copy { opacity: 1; }
   .map-stage[data-mode='entering'] .center-copy, .map-stage[data-mode='leaving'] .center-copy { opacity: 0; }
   .center-copy h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; color: #fff; text-shadow: 0 2px 18px #000a; outline: none; }
-  .center-copy p { font-size: 12px; color: #e8e2d6; margin-top: 6px; text-shadow: 0 1px 10px #000c; }
 
   /* Moon labels and leaders are created by the renderer (src/lib/orbit/map-scene.ts). */
   .scene-labels { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
@@ -261,6 +273,8 @@ const poster = set === 'home'
   .engagement-chip { display: inline-flex; align-items: center; gap: 9px; padding: 10px 14px; border-radius: var(--r-pill); border: 1px solid var(--control-line-on-ground); background: #2b2d29d9; font-size: 14px; color: var(--on-ground-muted); }
   .engagement-chip:hover { color: var(--on-ground); }
   .engagement-chip[aria-pressed='true'] { color: var(--on-ground); border-color: var(--accent-on-ground); }
+  .dock-steps { display: contents; }
+  .dock-pause { gap: 8px; }
 
   @media (max-width: 860px) {
     .orbit-hero, .orbit-hero--small { grid-template-columns: minmax(0, 1fr); padding: 8px 0 0; }
@@ -270,7 +284,6 @@ const poster = set === 'home'
     .orbit-hero--small .map-stage { height: 440px; }
     .hero-rest { order: 3; padding: 0 var(--gutter) 32px; }
     .hero-rest > :first-child { margin-top: 8px; }
-    .stage-toolbar { left: 16px; right: 16px; }
     .engagement-dock { left: 12px; right: 12px; }
     .scene-labels, .label-leaders { display: none; }
     .engagement-chip { font-size: 13px; padding: 8px 12px; }
