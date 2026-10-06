@@ -110,11 +110,13 @@ const categories: Category[] = [
   }
 ];
 const books = categories.flatMap(category => category.books);
+import MotionLine from '../components/orbit/MotionLine.astro';
 ---
 
 <BaseLayout title="Bookshelf" description="Books that have shaped Brandon Keao's thinking on product, strategy, leadership, and decision-making.">
   <header class="page-header">
     <h1 class="t-page-title">On the shoulders of giants</h1>
+    <MotionLine kind="books" />
     <p class="t-lead muted-g" style="margin-top:18px;max-width:720px">I've learned a lot from people who took the time to write down what they've figured out. These books have shaped how I think about building products and leading teams.</p>
   </header>
 

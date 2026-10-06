@@ -22,6 +22,7 @@ const process = [
   { title: 'Own', body: 'Leadership comes from everywhere. Own the problems in your world and make it easier for other people to lead.' },
   { title: 'Improve', body: 'Give honest, timely feedback and keep fixing small things. The small fixes add up.' },
 ];
+import MotionLine from '../components/orbit/MotionLine.astro';
 ---
 
 <BaseLayout
@@ -30,6 +31,7 @@ const process = [
 >
   <OrbitStage set="home" size="large" sheet="way-in">
     <h1 slot="headline" class="t-display">Senior product leadership making outcomes move.</h1>
+    <MotionLine slot="headline" kind="momentum" />
     <p class="t-lead muted-g" style="max-width:470px">I work with leadership teams when an important product or growth problem is not moving. Pick the one that sounds like yours.</p>
     <div style="display:flex;gap:20px;align-items:center;margin-top:34px;flex-wrap:wrap">
       <a href="/contact" class="btn btn-ground">Let's talk</a>

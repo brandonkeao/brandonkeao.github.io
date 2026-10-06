@@ -39,6 +39,7 @@ const about = [
     ],
   },
 ];
+import MotionLine from '../components/orbit/MotionLine.astro';
 ---
 
 <BaseLayout title="About" description="Brandon Keao is a product leader and builder with 18+ years in technology across consulting, product, design, research, and strategy.">
@@ -46,6 +47,7 @@ const about = [
     <img class="portrait" src="/images/brandon-keao-headshot.jpg" alt="Brandon Keao" width="260" height="260" />
     <div>
       <h1 class="t-page-title">Product leader and builder</h1>
+      <MotionLine kind="map" />
       <p class="t-lead muted-g" style="margin-top:20px;max-width:640px">I've spent 18+ years building products, leading teams, and designing systems in complex organizations.</p>
     </div>
   </header>
