@@ -373,17 +373,38 @@ const poster = closeup
   }
   @media (max-width: 860px) {
     /* Phones: the big planet bleeds off the right behind the headline; lead and CTAs below on plain ground. */
-    .orbit-hero--closeup { display: block; min-height: 0; padding: 0; }
+    /* overflow-x: clip keeps the meteor's flight from making the page scroll sideways. */
+    .orbit-hero--closeup { display: block; min-height: 0; padding: 0; overflow-x: clip; }
     .orbit-hero--closeup .hero-copy { display: block; }
-    .orbit-hero--closeup .hero-headline { padding: 8px var(--gutter) 0; min-height: 380px; }
+    .orbit-hero--closeup .hero-headline { padding: 8px var(--gutter) 0; min-height: 360px; }
     .orbit-hero--closeup .hero-rest { padding: 0 var(--gutter) 32px; }
-    .orbit-hero--closeup .map-stage { position: absolute; top: 0; bottom: auto; height: 400px; margin: 0; }
+    /* Home v2 review (AD-10, AD-11): the stage starts 48px lower and the mask keeps a quiet zone
+       under the headline and the lead, so no line crosses the copy and the far moon stays hidden. */
+    .orbit-hero--closeup .map-stage { position: absolute; top: 48px; bottom: auto; height: 400px; margin: 0; }
     .orbit-hero--closeup .scene-host { position: absolute; inset: 0; height: 400px; }
     .orbit-hero--closeup .stage-poster img { height: 400px; }
     .orbit-hero--closeup .scene-host, .orbit-hero--closeup .stage-poster img {
-      -webkit-mask-image: radial-gradient(130% 100% at 95% 62%, #000 38%, transparent 82%);
+      -webkit-mask-image: radial-gradient(120% 90% at 100% 58%, #000 30%, transparent 70%), linear-gradient(180deg, #000 60%, transparent 80%);
+      -webkit-mask-composite: source-in;
+      mask-image: radial-gradient(120% 90% at 100% 58%, #000 30%, transparent 70%), linear-gradient(180deg, #000 60%, transparent 80%);
+      mask-composite: intersect;
+    }
+  }
+  /* Short landscape phones (AD-12): the 768 composition in one screen. Copy stays left, the planet
+     sits right in a 300px stage, and the lead and actions follow the headline directly. */
+  @media (max-width: 1023px) and (max-height: 500px) {
+    .orbit-hero--closeup { display: block; min-height: 0; padding: 0; overflow-x: clip; }
+    .orbit-hero--closeup .hero-copy { display: block; max-width: calc(var(--gutter) + 400px); }
+    .orbit-hero--closeup .hero-headline { padding: 8px var(--gutter) 0; min-height: 0; }
+    .orbit-hero--closeup .hero-rest { padding: 0 0 32px var(--gutter); }
+    .orbit-hero--closeup .hero-rest > :first-child { margin-top: 16px; }
+    .orbit-hero--closeup .map-stage { position: absolute; top: 0; bottom: auto; left: calc(50% - 50vw); width: 100vw; height: 300px; margin: 0; }
+    .orbit-hero--closeup .scene-host { position: absolute; inset: 0; height: 300px; }
+    .orbit-hero--closeup .stage-poster img { height: 300px; }
+    .orbit-hero--closeup .scene-host, .orbit-hero--closeup .stage-poster img {
+      -webkit-mask-image: radial-gradient(70% 120% at 100% 50%, #000 30%, transparent 70%);
       -webkit-mask-composite: source-over;
-      mask-image: radial-gradient(130% 100% at 95% 62%, #000 38%, transparent 82%);
+      mask-image: radial-gradient(70% 120% at 100% 50%, #000 30%, transparent 70%);
       mask-composite: add;
     }
   }
