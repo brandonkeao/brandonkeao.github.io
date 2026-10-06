@@ -67,6 +67,13 @@
         { offsetDistance: '100%', opacity: 0, transform: 'scaleX(0.3)' },
       ], { duration: 2400, easing: 'cubic-bezier(0.45, 0.05, 0.35, 1)', fill: 'forwards' });
 
+      // The meteor pulls its line into orbit: once it leaves the arrowhead, the line
+      // erases from the left after it and the arrowhead fades, so nothing is left behind.
+      const leave = 2400 * 0.36;
+      const pulled = { duration: 1000, delay: leave, easing: 'cubic-bezier(0.55, 0, 0.75, 0.4)', fill: 'forwards' as FillMode };
+      line.querySelectorAll('.ml-draw').forEach((el) => el.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: -1 }], pulled));
+      line.querySelectorAll('.ml-resolve, .ml-track').forEach((el) => el.animate([{ opacity: 1 }, { opacity: 0 }], { ...pulled, duration: 700, delay: leave + 300 }));
+
       run.finished.then(() => {
         meteor.remove();
         if (cancelled) return;
