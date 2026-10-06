@@ -1,12 +1,14 @@
 ---
 // One heading pattern for a section: a sentence-case eyebrow, the section title, an optional lead.
-// Works on the ground and on a sheet; colours follow the surface.
+// Works on the ground and on a sheet; colours follow the surface. The eyebrow is a caption
+// (13/500, muted) so it reads as a section marker, apart from item meta (13/400, faint).
+// The default slot follows the lead (Home v2 puts the About portrait there).
 interface Props { eyebrow: string; title: string; id?: string; lead?: string }
 const { eyebrow, title, id, lead } = Astro.props;
 ---
 
 <header class="section-head">
-  <p class="section-eyebrow">{eyebrow}</p>
+  <p class="t-caption section-eyebrow">{eyebrow}</p>
   <h2 class="t-section" id={id}>{title}</h2>
   {lead && <p class="t-lead section-lead">{lead}</p>}
   <slot />
@@ -14,7 +16,7 @@ const { eyebrow, title, id, lead } = Astro.props;
 
 <style is:global>
   .section-head { max-width: 460px; }
-  .section-eyebrow { font-size: 14px; line-height: 1.4; color: var(--on-ground-faint); margin-bottom: 14px; }
-  .section-lead { margin-top: 18px; color: var(--on-ground-muted); }
+  .section-eyebrow { font-weight: 500; color: var(--on-ground-muted); margin-bottom: 12px; }
+  .section-lead { margin-top: 16px; color: var(--on-ground-muted); }
   .sheet .section-eyebrow, .sheet .section-lead { color: var(--on-sheet-muted); }
 </style>
