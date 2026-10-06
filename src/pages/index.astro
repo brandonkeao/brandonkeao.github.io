@@ -120,5 +120,23 @@ import HeroMeteor from '../components/orbit/HeroMeteor.astro';
     </div>
   </section>
 
+  <script is:inline>
+    // Home always opens at the top (Brandon, 2026-10-06), including reload and back/forward.
+    // Runs before the view-transition router restores a saved position, so there is no jump.
+    (function () {
+      if (location.pathname !== '/' || location.hash) return;
+      history.scrollRestoration = 'manual';
+      if (history.state) history.replaceState(Object.assign({}, history.state, { scrollX: 0, scrollY: 0 }), '');
+      scrollTo(0, 0);
+      if (window.__homeTop) return;
+      window.__homeTop = true;
+      var top = function () {
+        if (location.pathname === '/' && !location.hash) scrollTo({ left: 0, top: 0, behavior: 'instant' });
+      };
+      document.addEventListener('astro:after-swap', top);
+      document.addEventListener('astro:page-load', top);
+    })();
+  </script>
+
   <Closing title="If you're stuck, let's talk about what to try first." />
 </BaseLayout>
