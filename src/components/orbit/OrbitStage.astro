@@ -7,12 +7,14 @@
 // Slots: `headline` (the h1) and the default slot (lead, actions, proof line).
 // On narrow screens the order becomes headline, orbit, then the rest.
 // `still`: the stage starts paused with no Pause control; choosing a way in still flies.
+// `controls`: "stage" overlays the chip row on the orbit; "copy" puts it in the left
+// column under the text, where it still drives the orbit (Work with me).
 // `sheet`: the id of a sheet holding [data-orbit-title], [data-orbit-body] and
 // [data-orbit-steps], which follows the selected way in.
 import { SETS, type OrbitSet } from '../../lib/orbit/orbit-data';
 
-interface Props { set?: OrbitSet; size?: 'large' | 'small'; sheet?: string; still?: boolean }
-const { set = 'home', size = 'large', sheet, still = false } = Astro.props;
+interface Props { set?: OrbitSet; size?: 'large' | 'small'; sheet?: string; still?: boolean; controls?: 'stage' | 'copy' }
+const { set = 'home', size = 'large', sheet, still = false, controls = 'stage' } = Astro.props;
 const ways = SETS[set];
 const poster = set === 'home'
   ? { desktop: '/images/orbit/home-desktop.jpg', mobile: '/images/orbit/home-mobile.jpg' }
@@ -22,7 +24,23 @@ const poster = set === 'home'
 <section class:list={['orbit-hero', `orbit-hero--${size}`]}>
   <div class="hero-copy">
     <div class="hero-headline"><slot name="headline" /></div>
-    <div class="hero-rest"><slot /></div>
+    <div class="hero-rest">
+      <slot />
+      <!-- The one control row (Brandon, 2026-10-06): ways in, or Back and the chosen way's steps; Pause sits here too. -->
+      {controls === 'copy' && (
+        <div class="engagement-dock engagement-dock--copy" role="group" aria-label="Ways to work together" data-dock>
+          <p class="dock-context" data-context hidden></p>
+          <button class="engagement-chip" type="button" data-back hidden>← Back</button>
+          {ways.map((w, i) => (
+            <button class="engagement-chip" type="button" data-id={w.id} aria-pressed="false">
+              <i class={`dot dot-${i + 1}`} aria-hidden="true"></i>{w.name}
+            </button>
+          ))}
+          <span class="dock-steps" data-steps hidden></span>
+          <button class="engagement-chip dock-pause" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
+        </div>
+      )}
+    </div>
   </div>
   <div class="map-stage" data-orbit={set} data-sheet={sheet} data-still={still ? '' : undefined} data-mode="overview">
     <picture class="stage-poster">
@@ -35,6 +53,7 @@ const poster = set === 'home'
       <h2 id="map-current-title" tabindex="-1" data-title>Your outcome</h2>
     </div>
     <!-- The one control row (Brandon, 2026-10-06): ways in, or Back and the chosen way's steps; Pause sits here too. -->
+    {controls === 'stage' && (
     <div class="engagement-dock" role="group" aria-label="Ways to work together" data-dock>
       <p class="dock-context" data-context hidden></p>
       <button class="engagement-chip" type="button" data-back hidden>← Back</button>
@@ -46,6 +65,7 @@ const poster = set === 'home'
       <span class="dock-steps" data-steps hidden></span>
       <button class="engagement-chip dock-pause" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
     </div>
+    )}
   </div>
 </section>
 
@@ -65,7 +85,8 @@ const poster = set === 'home'
 
     const set = (stage.dataset.orbit as OrbitSet) || 'home';
     const ways = SETS[set];
-    const q = <T extends HTMLElement>(s: string, root: ParentNode = stage) => root.querySelector<T>(s)!;
+    const hero = stage.closest('.orbit-hero') ?? stage;
+    const q = <T extends HTMLElement>(s: string, root: ParentNode = hero) => root.querySelector<T>(s)!;
     const host = q('.scene-host');
     const title = q('[data-title]');
     const dock = q('[data-dock]');
@@ -73,7 +94,7 @@ const poster = set === 'home'
     const pauseBtn = q<HTMLButtonElement>('[data-pause]');
     const stepsEl = q('[data-steps]');
     const context = q('[data-context]');
-    const chips = [...stage.querySelectorAll<HTMLButtonElement>('.engagement-chip[data-id]')];
+    const chips = [...hero.querySelectorAll<HTMLButtonElement>('.engagement-chip[data-id]')];
     let stepsFor: CategoryId | null = null;
     const sheet = stage.dataset.sheet ? document.getElementById(stage.dataset.sheet) : null;
 
@@ -288,6 +309,9 @@ const poster = set === 'home'
   .dock-context { flex-basis: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 4px; font-size: 15px; color: var(--on-ground-faint); }
   .dock-context strong { color: var(--on-ground); font-weight: 600; }
   .dock-pause { gap: 8px; }
+  /* Controls in the copy column: a left-aligned row under the text, not over the orbit. */
+  .engagement-dock--copy { position: static; justify-content: flex-start; margin-top: 32px; padding: 0; }
+  .engagement-dock--copy .dock-context { justify-content: flex-start; }
 
   @media (max-width: 860px) {
     .orbit-hero, .orbit-hero--small { grid-template-columns: minmax(0, 1fr); padding: 8px 0 0; }
@@ -300,6 +324,7 @@ const poster = set === 'home'
     .hero-rest { order: 3; padding: 0 var(--gutter) 32px; }
     .hero-rest > :first-child { margin-top: 8px; }
     .engagement-dock { position: relative; left: auto; right: auto; bottom: auto; padding: 8px 12px 4px; }
+    .engagement-dock--copy { padding: 0; margin-top: 24px; }
     .scene-labels, .label-leaders { display: none; }
     .engagement-chip { font-size: 13px; padding: 8px 12px; }
     .hero-proof { display: none; }
