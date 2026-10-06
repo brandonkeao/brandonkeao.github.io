@@ -239,15 +239,25 @@ function rustTexture() {
   });
 }
 
+/** Close-up framing on top of the fitted pose: `zoom` divides the camera distance; `offsetX`/`offsetY`
+ * shift the image in NDC without changing perspective (Home's "Quiet orbit" close-up, 2026-10-06). */
+export type Framing = { zoom: number; offsetX: number; offsetY: number; maxPixelRatio: number };
+
 /** `speed` scales the ambient motion (orbits, steps, planet surface); flights keep their timing. */
-export function createMap(host: HTMLElement, hooks: Hooks, clearColor = 0x0a0b0a, speed = 1): MapController {
+export function createMap(
+  host: HTMLElement,
+  hooks: Hooks,
+  clearColor = 0x0a0b0a,
+  speed = 1,
+  framing: Framing = { zoom: 1, offsetX: 0, offsetY: 0, maxPixelRatio: 1.8 },
+): MapController {
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
     alpha: false,
     powerPreference: 'high-performance',
   });
   renderer.setClearColor(clearColor);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, framing.maxPixelRatio));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   host.appendChild(renderer.domElement);
@@ -729,12 +739,13 @@ export function createMap(host: HTMLElement, hooks: Hooks, clearColor = 0x0a0b0a
   const pose: Pose = { ...poses.overview };
   const up = new THREE.Vector3(0, 1, 0);
   function applyPose(p: Pose) {
-    camera.position.set(...cameraPosition(p));
+    camera.position.set(...cameraPosition({ ...p, distance: p.distance / framing.zoom }));
     camera.up.copy(up);
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
-    // Vertical bias: offset NDC y without moving the camera.
-    camera.projectionMatrix.elements[9] = -p.shift;
+    // Vertical bias (and the close-up offsets): shift NDC without moving the camera.
+    camera.projectionMatrix.elements[9] = -(p.shift + framing.offsetY);
+    camera.projectionMatrix.elements[8] = -framing.offsetX;
     camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
     camera.updateMatrixWorld();
   }

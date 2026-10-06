@@ -14,15 +14,18 @@
 // [data-orbit-steps], which follows the selected way in.
 import { SETS, type OrbitSet } from '../../lib/orbit/orbit-data';
 
-interface Props { set?: OrbitSet; size?: 'xl' | 'large' | 'small'; sheet?: string; still?: boolean; controls?: 'none' | 'stage' | 'copy'; speed?: number }
+interface Props { set?: OrbitSet; size?: 'closeup' | 'xl' | 'large' | 'small'; sheet?: string; still?: boolean; controls?: 'none' | 'stage' | 'copy'; speed?: number }
 const { set = 'home', size = 'large', sheet, still = false, controls = 'stage', speed = 1 } = Astro.props;
 const ways = SETS[set];
-const poster = set === 'home'
-  ? { desktop: '/images/orbit/home-desktop.jpg', mobile: '/images/orbit/home-mobile.jpg' }
-  : { desktop: '/images/orbit/work-desktop.jpg', mobile: '/images/orbit/work-mobile.jpg' };
+const closeup = size === 'closeup';
+const poster = closeup
+  ? { desktop: '/images/orbit/home-closeup-desktop.jpg', mobile: '/images/orbit/home-closeup-mobile.jpg' }
+  : set === 'home'
+    ? { desktop: '/images/orbit/home-desktop.jpg', mobile: '/images/orbit/home-mobile.jpg' }
+    : { desktop: '/images/orbit/work-desktop.jpg', mobile: '/images/orbit/work-mobile.jpg' };
 ---
 
-<section class:list={['orbit-hero', `orbit-hero--${size}`]}>
+<section class:list={['orbit-hero', `orbit-hero--${size}`, closeup && 'orbit-hero--xl']}>
   <div class="hero-copy">
     <div class="hero-headline"><slot name="headline" /></div>
     <div class="hero-rest">
@@ -43,10 +46,10 @@ const poster = set === 'home'
       )}
     </div>
   </div>
-  <div class="map-stage" data-orbit={set} data-sheet={sheet} data-still={still ? '' : undefined} data-static={controls === 'none' ? '' : undefined} data-speed={speed} data-mode="overview">
+  <div class="map-stage" data-orbit={set} data-sheet={sheet} data-still={still ? '' : undefined} data-static={controls === 'none' ? '' : undefined} data-speed={speed} data-closeup={closeup ? '' : undefined} data-mode="overview">
     <picture class="stage-poster">
       <source media="(max-width: 860px)" srcset={poster.mobile} />
-      <img src={poster.desktop} alt="" width="840" height="700" decoding="async" fetchpriority={size === 'large' ? 'high' : 'auto'} />
+      <img src={poster.desktop} alt="" width="840" height="700" decoding="async" fetchpriority={size === 'small' ? 'auto' : 'high'} />
     </picture>
     <div class="scene-host"></div>
     <!-- No visible text over the planet (Brandon, 2026-10-06); the title stays for screen readers. -->
@@ -221,6 +224,21 @@ const poster = set === 'home'
       if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) { fail(); return; }
       try {
         const { createMap } = await import('../../lib/orbit/map-scene');
+        // Home close-up ("Quiet orbit", Brandon 2026-10-06): zoom in and shift the planet right.
+        // Off production, ?zoom=&ox=&oy= override the framing so it can be tuned on the preview.
+        let framing: { zoom: number; offsetX: number; offsetY: number; maxPixelRatio: number } | undefined;
+        if (stage.hasAttribute('data-closeup')) {
+          framing = matchMedia('(max-width: 860px)').matches
+            ? { zoom: 1.6, offsetX: 0.6, offsetY: 0, maxPixelRatio: 1.5 }
+            : { zoom: 1.9, offsetX: 0.55, offsetY: -0.1, maxPixelRatio: 1.5 };
+          if (!/(^|\.)brandonkeao\.com$/.test(location.hostname)) {
+            const qs = new URLSearchParams(location.search);
+            for (const [k, key] of [['zoom', 'zoom'], ['ox', 'offsetX'], ['oy', 'offsetY']] as const) {
+              const v = parseFloat(qs.get(k) ?? '');
+              if (!Number.isNaN(v)) framing[key] = v;
+            }
+          }
+        }
         if (disposed) return;
         useSet(set);
         map = createMap(host, {
@@ -243,7 +261,7 @@ const poster = set === 'home'
             queueMicrotask(render);
           },
           onFailure: fail,
-        }, undefined, Number(stage.dataset.speed) || 1);
+        }, undefined, Number(stage.dataset.speed) || 1, framing);
         map.pause(paused);
         map.reduceMotion(reduced);
         // A choice made before the renderer arrived flies in now.
@@ -282,6 +300,19 @@ const poster = set === 'home'
   .orbit-hero--xl .t-display br { display: block; }
   .orbit-hero--xl .t-display { font-size: clamp(36px, 4.2vw, 56px); }
   .orbit-hero--xl .map-stage { height: 780px; }
+  /* Home close-up: the scene is full-bleed behind the copy; the planet sits right, cropped by the
+     edge, and the canvas fades out before the copy column (like the Quiet orbit banner). */
+  .orbit-hero--closeup { position: relative; min-height: 780px; --copy-edge: calc(max(0px, (100vw - var(--content-max)) / 2) + var(--gutter) + 480px); }
+  .orbit-hero--closeup .hero-copy { position: relative; z-index: 2; }
+  .orbit-hero--closeup .map-stage { position: absolute; z-index: 0; top: 0; bottom: 0; left: calc(50% - 50vw); width: 100vw; height: auto; }
+  /* Fade out before the copy, and fade the top edge in so the scene's background meets the page ground without a seam. */
+  .orbit-hero--closeup .scene-host, .orbit-hero--closeup .stage-poster img {
+    -webkit-mask-image: linear-gradient(90deg, transparent calc(var(--copy-edge) - 140px), #000 calc(var(--copy-edge) + 220px)), linear-gradient(180deg, transparent 0, #000 90px);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent calc(var(--copy-edge) - 140px), #000 calc(var(--copy-edge) + 220px)), linear-gradient(180deg, transparent 0, #000 90px);
+    mask-composite: intersect;
+  }
+  .orbit-hero--closeup .stage-poster img { object-position: right center; }
   .hero-rest > :first-child { margin-top: 26px; }
 
   .map-stage { position: relative; height: 700px; isolation: isolate; overflow: hidden; background: var(--ground); }
@@ -339,5 +370,21 @@ const poster = set === 'home'
     .scene-labels, .label-leaders { display: none; }
     .engagement-chip { font-size: 13px; padding: 8px 12px; }
     .hero-proof { display: none; }
+  }
+  @media (max-width: 860px) {
+    /* Phones: the big planet bleeds off the right behind the headline; lead and CTAs below on plain ground. */
+    .orbit-hero--closeup { display: block; min-height: 0; padding: 0; }
+    .orbit-hero--closeup .hero-copy { display: block; }
+    .orbit-hero--closeup .hero-headline { padding: 8px var(--gutter) 0; min-height: 380px; }
+    .orbit-hero--closeup .hero-rest { padding: 0 var(--gutter) 32px; }
+    .orbit-hero--closeup .map-stage { position: absolute; top: 0; bottom: auto; height: 400px; margin: 0; }
+    .orbit-hero--closeup .scene-host { position: absolute; inset: 0; height: 400px; }
+    .orbit-hero--closeup .stage-poster img { height: 400px; }
+    .orbit-hero--closeup .scene-host, .orbit-hero--closeup .stage-poster img {
+      -webkit-mask-image: radial-gradient(130% 100% at 95% 62%, #000 38%, transparent 82%);
+      -webkit-mask-composite: source-over;
+      mask-image: radial-gradient(130% 100% at 95% 62%, #000 38%, transparent 82%);
+      mask-composite: add;
+    }
   }
 </style>

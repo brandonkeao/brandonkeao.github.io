@@ -55,6 +55,8 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Full-bleed layers (the Home close-up) use 100vw; never let that scroll sideways. */
+  overflow-x: clip;
 }
 main { flex: 1; }
 /* The frame fills the window so the footer sits at the bottom of short pages. */
