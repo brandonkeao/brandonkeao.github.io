@@ -1,0 +1,6 @@
+---
+interface Props { href: string; on?: 'ground' | 'sheet'; external?: boolean; class?: string }
+const { href, on = 'sheet', external = false, class: extra } = Astro.props;
+---
+
+<a href={href} class:list={[on === 'ground' ? 'link-ground' : 'link-sheet', extra]} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}><slot /></a>

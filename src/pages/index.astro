@@ -1,299 +1,142 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import MotionMark from '../components/MotionMark.astro';
+import OrbitStage from '../components/orbit/OrbitStage.astro';
+import Sheet from '../components/orbit/Sheet.astro';
+import StepList from '../components/orbit/StepList.astro';
+import WayRow from '../components/orbit/WayRow.astro';
+import Quote from '../components/orbit/Quote.astro';
+import Closing from '../components/orbit/Closing.astro';
+import ExperienceStrip from '../components/orbit/ExperienceStrip.astro';
+import { SETS } from '../lib/orbit/orbit-data';
 
-const companies = [
-  'Rebrandly',
-  'Pie Insurance',
-  'Bitly',
-  'PAIRIN',
-  'Ora Interactive',
-  'Sears',
-  'Bridgewater',
-  'Bloomberg',
-  'Goldman Sachs',
-  'Deutsche Bank',
-  'Capital Group',
-  'Thomson Reuters',
-  'Saxo Bank'
-];
+const ways = SETS.home;
+const meta = ['Diagnostic', 'Strategic initiative', 'Fractional leadership'];
+const first = ways[0];
 
-const principles = [
-  {
-    number: '01 / 04',
-    title: 'Understand',
-    body: 'Start with customer and market needs. Map the system and make the problem clear enough to act on.'
-  },
-  {
-    number: '02 / 04',
-    title: 'Start',
-    body: 'Starting is the best way to begin learning and make progress. Use judgment, but do not let endless debate become the work.'
-  },
-  {
-    number: '03 / 04',
-    title: 'Own',
-    body: 'Leadership comes from everywhere. Own the problems in your world and make it easier for other people to lead.'
-  },
-  {
-    number: '04 / 04',
-    title: 'Improve',
-    body: 'Give honest, timely feedback and continually fix small things. The compounding effect is how products, systems, and people grow.'
-  }
-];
+const clients = ['Rebrandly', 'Pie Insurance', 'Bitly', 'PAIRIN', 'Ora Interactive', 'Sears', 'Bridgewater', 'Bloomberg', 'Goldman Sachs', 'Deutsche Bank', 'Capital Group', 'Thomson Reuters', 'Saxo Bank'];
 
-const engagements = [
-  {
-    meta: 'Diagnostic',
-    title: 'Find the real problem',
-    body: 'A focused assessment when leadership knows something is wrong but the team does not yet agree on the cause or the next move.',
-    symbol: 'diagnostic' as const
-  },
-  {
-    meta: 'Strategic initiative',
-    title: 'Own the outcome',
-    body: 'Time-bound leadership of an important initiative that needs one person to connect the problem, choices, teams, and delivery.',
-    symbol: 'initiative' as const
-  },
-  {
-    meta: 'Fractional leadership',
-    title: 'Lead through the messy middle',
-    body: 'Embedded senior product and growth leadership while the organization builds capability, navigates change, or searches for a permanent leader.',
-    symbol: 'continuity' as const
-  }
+const covers = ['inspired', 'empowered', 'continuous-discovery-habits', 'escaping-the-build-trap', 'high-output-management'];
+
+const process = [
+  { title: 'Understand', body: 'Start with customer and market needs. Map the system and make the problem clear enough to act on.' },
+  { title: 'Start', body: 'Starting is the best way to begin learning and make progress. Use judgment, but do not let endless debate become the work.' },
+  { title: 'Own', body: 'Leadership comes from everywhere. Own the problems in your world and make it easier for other people to lead.' },
+  { title: 'Improve', body: 'Give honest, timely feedback and keep fixing small things. The small fixes add up.' },
 ];
+import HeroMeteor from '../components/orbit/HeroMeteor.astro';
 ---
 
 <BaseLayout
-  title="Senior product leadership that makes outcomes move."
-  description="I help teams build momentum toward better customer and business outcomes. My background is in engineering, consulting, and product leadership."
+  title="Senior product leadership making outcomes move."
+  description="I work with leadership teams when an important product or growth problem is not moving. Background in engineering, consulting, and product leadership."
 >
-  <div class="v2-intro">
-    <section class="v2-hero">
-      <div class="container v2-hero-grid">
-        <div class="v2-hero-copy">
+  <OrbitStage set="home" size="closeup" controls="none" speed={2}>
+    <h1 slot="headline" class="t-display">Senior product<br /> leadership making<br /> outcomes move.</h1>
+    <HeroMeteor slot="headline" />
+    <p class="t-lead muted-g">Senior enough to shape the direction. Close enough to the work to help make it happen.</p>
+    <div style="display:flex;gap:20px;align-items:center;margin-top:28px;flex-wrap:wrap">
+      <a href="/services/" class="btn btn-brand">Work with me</a>
+      <a href="/contact/" class="link-ground">Let's talk</a>
+    </div>
+  </OrbitStage>
+
+  <ExperienceStrip names={clients} />
+
+  <Sheet id="way-in" label="Selected way in">
+    <p class="crumb">Your outcome › <b data-orbit-title>{first.name}</b></p>
+    <div class="row" style="margin-top:18px">
+      <div class="col">
+        <p data-orbit-body style="font-size:clamp(20px,1.7vw,24px);line-height:1.42;letter-spacing:-0.01em">{first.summary}</p>
+        <p style="margin-top:28px"><a class="link-sheet" href="/services/">See how we can work together</a></p>
+      </div>
+      <div class="col"><StepList steps={first.items} data-orbit-steps /></div>
+    </div>
+  </Sheet>
+
+  <section class="section-ground" aria-label="Proof" data-proof>
+    <div style="max-width:960px">
+      <Quote
+        quote="“Finding someone who can translate business objectives into technical requirements is difficult. Finding someone who can also own the project, teams, and client relationship is rare.”"
+        cite="Andre Sugai, CTO and Partner, Ora Interactive"
+      />
+    </div>
+  </section>
+
+  <Sheet label="Ways to work together">
+    <h2 class="t-section">Ways to work together</h2>
+    <div style="margin-top:28px">
+      {ways.map((w, i) => (
+        <WayRow meta={meta[i]} title={w.name} description={w.summary} href="/services/" linkLabel="How it works" dot={(i + 1) as 1 | 2 | 3} />
+      ))}
+    </div>
+  </Sheet>
+
+  <Sheet label="Where my approach comes from">
+    <div class="row">
+      <div class="col">
+        <h2 class="t-section">Where my approach comes from.</h2>
+        <p class="t-lead muted-s" style="margin-top:18px;max-width:520px">My Manager README says how I work with a team. My Bookshelf lists many of the ideas behind it.</p>
+      </div>
+      <div class="col stack divider-list">
+        <div style="padding:24px 0;display:flex;justify-content:space-between;align-items:center;gap:16px">
+          <div><p class="t-caption muted-s">How I work with a team</p><h3 class="t-title">Manager README</h3></div>
+          <a class="link-sheet" href="/manager-readme/">Read it</a>
+        </div>
+        <div style="padding:24px 0;display:flex;justify-content:space-between;align-items:center;gap:16px">
           <div>
-            <p class="kicker">Senior product & growth operator</p>
-            <h1 class="v2-display">Senior product leadership that <em>makes outcomes move.</em></h1>
-            <MotionMark kind="momentum" />
-          </div>
-          <p class="v2-lead">
-            I help teams build momentum toward better customer and business outcomes. My background is in engineering, consulting, and product leadership. I like understanding how things fit together and working with the team to fix what’s getting in the way.
-          </p>
-          <div class="v2-actions">
-            <a class="btn btn-primary" href="/contact">Start a Conversation <span aria-hidden="true">↗</span></a>
-            <a
-              class="btn btn-secondary"
-              href="https://www.linkedin.com/in/brandonkeao/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              See the experience <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-        </div>
-        <aside class="v2-note">
-          <strong>The role I play</strong>
-          <p>Senior enough to shape the direction. Close enough to the work to help make it happen.</p>
-          <div class="motion-continuum" data-motion aria-hidden="true">
-            <div class="motion-continuum-labels"><span>Direction</span><span>Execution</span></div>
-            <div class="motion-continuum-line"><span class="motion-continuum-point"></span></div>
-          </div>
-        </aside>
-      </div>
-    </section>
-
-    <section class="v2-proof" aria-label="Experience summary">
-      <div class="container v2-proof-grid">
-        <div class="v2-proof-stat">
-          <b>18+</b>
-          <span>years building products, teams, and complex systems</span>
-        </div>
-        <div class="v2-company-list">
-          <small>Experience includes · Employers and clients</small>
-          {companies.map(company => <span>{company}</span>)}
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <section class="v2-section" id="thinking">
-    <div class="container v2-thinking-grid">
-      <div class="reveal">
-        <p class="kicker">How I think and work</p>
-        <h2 class="v2-section-title">The values and inputs behind the work.</h2>
-        <p class="v2-lead v2-heading-support">My Manager README makes the operating principles explicit. My Bookshelf shows many of the ideas that shaped them.</p>
-      </div>
-      <div class="v2-link-list reveal-stagger">
-        <a href="/manager-readme"><span>Working together</span><strong>Manager README</strong><span aria-hidden="true">↗</span></a>
-        <a href="/bookshelf"><span>Ideas and influences</span><strong>Bookshelf</strong><span aria-hidden="true">↗</span></a>
-      </div>
-    </div>
-  </section>
-
-  <section class="v2-section v2-about">
-    <div class="container v2-about-grid reveal">
-      <div>
-        <p class="kicker">About Brandon</p>
-        <h2 class="v2-section-title">A builder who cares about things that actually work.</h2>
-      </div>
-      <div>
-        <p class="v2-lead">I have an engineering degree from Northwestern University and 18+ years in technology spanning consulting, product, design, research, and strategy.</p>
-        <p>That foundation shapes how I work with AI and data today: understand the problem, decide what to try, build alongside the team, and check whether it helped.</p>
-        <a class="text-link" href="/about">More about me <span aria-hidden="true">↗</span></a>
-      </div>
-    </div>
-  </section>
-
-  <section class="v2-section v2-dark">
-    <div class="container">
-      <div class="v2-split-heading reveal">
-        <div>
-          <p class="kicker">How I work</p>
-          <h2 class="v2-section-title">The minimum process needed to be effective.</h2>
-        </div>
-      </div>
-      <div class="v2-principles">
-        {principles.map((principle, index) => (
-          <article class="v2-principle" data-motion style={`--motion-delay: ${index * 160}ms`}>
-            <span>{principle.number}</span>
-            <h3>{principle.title}</h3>
-            <p>{principle.body}</p>
-          </article>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section class="v2-section v2-services" id="work-with-me">
-    <div class="container">
-      <div class="v2-section-heading reveal">
-        <p class="kicker">How to work together</p>
-        <h2 class="v2-section-title">Outcomes before output</h2>
-      </div>
-      <div class="v2-engagements">
-        {engagements.map((engagement, index) => (
-          <article class="v2-engagement">
-            <span class="v2-number">0{index + 1}</span>
-            <div>
-              <span class="v2-engagement-meta">{engagement.meta}</span>
-              <h3>{engagement.title}</h3>
+            <p class="t-caption muted-s">Ideas and influences</p>
+            <h3 class="t-title">Bookshelf</h3>
+            <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+              {covers.map((c) => <img src={`/images/books/${c}.jpg`} alt="" width="64" height="96" loading="lazy" style="height:96px;width:auto;border-radius:2px" />)}
             </div>
-            <p>{engagement.body}</p>
-            <span class="v2-engagement-symbol" aria-hidden="true"><MotionMark kind={engagement.symbol} /></span>
-          </article>
-        ))}
+          </div>
+          <a class="link-sheet" href="/bookshelf/">Browse</a>
+        </div>
       </div>
-      <a class="text-link" href="/services">See how we can work together <span aria-hidden="true">↗</span></a>
+    </div>
+  </Sheet>
+
+  <Sheet label="About">
+    <div class="row" style="align-items:center">
+      <img class="portrait" src="/images/brandon-keao-headshot.jpg" alt="Brandon Keao" width="300" height="300" loading="lazy" style="width:min(300px,100%);height:auto;aspect-ratio:1" />
+      <div class="col">
+        <h2 class="t-section">A builder who cares about things that actually work.</h2>
+        <p class="t-lead" style="margin-top:18px">I have an engineering degree from Northwestern University and 18+ years in technology spanning consulting, product, design, research, and strategy.</p>
+        <p class="t-body muted-s" style="margin-top:12px">That foundation shapes how I work with AI and data today: understand the problem, decide what to try, build alongside the team, and check whether it helped.</p>
+        <p style="margin-top:24px"><a class="link-sheet" href="/about/">More about me</a></p>
+      </div>
+    </div>
+  </Sheet>
+
+  <section class="section-ground" aria-labelledby="process-title">
+    <h2 id="process-title" class="t-section" style="max-width:700px">The minimum process needed to be effective.</h2>
+    <div class="grid-4" style="margin-top:40px">
+      {process.map((p) => (
+        <div class="area">
+          <h3 class="t-item">{p.title}</h3>
+          <p class="t-small muted-g" style="margin-top:10px">{p.body}</p>
+        </div>
+      ))}
     </div>
   </section>
 
-  <section class="v2-section v2-quote">
-    <div class="container reveal">
-      <blockquote>“Finding someone who can translate business objectives into technical requirements is difficult. Finding someone who can also own the project, teams, and client relationship is rare.”</blockquote>
-      <cite>Andre Sugai · CTO and Partner, Ora Interactive</cite>
-    </div>
-  </section>
+  <script is:inline>
+    // Home always opens at the top (Brandon, 2026-10-06), including reload and back/forward.
+    // Runs before the view-transition router restores a saved position, so there is no jump.
+    (function () {
+      if (location.pathname !== '/' || location.hash) return;
+      history.scrollRestoration = 'manual';
+      if (history.state) history.replaceState(Object.assign({}, history.state, { scrollX: 0, scrollY: 0 }), '');
+      scrollTo(0, 0);
+      if (window.__homeTop) return;
+      window.__homeTop = true;
+      var top = function () {
+        if (location.pathname === '/' && !location.hash) scrollTo({ left: 0, top: 0, behavior: 'instant' });
+      };
+      document.addEventListener('astro:after-swap', top);
+      document.addEventListener('astro:page-load', top);
+    })();
+  </script>
 
-  <section class="v2-section v2-contact">
-    <div class="container reveal">
-      <p class="kicker">Start a conversation</p>
-      <h2>If you're stuck, let's talk about what would create momentum.</h2>
-      <a class="btn btn-primary" href="/contact">Tell me what you need <span aria-hidden="true">↗</span></a>
-    </div>
-  </section>
+  <Closing title="If you're stuck, let's talk about what to try first." />
 </BaseLayout>
-
-
-<style>
-  /* Paper for reading, ink for method, rust for the invitation. */
-  .v2-intro,
-  .v2-section {
-    --accent: #a9432c;
-    --accent-hover: #843323;
-    --color-sheet: #fbf9f5;
-  }
-
-  .v2-intro,
-  .v2-services {
-    background: var(--bg-primary);
-  }
-
-  .v2-hero {
-    --bg-primary: var(--color-ink);
-    --text-primary: var(--color-paper);
-    --text-secondary: #d8d1c6;
-    --accent: #df7659;
-    color: var(--text-primary);
-    background: var(--bg-primary);
-    border-bottom-color: var(--bg-primary);
-  }
-
-  .v2-hero .btn-primary:hover {
-    color: var(--color-ink);
-  }
-
-  .v2-hero :focus-visible {
-    outline-color: var(--color-paper);
-  }
-
-  .v2-section {
-    border-bottom-color: var(--border);
-  }
-
-  #thinking {
-    background: var(--color-sheet);
-  }
-
-  .v2-about,
-  .v2-quote {
-    background: var(--bg-secondary);
-  }
-
-  .v2-dark {
-    border-bottom-color: var(--text-primary);
-  }
-
-  .v2-dark .kicker {
-    color: #df7659;
-  }
-
-  .v2-quote blockquote {
-    padding-left: clamp(1.5rem, 3vw, 3rem);
-    border-left: 3px solid var(--accent);
-    color: var(--text-primary);
-    font-size: clamp(2rem, 4vw, 3.6rem);
-    line-height: 1.12;
-    letter-spacing: -0.03em;
-  }
-
-  .v2-quote cite {
-    display: block;
-    padding-left: calc(clamp(1.5rem, 3vw, 3rem) + 3px);
-    color: var(--text-secondary);
-  }
-
-  .v2-contact {
-    background: var(--accent);
-    border-bottom-color: var(--accent);
-  }
-
-  .v2-contact .kicker {
-    color: var(--bg-primary);
-  }
-
-  .v2-contact .btn-primary {
-    color: var(--accent-hover);
-    background: var(--color-sheet);
-  }
-
-  .v2-contact .btn-primary:hover {
-    color: var(--accent-hover);
-    background: var(--bg-primary);
-  }
-
-  .v2-dark :focus-visible,
-  .v2-contact :focus-visible {
-    outline-color: var(--bg-primary);
-    outline-offset: 5px;
-  }
-</style>

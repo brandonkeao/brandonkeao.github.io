@@ -1,0 +1,10 @@
+---
+// Closing band on the ground: a heading and the one call to action.
+interface Props { title: string }
+const { title } = Astro.props;
+---
+
+<section class="section-ground closing">
+  <h2 class="t-section">{title}</h2>
+  <a href="/contact/" class="btn btn-ground">Let's talk</a>
+</section>

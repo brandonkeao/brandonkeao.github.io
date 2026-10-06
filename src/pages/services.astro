@@ -1,138 +1,62 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HeroMotion from '../components/HeroMotion.astro';
+import OrbitStage from '../components/orbit/OrbitStage.astro';
+import Sheet from '../components/orbit/Sheet.astro';
+import WayRow from '../components/orbit/WayRow.astro';
+import Closing from '../components/orbit/Closing.astro';
+import TextLink from '../components/orbit/TextLink.astro';
 
-const serviceAreas = [
-  {
-    title: 'Product Vision, Strategy & Positioning',
-    items: ['Vision development', 'Strategic planning', 'Positioning', 'Roadmapping', 'Go-to-market strategy', 'Strategy summits']
-  },
-  {
-    title: 'Product Design & User Research',
-    items: ['User personas', 'Experience research', 'Customer journeys', 'Interviews', 'Usability testing', 'Opportunity mapping']
-  },
-  {
-    title: 'Product Operations & Organization Design',
-    items: ['Organizational assessments', 'Team structure', 'Competency frameworks', 'Analytics reviews', 'Decision practices', 'Operating cadence']
-  },
-  {
-    title: 'Coaching & Mentoring',
-    items: ['Product coaching', 'Team hiring', 'Communication', 'Prioritization', 'Functional training', 'Leadership development']
-  }
+const ways = [
+  { title: 'Initial conversation', description: 'Tell me what you are trying to accomplish and where the work is getting stuck.' },
+  { title: 'Focused diagnostic', description: 'A focused engagement to understand the system and test the competing explanations.' },
+  { title: 'Embedded product leadership', description: 'Hands-on senior leadership for a critical initiative or transition.' },
 ];
+
+const areas = [
+  'Product vision, strategy, and positioning',
+  'Product design and user research',
+  'Product operations and organization design',
+  'Coaching and mentoring',
+];
+import MotionLine from '../components/orbit/MotionLine.astro';
 ---
 
 <BaseLayout title="Work With Me" description="Product strategy, discovery, assessment, and fractional product leadership with Brandon Keao.">
-  <section class="page-hero">
-    <div class="container">
-      <p class="kicker">Work with me</p>
-      <h1 class="page-title">Get unstuck.<br />Build momentum.</h1>
-      <HeroMotion kind="align" />
-      <p class="page-dek">I work with leadership teams when an important product or growth problem is not moving. The cause may be unclear, the data may not settle the debate, or the work may need several teams to move together. I help the team find what is getting in the way, decide what to do next, and see it through.</p>
+  <OrbitStage set="work" size="large" still controls="copy">
+    <div slot="headline" style="width:fit-content;max-width:100%">
+      <h1 class="t-page-title">Get unstuck.<br />Build momentum.</h1>
+      <MotionLine kind="align" stretch />
+    </div>
+    <p class="t-lead muted-g" style="max-width:560px">I work with leadership teams when an important product or growth problem is not moving.</p>
+  </OrbitStage>
+
+  <Sheet label="Ways to work together">
+    <p class="crumb">Ways to work together</p>
+    <h2 class="t-section" style="margin-top:10px">Start with the problem.</h2>
+    <div style="margin-top:28px">
+      {ways.map((w) => <WayRow title={w.title} description={w.description} href="/contact/" linkLabel="Let's talk" />)}
+    </div>
+  </Sheet>
+
+  <section id="system" class="section-ground" aria-labelledby="help-title">
+    <div class="row" style="align-items:flex-end">
+      <h2 id="help-title" class="t-section col">The product is only one part of the system.</h2>
+      <p class="t-lead muted-g col">I work across teams to solve customer and business problems.</p>
+    </div>
+    <div class="grid-4" style="margin-top:40px">
+      {areas.map((a) => <div class="area"><h3 class="t-item">{a}</h3></div>)}
     </div>
   </section>
 
-  <section class="v2-section">
-    <div class="container">
-      <div class="v2-section-heading">
-        <p class="kicker">Ways to work together</p>
-        <h2 class="v2-section-title">Start with the problem.</h2>
-      </div>
-
-      <div class="v2-engagements">
-        <article class="v2-engagement">
-          <span class="v2-number">01</span>
-          <div>
-            <span class="v2-engagement-meta">Explore the problem</span>
-            <h3>Initial conversation</h3>
-          </div>
-          <p>Tell me what you are trying to accomplish and where the work is getting stuck. I will give you an honest view of whether I can help and what a useful next step could be.</p>
-          <span class="v2-engagement-symbol" aria-hidden="true">◎</span>
-        </article>
-
-        <article class="v2-engagement">
-          <span class="v2-number">02</span>
-          <div>
-            <span class="v2-engagement-meta">Find the constraint</span>
-            <h3>Focused diagnostic</h3>
-          </div>
-          <p>A focused engagement to understand the system, test the competing explanations, and leave the team with a clear direction and next move.</p>
-          <span class="v2-engagement-symbol" aria-hidden="true">↗</span>
-        </article>
-
-        <article class="v2-engagement">
-          <span class="v2-number">03</span>
-          <div>
-            <span class="v2-engagement-meta">Own the outcome</span>
-            <h3>Embedded product leadership</h3>
-          </div>
-          <p>Hands-on senior leadership for a critical initiative or transition. I connect the decisions, teams, and delivery needed to create momentum and make the change real.</p>
-          <span class="v2-engagement-symbol" aria-hidden="true">∞</span>
-        </article>
-      </div>
-
-    </div>
-  </section>
-
-  <section class="v2-section v2-dark">
-    <div class="container">
-      <div class="v2-split-heading">
-        <div>
-          <p class="kicker">Where I can help</p>
-          <h2 class="v2-section-title">The product is only one part of the system.</h2>
-        </div>
-        <p class="v2-lead">I work across teams to solve customer and business problems.</p>
-      </div>
-
-      <div class="service-area-grid">
-        {serviceAreas.map((area, index) => (
-          <article class="service-area">
-            <span>0{index + 1}</span>
-            <h3>{area.title}</h3>
-            <ul>
-              {area.items.map(item => <li>{item}</li>)}
-            </ul>
-          </article>
-        ))}
+  <Sheet label="Working together">
+    <div class="row">
+      <div class="col"><h2 class="t-section">Clear expectations and honest feedback.</h2></div>
+      <div class="col">
+        <p class="t-lead">I believe leadership comes from everywhere. My job is to make the problem clear, remove what is in the way, and support the people doing the work.</p>
+        <p style="margin-top:24px"><TextLink href="/manager-readme/">Read my Manager README</TextLink></p>
       </div>
     </div>
-  </section>
+  </Sheet>
 
-  <section class="v2-section">
-    <div class="container v2-about-grid">
-      <div>
-        <p class="kicker">What working together feels like</p>
-        <h2 class="v2-section-title service-values-title">
-          <span>Clear expectations.</span>
-          <span>Honest feedback.</span>
-          <span>Shared ownership.</span>
-        </h2>
-      </div>
-      <div>
-        <p class="v2-lead">I believe leadership comes from everywhere. My role is to help make the problem clear, create the conditions for good work, and support the people doing it.</p>
-        <p class="service-body">The full version includes how I run one-on-ones, give feedback, think about development, and hold myself accountable when my behavior does not match the values on the page.</p>
-        <a class="text-link" href="/manager-readme">Read my Manager README <span aria-hidden="true">↗</span></a>
-      </div>
-    </div>
-  </section>
-
-  <section class="v2-section v2-contact">
-    <div class="container">
-      <p class="kicker">Start a conversation</p>
-      <h2>Tell me what you're trying to move.</h2>
-      <a class="btn btn-primary" href="/contact">Get in touch <span aria-hidden="true">↗</span></a>
-    </div>
-  </section>
+  <Closing title="Tell me what you're trying to move." />
 </BaseLayout>
-
-
-<style>
-  .service-values-title {
-    font-size: clamp(1.75rem, 3.4vw, 2.75rem);
-    line-height: 1.16;
-  }
-
-  .service-values-title span {
-    display: block;
-  }
-</style>

@@ -1,0 +1,158 @@
+---
+// Red line marks under page titles, brought back from the earlier site at Brandon's
+// request (2026-10-06). Each draws once when it comes into view; it never replays.
+// The final drawing is plain SVG, so reduced motion and no-JS readers see it still.
+interface Props {
+  kind: 'momentum' | 'map' | 'align' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
+  /** align only: size the mark to its container; the fork is half, the single line the other half (Brandon, 2026-10-06). */
+  stretch?: boolean;
+}
+const { kind, stretch = false } = Astro.props;
+---
+
+{stretch && kind === 'align' ? (
+  <div class="motion-line motion-line-align motion-line-stretch" data-motion aria-hidden="true">
+    <span class="ml-strands">
+      <span class="ml-strand ml-soft"></span>
+      <span class="ml-strand ml-d1"></span>
+      <span class="ml-strand ml-soft ml-d2"></span>
+    </span>
+    <svg class="ml-curve" viewBox="0 0 52 40" width="52" height="40" fill="none" focusable="false">
+      <path class="ml-draw ml-soft" pathLength="1" d="M0 6c25 0 25 14 52 14" />
+      <path class="ml-draw ml-d1" pathLength="1" d="M0 20h52" />
+      <path class="ml-draw ml-soft ml-d2" pathLength="1" d="M0 34c25 0 25-14 52-14" />
+    </svg>
+    <span class="ml-stretch"></span>
+    <svg class="ml-arrow" viewBox="0 0 10 40" width="10" height="40" fill="none" focusable="false"><path d="M2 14l6 6-6 6" /></svg>
+  </div>
+) : (
+<svg class={`motion-line motion-line-${kind}`} data-motion aria-hidden="true" focusable="false" viewBox="0 0 234 40" width="234" height="40" fill="none">
+  {kind === 'momentum' && <>
+    <path class="ml-track" d="M4 20H228" />
+    <path class="ml-draw" pathLength="1" d="M4 20H228" />
+    <circle class="ml-traveller" cx="4" cy="20" r="3" />
+    <path class="ml-resolve" d="m222 14 6 6-6 6" />
+  </>}
+  {kind === 'map' && <>
+    <path class="ml-draw" pathLength="1" d="M22 26h34V10h42m16 0h38v20h54" />
+    <rect class="ml-arrive" x="8" y="20" width="14" height="12" rx="1" />
+    <rect class="ml-arrive ml-d1" x="98" y="4" width="16" height="12" rx="1" />
+    <rect class="ml-arrive ml-d2" x="206" y="24" width="16" height="12" rx="1" />
+  </>}
+  {kind === 'align' && <>
+    <path class="ml-draw ml-soft" pathLength="1" d="M8 6h48c25 0 25 14 52 14" />
+    <path class="ml-draw ml-d1" pathLength="1" d="M8 20h214m-6-6 6 6-6 6" />
+    <path class="ml-draw ml-soft ml-d2" pathLength="1" d="M8 34h48c25 0 25-14 52-14" />
+  </>}
+  {kind === 'books' && <>
+    <path class="ml-draw ml-soft" pathLength="1" d="M4 36h222" />
+    <g class="ml-place"><rect x="14" y="10" width="22" height="26" rx="1" /><path d="M20 15h10" /></g>
+    <g class="ml-place ml-d1"><rect x="42" y="4" width="18" height="32" rx="1" /><path d="M48 10h6" /></g>
+    <g class="ml-place ml-d2"><rect x="66" y="8" width="26" height="28" rx="1" /><path d="M73 14h12" /></g>
+    <g class="ml-place ml-d3"><rect x="98" y="2" width="20" height="34" rx="1" /><path d="M104 9h8" /></g>
+    <g class="ml-place ml-d4"><rect x="124" y="12" width="28" height="24" rx="1" /><path d="M132 18h12" /></g>
+  </>}
+  {kind === 'exchange' && <>
+    <path class="ml-draw" pathLength="1" d="M8 12h170m-6-6 6 6-6 6" />
+    <path class="ml-draw ml-d2" pathLength="1" d="M226 28H56m6-6-6 6 6 6" />
+  </>}
+  {kind === 'connect' && <>
+    <path class="ml-draw" pathLength="1" d="M12 20h96" />
+    <path class="ml-draw" pathLength="1" d="M222 20h-96" />
+    <circle class="ml-dot" cx="8" cy="20" r="3" /><circle class="ml-dot" cx="226" cy="20" r="3" />
+    <circle class="ml-meet" cx="117" cy="20" r="6" />
+  </>}
+  {kind === 'converge' && <>
+    <path class="ml-draw ml-d1" pathLength="1" d="M22 20h80m18 0h92" />
+    <g class="ml-team" style="--ml-offset:-5px"><circle cx="14" cy="20" r="8" /><circle class="ml-dot" cx="14" cy="20" r="2" /></g>
+    <g class="ml-team ml-d1"><circle cx="111" cy="20" r="8" /><circle class="ml-dot" cx="111" cy="20" r="2" /></g>
+    <g class="ml-team ml-d2" style="--ml-offset:5px"><circle cx="220" cy="20" r="8" /><circle class="ml-dot" cx="220" cy="20" r="2" /></g>
+  </>}
+  {kind === 'build' && <>
+    <path class="ml-draw ml-soft" pathLength="1" d="M4 36h222" />
+    <rect class="ml-place" x="14" y="20" width="32" height="16" rx="1" />
+    <rect class="ml-place ml-d1" x="52" y="20" width="32" height="16" rx="1" />
+    <rect class="ml-place ml-d2" x="90" y="20" width="32" height="16" rx="1" />
+    <rect class="ml-place ml-d3" x="33" y="2" width="32" height="12" rx="1" />
+    <rect class="ml-place ml-d4" x="71" y="2" width="32" height="12" rx="1" />
+  </>}
+</svg>
+)}
+
+<script>
+  const played = new WeakSet<Element>();
+  let observer: IntersectionObserver | undefined;
+
+  function init() {
+    observer?.disconnect();
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+    observer = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        // A mark another animation drives (the Home meteor) is started by that animation.
+        if (e.target.hasAttribute('data-motion-hold')) continue;
+        observer?.unobserve(e.target);
+        played.add(e.target);
+        e.target.setAttribute('data-motion-play', '');
+      }
+    }, { threshold: 0.25 });
+    document.querySelectorAll('.motion-line[data-motion]').forEach((el) => {
+      if (!played.has(el)) {
+        el.setAttribute('data-motion-armed', '');
+        observer?.observe(el);
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => observer?.disconnect());
+</script>
+
+<style is:global>
+  .motion-line { display: block; width: 234px; max-width: 100%; height: 40px; margin-top: 20px; overflow: visible; color: var(--accent-on-ground); stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .ml-draw { stroke-dasharray: 1; stroke-dashoffset: 0; }
+  /* Stretched align mark: three straight strands, a fixed curve that merges them at the
+     horizontal midpoint, a single line for the other half, then the arrowhead. */
+  .motion-line-stretch { display: flex; align-items: center; width: 100%; height: 40px; }
+  .motion-line-stretch svg { flex: none; overflow: visible; }
+  .ml-strands { position: relative; flex: 0 0 calc(50% - 52px); height: 40px; }
+  .ml-strand { position: absolute; left: 0; right: -1px; height: 1.5px; border-radius: 1px; background: currentColor; transform-origin: 0 50%; }
+  .ml-strand:nth-child(1) { top: 5.25px; } .ml-strand:nth-child(2) { top: 19.25px; } .ml-strand:nth-child(3) { top: 33.25px; }
+  .ml-stretch { flex: 1; height: 1.5px; margin-left: -1px; background: currentColor; transform-origin: 0 50%; }
+  .ml-dot { fill: currentColor; stroke: none; }
+  .ml-soft { opacity: 0.65; }
+  .ml-track { opacity: 0.25; }
+  .ml-traveller { fill: currentColor; stroke: none; opacity: 0; }
+  .ml-meet { transform-origin: 117px 20px; }
+  .ml-d1 { --ml-delay: 100ms; } .ml-d2 { --ml-delay: 200ms; } .ml-d3 { --ml-delay: 300ms; } .ml-d4 { --ml-delay: 400ms; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Armed marks wait hidden for their one play; unarmed (no JS) marks show final. */
+    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-draw { stroke-dashoffset: 1; }
+    .motion-line[data-motion-play] .ml-draw { animation: ml-draw 850ms ease-out var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-stretch,
+    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-strand { transform: scaleX(0); }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-arrow { opacity: 0; }
+    /* Stretched mark runs in sequence: strands, merge, single line, arrowhead. */
+    .motion-line[data-motion-play] .ml-strand { animation: ml-stretch 600ms cubic-bezier(0.3, 0, 0.2, 1) var(--ml-delay, 0ms) both; }
+    .motion-line-stretch[data-motion-play] .ml-curve .ml-draw { animation: ml-draw 500ms ease-out calc(550ms + var(--ml-delay, 0ms)) both; }
+    .motion-line[data-motion-play] .ml-stretch { animation: ml-stretch 600ms cubic-bezier(0.3, 0, 0.2, 1) 1150ms both; }
+    .motion-line[data-motion-play] .ml-arrow { animation: ml-fade 300ms ease-out 1700ms both; }
+    .motion-line[data-motion-play] .ml-arrive { animation: ml-arrive 650ms ease-out var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-play] .ml-place { animation: ml-place 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-play] .ml-meet { animation: ml-meet 950ms ease-out both; }
+    .motion-line[data-motion-play] .ml-team { animation: ml-align 850ms ease-out var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-play] .ml-traveller { animation: ml-travel 1100ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .motion-line[data-motion-play] .ml-resolve { animation: ml-resolve 1100ms ease-out both; }
+  }
+
+  @keyframes ml-stretch { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes ml-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes ml-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes ml-arrive { from { opacity: 0.45; } to { opacity: 1; } }
+  @keyframes ml-place { from { transform: translateY(-4px); } to { transform: translateY(0); } }
+  @keyframes ml-meet { from { transform: scale(0.6); opacity: 0.45; } to { transform: scale(1); opacity: 1; } }
+  @keyframes ml-align { from { transform: translateY(var(--ml-offset, 0px)); } to { transform: translateY(0); } }
+  @keyframes ml-travel { 0% { opacity: 1; transform: translateX(0); } 85% { opacity: 1; transform: translateX(218px); } 100% { opacity: 0; transform: translateX(218px); } }
+  @keyframes ml-resolve { 0%, 75% { opacity: 0; } 100% { opacity: 1; } }
+</style>

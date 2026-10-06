@@ -16,7 +16,7 @@ export default defineConfig({
   },
   integrations: [
     sitemap({
-      filter: (page) => !new URL(page).pathname.startsWith('/writing')
+      filter: (page) => !['/writing', '/consulting'].some((p) => new URL(page).pathname.startsWith(p))
     })
   ],
 });
