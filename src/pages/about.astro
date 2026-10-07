@@ -4,6 +4,7 @@ import Sheet from '../components/orbit/Sheet.astro';
 import Clause from '../components/orbit/Clause.astro';
 import Closing from '../components/orbit/Closing.astro';
 import TextLink from '../components/orbit/TextLink.astro';
+import SectionHead from '../components/orbit/SectionHead.astro';
 
 const about = [
   {
@@ -39,6 +40,12 @@ const about = [
     ],
   },
 ];
+const principles = [
+  { title: 'Understand', body: 'Start with customer and market needs. Map the system and make the problem clear enough to act on.' },
+  { title: 'Start', body: 'Starting is the best way to begin learning and make progress. Use judgment, but do not let endless debate become the work.' },
+  { title: 'Own', body: 'Leadership comes from everywhere. Own the problems in your world and make it easier for other people to lead.' },
+  { title: 'Improve', body: 'Give honest, timely feedback and keep fixing small things. The small fixes add up.' },
+];
 import MotionLine from '../components/orbit/MotionLine.astro';
 ---
 
@@ -51,6 +58,20 @@ import MotionLine from '../components/orbit/MotionLine.astro';
       <p class="t-lead muted-g" style="margin-top:20px;max-width:640px">I've spent 18+ years building products, leading teams, and designing systems in complex organizations.</p>
     </div>
   </header>
+
+  <section class="about-process ground-pad" aria-labelledby="about-process">
+    <div class="about-process-head">
+      <SectionHead id="about-process" eyebrow="How I work" title="The minimum process needed to be effective." />
+    </div>
+    <ol class="about-steps">
+      {principles.map((p, i) => (
+        <li>
+          <h3 class="t-item"><span class="about-num">{String(i + 1).padStart(2, '0')}</span>{p.title}</h3>
+          <p class="t-body muted-g">{p.body}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
 
   <Sheet label="About">
     <div class="divider-list">
@@ -67,7 +88,20 @@ import MotionLine from '../components/orbit/MotionLine.astro';
   <Closing title="If the work needs a builder, let's talk." />
 </BaseLayout>
 
-<style>
+<style is:global>
+  /* How I work: a ground band right after the header, before the first sheet. The header ends in 64px
+     (28 on phones); this band adds 48 (28) on top, so the seam is one band step (112 / 56), and the
+     same step sits below it before the sheet. */
+  .about-process { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; padding-top: 48px; padding-bottom: var(--space-band); }
+  .about-process-head { grid-column: 1 / span 4; }
+  .about-steps { grid-column: 6 / -1; min-width: 0; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; row-gap: 40px; }
+  .about-steps .t-item + p { margin-top: 8px; max-width: 60ch; }
+  .about-num { display: inline-block; min-width: 40px; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--on-ground-faint); vertical-align: 4px; }
+  @media (max-width: 1100px) {
+    .about-process-head { grid-column: 1 / span 5; }
+    .about-steps { grid-template-columns: minmax(0, 1fr); }
+  }
+
   .about-head { display: flex; gap: 56px; align-items: center; }
   .about-head .portrait { width: 260px; height: 260px; flex: none; }
   .about-link { margin-top: 24px; padding-left: 320px; }
@@ -75,5 +109,10 @@ import MotionLine from '../components/orbit/MotionLine.astro';
     .about-head { display: block; }
     .about-head .portrait { width: 120px; height: 120px; margin-bottom: 20px; }
     .about-link { padding-left: 0; }
+    .about-process { grid-template-columns: minmax(0, 1fr); row-gap: 24px; padding-top: 28px; padding-bottom: var(--space-band-sm); }
+    .about-process-head, .about-steps { grid-column: 1 / -1; }
+    .about-steps { row-gap: 28px; }
+    .about-steps .t-body { font-size: 15px; line-height: 22px; }
+    .about-num { min-width: 36px; vertical-align: 3px; }
   }
 </style>

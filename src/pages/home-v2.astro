@@ -10,7 +10,7 @@
 // Structure (iteration 2, Brandon's voice review 2026-10-07; layout choices AI-made and reversible):
 //   1. Stage (ground): the hero and the Experience strip, one field on the first screen.
 //   2. Paper (one sheet): about (portrait inside the text), how I think, the client's words.
-//   3. Stage (ground): the ways to work together, then how I work.
+//   3. Stage (ground): the ways to work together.
 //   4. The ask: one large white callout that closes the page, with the one brand-red button.
 // One grid: 12 columns, heading in columns 1-4, content in 6-12; one column at 860 and below.
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -27,13 +27,6 @@ const companies = ['Rebrandly', 'Pie Insurance', 'Bitly', 'PAIRIN', 'Ora Interac
 const reading = [
   { meta: 'Working together', title: 'Manager README', href: '/manager-readme/' },
   { meta: 'Ideas and influences', title: 'Bookshelf', href: '/bookshelf/' },
-];
-
-const principles = [
-  { title: 'Understand', body: 'Start with customer and market needs. Map the system and make the problem clear enough to act on.' },
-  { title: 'Start', body: 'Starting is the best way to begin learning and make progress. Use judgment, but do not let endless debate become the work.' },
-  { title: 'Own', body: 'Leadership comes from everywhere. Own the problems in your world and make it easier for other people to lead.' },
-  { title: 'Improve', body: 'Give honest, timely feedback and keep fixing small things. The small fixes add up.' },
 ];
 
 // The same three ways as the hero's moons, so the dots match the moons. Work with me has no
@@ -124,20 +117,6 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
         <p class="hv-link hv-link-end"><a class="link-ground" href="/services/">More on working with me</a></p>
       </div>
     </section>
-
-    <section class="hv-band hv-process ground-pad" aria-labelledby="hv-process">
-      <div class="hv-head">
-        <SectionHead id="hv-process" eyebrow="How I work" title="The minimum process needed to be effective." />
-      </div>
-      <ol class="hv-body hv-items hv-steps">
-        {principles.map((p, i) => (
-          <li class="hv-item">
-            <h3 class="t-item hv-title"><span class="hv-num">{String(i + 1).padStart(2, '0')}</span>{p.title}</h3>
-            <p class="t-body muted-g hv-measure">{p.body}</p>
-          </li>
-        ))}
-      </ol>
-    </section>
   </div>
 
   <!-- Field 4: the ask. One white callout closes the page (Brandon 2026-10-07: "one large bottom
@@ -200,13 +179,9 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
   .hv-quote blockquote { border-left: 3px solid var(--accent); padding-left: 28px; color: var(--on-sheet); }
   .hv-quote .quote-cite { padding-left: 31px; color: var(--on-sheet-muted); }
 
-  /* How I work, on the ground: 2 x 2, the number on the title's line, no hairlines. */
-  .hv-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; row-gap: 40px; }
-  .hv-num { display: inline-block; min-width: 40px; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--on-ground-faint); vertical-align: 4px; }
-
   /* ---- field 3: the stage --------------------------------------------------------------- */
   .hv-field { padding-bottom: var(--space-band); }
-  .hv-ways, .hv-process { padding-top: var(--space-band); }
+  .hv-ways { padding-top: var(--space-band); }
   .hv-field .hv-meta { color: var(--on-ground-muted); }
   .hv-way-list { gap: 40px; }
   .hv-way { display: flex; flex-direction: column; gap: 4px; }
@@ -220,18 +195,16 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
   /* ---- field 4: the ask ----------------------------------------------------------------- */
   /* A white callout that takes over the end of the page: display-size title on the grid's left
      edge, one large brand-red button under it. */
-  /* The ask: text on the left, the button on the right in the same row (Brandon, 2026-10-07); stacked on phones. */
+  /* The ask: the button sits left, under the text (Brandon, 2026-10-07: smaller title, button back down). */
   .sheet.hv-close { padding-top: 120px; padding-bottom: 128px; }
-  .hv-close-inner { display: flex; align-items: center; justify-content: space-between; gap: 64px; }
   .hv-close-text { max-width: 760px; }
   .hv-close-eyebrow { font-weight: 500; color: var(--on-sheet-muted); margin-bottom: 20px; }
   .hv-close-title { color: var(--on-sheet); max-width: 15.5em; text-wrap: balance; }
-  .hv-close-btn { flex: none; font-size: 19px; padding: 20px 36px; min-height: 64px; }
+  .hv-close-btn { margin-top: 48px; font-size: 19px; padding: 20px 36px; min-height: 64px; }
 
   @media (max-width: 1100px) {
     .hv-head { grid-column: 1 / span 5; }
     .hv-body { grid-column: 7 / -1; }
-    .hv-steps { grid-template-columns: minmax(0, 1fr); }
   }
 
   /* ---- phones: one column, designed rows ----------------------------------------------- */
@@ -251,17 +224,11 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
     .hv-quote blockquote { padding-left: 20px; }
     .hv-quote .quote-cite { padding-left: 23px; }
 
-    /* How I work: "01  Understand" on one line, body 15/22. */
-    .hv-steps { row-gap: 28px; }
-    .hv-steps .t-body { font-size: 16px; line-height: 24px; }
-    .hv-num { min-width: 36px; vertical-align: 3px; }
-
     .hv-field { padding-bottom: var(--space-band-sm); }
-    .hv-ways, .hv-process { padding-top: var(--space-band-sm); }
+    .hv-ways { padding-top: var(--space-band-sm); }
     .hv-way-list { gap: 28px; }
     .hv-link-end { margin-top: 32px; }
     .sheet.hv-close { padding-top: 72px; padding-bottom: 80px; }
-    .hv-close-inner { flex-direction: column; align-items: stretch; gap: 0; }
     .hv-close-eyebrow { margin-bottom: 14px; }
     .hv-close-title { font-size: 32px; }
     .hv-close-btn { margin-top: 32px; font-size: 18px; padding: 18px 28px; min-height: 60px; display: flex; width: 100%; }
