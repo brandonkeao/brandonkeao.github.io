@@ -1,6 +1,7 @@
 ---
 // Home only: a meteor streaks across under the headline and leaves a solid red line the
-// full width of the copy column, then arcs into the planet, shedding embers, and lands
+// full width of the copy column, keeps its heading, then bends late as the planet's gravity
+// pulls it in (Brandon, 2026-10-07), shedding embers, and lands
 // with a flash and two ripples (Brandon, 2026-10-06). The line stays as the resting
 // state. Plays once per page view; with reduced motion or no JavaScript the line is
 // simply there.
@@ -10,8 +11,6 @@
 
 <script>
   let cleanup: (() => void) | undefined;
-  const DURATION = 2400;
-  const EASING = 'cubic-bezier(0.45, 0.05, 0.35, 1)';
 
   function launch() {
     cleanup?.();
@@ -27,18 +26,16 @@
     const made: HTMLElement[] = [];
     cleanup = () => { cancelled = true; made.forEach((n) => n.remove()); show(); };
 
-    // Aim at the planet's upper-left limb once the renderer publishes its centre;
-    // fall back to the stage centre if the scene is slow or unavailable.
-    const target = () => {
+    // The planet's centre and radius on screen, once the renderer publishes them; without a live
+    // scene, where the close-up poster's planet sits (right-anchored), never the copy.
+    const planetAt = () => {
       const s = stage.getBoundingClientRect();
       const cs = getComputedStyle(stage);
-      // Without a live scene, aim where the close-up poster's planet sits (right-anchored,
-      // about 78% across and 47% down, radius about 36% of the stage height), never at the copy.
       const closeup = stage.hasAttribute('data-closeup');
-      const cx = parseFloat(cs.getPropertyValue('--center-x')) || (closeup ? s.width * 0.78 : s.width / 2);
+      const cx = parseFloat(cs.getPropertyValue('--center-x')) || (closeup ? s.width * 0.86 : s.width / 2);
       const cy = parseFloat(cs.getPropertyValue('--center-y')) || (closeup ? s.height * 0.47 : s.height / 2);
-      const r = parseFloat(cs.getPropertyValue('--center-r')) || (closeup ? s.height * 0.36 : Math.min(s.width, s.height) / 6);
-      return { x: s.left + cx - r * 0.92, y: s.top + cy - r * 0.38 };
+      const r = parseFloat(cs.getPropertyValue('--center-r')) || (closeup ? s.height * 0.38 : Math.min(s.width, s.height) / 6);
+      return { x: s.left + cx, y: s.top + cy, r };
     };
 
     const go = () => {
@@ -49,21 +46,62 @@
       // The line is still scaled to 0 here, so take its layout width, not its painted box.
       const x0 = l.left - h.left;
       const x1 = x0 + line.offsetWidth;
-      const t = target();
-      const tx = t.x - h.left, ty = t.y - h.top;
-      // Run the full line, then bend toward the planet.
-      const c1x = Math.min(x1 + Math.max(60, (tx - x1) * 0.45), h.width - 8);
-      const path = `M ${x0} ${y} L ${x1} ${y} C ${c1x} ${y} ${tx - 40} ${ty + 30} ${tx} ${ty}`;
+      const p = planetAt();
+      const cx = p.x - h.left, cy = p.y - h.top, r = p.r;
+      // Gravity, not a launch (Brandon 2026-10-07: "continue with the momentum straight and then
+      // curve as it gets pulled into the planet's gravity and ultimately hits the planet").
+      // The head keeps the line's heading past the copy, then bends late, with growing curvature,
+      // and strikes the limb that faces its approach.
+      let path: string;
+      let tx: number, ty: number;
+      const room = cx - r - x1;
+      if (room > 80) {
+        // Desktop: the planet is ahead, level with the line. The head keeps the line's heading for
+        // a long run, then falls in a bend that tightens toward the end and strikes the lower-left
+        // limb, the side facing its approach.
+        const fall = Math.min(Math.max(y + r * 0.6, cy - r * 0.5), cy + r * 0.72);
+        ty = fall;
+        tx = cx - Math.sqrt(Math.max(0, r * r - (ty - cy) ** 2)) * 0.97;
+        const xs = x1 + (tx - x1) * 0.42;
+        const d = Math.hypot(tx - xs, ty - y);
+        // The first handle stays on the heading (momentum); the second sits close to the impact
+        // along the final, steeper heading (about 50 degrees down), so the curvature grows late.
+        const c1x = xs + d * 0.6;
+        const c2x = tx - d * 0.2 * 0.64, c2y = ty - d * 0.2 * 0.77;
+        path = `M ${x0} ${y} L ${xs} ${y} C ${c1x} ${y} ${c2x} ${c2y} ${tx} ${ty}`;
+      } else {
+        // Phones: the planet sits under the end of the line. The head runs off the end of the
+        // line and the pull bends it down onto the planet's face.
+        tx = Math.min(x1 - 12, cx + r * 0.4);
+        ty = y + Math.max(48, (cy - y) * 0.95);
+        const d = Math.hypot(tx - x1, ty - y);
+        const c1x = Math.min(x1 + d * 0.3, h.width - 4);
+        path = `M ${x0} ${y} L ${x1} ${y} C ${c1x} ${y} ${tx + d * 0.18} ${ty - d * 0.4} ${tx} ${ty}`;
+      }
       const lineLen = x1 - x0;
-      const total = lineLen + Math.hypot(tx - x1, ty - y) * 1.15;
+      let total = 0;
+      try {
+        const probe = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        probe.setAttribute('d', path);
+        total = probe.getTotalLength();
+      } catch { /* estimated below */ }
+      if (!(total > lineLen)) total = lineLen + Math.hypot(tx - x1, ty - y) * 1.15;
       const lineShare = lineLen / total;
 
-      const ride = (scale?: [number, number, number, number]) => [
-        { offsetDistance: '0%', opacity: 0, ...(scale && { transform: `scaleX(${scale[0]})` }) },
-        { offsetDistance: '2%', opacity: 1, offset: 0.04, ...(scale && { transform: `scaleX(${scale[1]})` }) },
-        { offsetDistance: `${lineShare * 100}%`, opacity: 1, offset: 0.36, ...(scale && { transform: `scaleX(${scale[2]})` }) },
-        { offsetDistance: '88%', opacity: 1, offset: 0.8, ...(scale && { transform: `scaleX(${scale[3]})` }) },
-        { offsetDistance: '100%', opacity: 0, ...(scale && { transform: 'scaleX(0.3)' }) },
+      // Timing follows the path: constant speed while the line is laid (momentum), then the head
+      // speeds up as it falls in (from v to about 2v), so the bend reads as a pull, not a launch.
+      const v = Math.max(0.4, lineLen / 950); // px per ms
+      const tIn = 110, t1 = lineLen / v, t2 = Math.max(260, (total - lineLen) / (1.45 * v));
+      const D = tIn + t1 + t2;
+      const kIn = tIn / D, kLine = (tIn + t1) / D;
+      const dIn = (v * tIn) / total;
+      const FALL = 'cubic-bezier(0.3, 0.2, 0.7, 0.4)';
+
+      const ride = (scale?: [number, number, number]) => [
+        { offsetDistance: '0%', opacity: 0, easing: 'linear', ...(scale && { transform: `scaleX(${scale[0]})` }) },
+        { offsetDistance: `${dIn * 100}%`, opacity: 1, offset: kIn, easing: 'linear', ...(scale && { transform: `scaleX(${scale[1]})` }) },
+        { offsetDistance: `${lineShare * 100}%`, opacity: 1, offset: kLine, easing: FALL, ...(scale && { transform: `scaleX(${scale[1]})` }) },
+        { offsetDistance: '100%', opacity: 1, ...(scale && { transform: `scaleX(${scale[2]})` }) },
       ];
 
       const meteor = document.createElement('div');
@@ -71,17 +109,16 @@
       meteor.style.offsetPath = `path('${path}')`;
       hero.appendChild(meteor);
       made.push(meteor);
-      const run = meteor.animate(ride([0.4, 0.6, 1, 1.5]), { duration: DURATION, easing: EASING, fill: 'forwards' });
+      const run = meteor.animate(ride([0.4, 1, 1.5]), { duration: D, fill: 'forwards' });
 
       // The line is laid down behind the head: its right edge tracks the meteor exactly,
-      // because both use the same keyframe offsets and easing.
-      const at2 = (0.02 * total) / lineLen;
+      // because both use the same keyframe offsets and linear timing along the line.
       line.animate([
-        { transform: 'scaleX(0)' },
-        { transform: `scaleX(${Math.min(at2, 1)})`, offset: 0.04 },
-        { transform: 'scaleX(1)', offset: 0.36 },
+        { transform: 'scaleX(0)', easing: 'linear' },
+        { transform: `scaleX(${Math.min((v * tIn) / lineLen, 1)})`, offset: kIn, easing: 'linear' },
+        { transform: 'scaleX(1)', offset: kLine },
         { transform: 'scaleX(1)' },
-      ], { duration: DURATION, easing: EASING, fill: 'forwards' }).finished.then(show).catch(show);
+      ], { duration: D, fill: 'forwards' }).finished.then(show).catch(show);
 
       // Embers: a hidden core follows the head; small sparks are shed from it and fade.
       const core = document.createElement('div');
@@ -89,12 +126,12 @@
       core.style.offsetPath = meteor.style.offsetPath;
       hero.appendChild(core);
       made.push(core);
-      const coreRun = core.animate(ride(), { duration: DURATION, easing: EASING, fill: 'forwards' });
+      const coreRun = core.animate(ride(), { duration: D, fill: 'forwards' });
       let lastEmber = 0;
       const shed = (now: number) => {
         if (cancelled || coreRun.playState === 'finished') return;
-        const p = ((coreRun.currentTime as number) ?? 0) / DURATION;
-        if (p > 0.05 && p < 0.92 && now - lastEmber > 45) {
+        const q = ((coreRun.currentTime as number) ?? 0) / D;
+        if (q > 0.05 && q < 0.96 && now - lastEmber > 45) {
           lastEmber = now;
           const c = core.getBoundingClientRect();
           const hr = hero.getBoundingClientRect();
