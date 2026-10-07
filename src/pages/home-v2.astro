@@ -7,11 +7,11 @@
 // page needs to be designed with mobile in mind as well...".
 // Hero: the staging Home hero, unchanged. Below it: production's Home story and section order,
 // with Brandon's decided Orbit copy edits (outputs/orbit-site-2026-10-06/CONTENT_AUDIT.md).
-// Structure (Home v2 review, Direction A "Three fields", AI-made and reversible):
-//   1. Stage (ground): the hero and the proof strip. Anchor: the planet.
-//   2. Paper (one sheet): how I think, about, how I work. Anchor: the portrait.
-//   3. Stage (ground): the ways to work together, the client's words, the ask. Anchor: the three
-//      moon-colour dots, closing on the red button.
+// Structure (iteration 2, Brandon's voice review 2026-10-07; layout choices AI-made and reversible):
+//   1. Stage (ground): the hero and the Experience strip, one field on the first screen.
+//   2. Paper (one sheet): about (portrait inside the text), how I think, the client's words.
+//   3. Stage (ground): the ways to work together, then how I work.
+//   4. The ask: one large white callout that closes the page, with the one brand-red button.
 // One grid: 12 columns, heading in columns 1-4, content in 6-12; one column at 860 and below.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import OrbitStage from '../components/orbit/OrbitStage.astro';
@@ -60,8 +60,20 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
 
   <ExperienceStrip surface="ground" names={companies} />
 
-  <!-- Field 2: paper. The person: how I think, who I am, how I work. -->
-  <Sheet class="hv-sheet" label="How I think, about Brandon, and how I work">
+  <!-- Field 2: paper. The person: who I am, how I think, and a client's words. -->
+  <Sheet class="hv-sheet" label="About Brandon, how I think, and what a client said">
+    <section class="hv-band hv-about" aria-labelledby="hv-about">
+      <div class="hv-head">
+        <SectionHead id="hv-about" eyebrow="About Brandon" title="A builder who cares about things that actually work." />
+      </div>
+      <div class="hv-body hv-about-text">
+        <img class="portrait hv-portrait" src="/images/brandon-keao-headshot.jpg" alt="Brandon Keao" width="300" height="300" loading="lazy" />
+        <p class="t-lead hv-measure">I have an engineering degree from Northwestern University and 18+ years in technology spanning consulting, product, design, research, and strategy.</p>
+        <p class="t-body muted-s hv-measure hv-follow">That foundation shapes how I work with AI and data today: understand the problem, decide what to try, build alongside the team, and check whether it helped.</p>
+        <p class="hv-link"><a class="link-sheet" href="/about/">More about me</a></p>
+      </div>
+    </section>
+
     <section class="hv-band" aria-labelledby="hv-think">
       <div class="hv-head">
         <SectionHead id="hv-think" eyebrow="How I think" title="Where my approach comes from." lead="My Manager README says how I work with a team. My Bookshelf lists many of the ideas behind it." />
@@ -81,35 +93,17 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
       </ul>
     </section>
 
-    <section class="hv-band hv-about" aria-labelledby="hv-about">
-      <div class="hv-head">
-        <SectionHead id="hv-about" eyebrow="About Brandon" title="A builder who cares about things that actually work.">
-          <img class="portrait hv-portrait" src="/images/brandon-keao-headshot.jpg" alt="Brandon Keao" width="300" height="300" loading="lazy" />
-        </SectionHead>
-      </div>
+    <section class="hv-band hv-quote" aria-label="What a client said">
       <div class="hv-body">
-        <p class="t-lead hv-measure">I have an engineering degree from Northwestern University and 18+ years in technology spanning consulting, product, design, research, and strategy.</p>
-        <p class="t-body muted-s hv-measure hv-follow">That foundation shapes how I work with AI and data today: understand the problem, decide what to try, build alongside the team, and check whether it helped.</p>
-        <p class="hv-link"><a class="link-sheet" href="/about/">More about me</a></p>
+        <Quote
+          quote="“Finding someone who can translate business objectives into technical requirements is difficult. Finding someone who can also own the project, teams, and client relationship is rare.”"
+          cite="Andre Sugai, CTO and Partner, Ora Interactive"
+        />
       </div>
-    </section>
-
-    <section class="hv-band" aria-labelledby="hv-process">
-      <div class="hv-head">
-        <SectionHead id="hv-process" eyebrow="How I work" title="The minimum process needed to be effective." />
-      </div>
-      <ol class="hv-body hv-items hv-steps">
-        {principles.map((p, i) => (
-          <li class="hv-item">
-            <h3 class="t-item hv-title"><span class="hv-num">{String(i + 1).padStart(2, '0')}</span>{p.title}</h3>
-            <p class="t-body muted-s hv-measure">{p.body}</p>
-          </li>
-        ))}
-      </ol>
     </section>
   </Sheet>
 
-  <!-- Field 3: the stage again. The offer, the client's word and the ask. -->
+  <!-- Field 3: the stage again. The offer, then the method. -->
   <div class="hv-field">
     <section class="hv-band hv-ways ground-pad" aria-labelledby="hv-ways">
       <div class="hv-head">
@@ -131,22 +125,30 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
       </div>
     </section>
 
-    <section class="hv-band hv-quote ground-pad" aria-label="What a client said">
-      <div class="hv-body">
-        <Quote
-          quote="“Finding someone who can translate business objectives into technical requirements is difficult. Finding someone who can also own the project, teams, and client relationship is rare.”"
-          cite="Andre Sugai, CTO and Partner, Ora Interactive"
-        />
+    <section class="hv-band hv-process ground-pad" aria-labelledby="hv-process">
+      <div class="hv-head">
+        <SectionHead id="hv-process" eyebrow="How I work" title="The minimum process needed to be effective." />
       </div>
-    </section>
-
-    <section class="hv-band hv-closing ground-pad" aria-labelledby="hv-close">
-      <div class="hv-body">
-        <SectionHead id="hv-close" eyebrow="Start a conversation" title="If you're stuck, let's talk about what to try first." />
-        <a href="/contact/" class="btn btn-brand hv-close-btn">Let's talk</a>
-      </div>
+      <ol class="hv-body hv-items hv-steps">
+        {principles.map((p, i) => (
+          <li class="hv-item">
+            <h3 class="t-item hv-title"><span class="hv-num">{String(i + 1).padStart(2, '0')}</span>{p.title}</h3>
+            <p class="t-body muted-g hv-measure">{p.body}</p>
+          </li>
+        ))}
+      </ol>
     </section>
   </div>
+
+  <!-- Field 4: the ask. One white callout closes the page (Brandon 2026-10-07: "one large bottom
+       dedicated component that is a very clear call to action"). -->
+  <Sheet class="hv-close" label="Start a conversation">
+    <div class="hv-close-inner">
+      <p class="t-caption hv-close-eyebrow">Start a conversation</p>
+      <h2 class="t-display hv-close-title" id="hv-close">If you're stuck, let's talk about what to try first.</h2>
+      <a href="/contact/" class="btn btn-brand hv-close-btn">Let's talk</a>
+    </div>
+  </Sheet>
 </BaseLayout>
 
 <style is:global>
@@ -186,17 +188,22 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
   .hv-row:hover .hv-title { text-decoration-color: var(--accent); }
   .hv-row:hover .hv-arrow { color: var(--on-sheet); }
 
-  /* About: the portrait is the paper's anchor, under the title. */
-  .hv-portrait { width: 200px; height: 200px; margin-top: 32px; }
+  /* About: the portrait sits on the right inside the text, which wraps beside it (Brandon
+     2026-10-07: "the image to be on the right and part of the text block"). */
+  .hv-about-text::after { content: ''; display: block; clear: both; }
+  .hv-portrait { float: right; width: 200px; height: 200px; margin: 6px 0 20px 40px; }
 
-  /* How I work: 2 x 2, the number on the title's line. */
-  .hv-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; row-gap: 36px; }
-  .hv-num { display: inline-block; min-width: 40px; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--on-sheet-muted); vertical-align: 4px; }
+  /* The client's words close the paper: the quote in the content column, a red rule beside it. */
+  .hv-quote blockquote { border-left: 3px solid var(--accent); padding-left: 28px; color: var(--on-sheet); }
+  .hv-quote .quote-cite { padding-left: 31px; color: var(--on-sheet-muted); }
+
+  /* How I work, on the ground: 2 x 2, the number on the title's line, no hairlines. */
+  .hv-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; row-gap: 40px; }
+  .hv-num { display: inline-block; min-width: 40px; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--on-ground-faint); vertical-align: 4px; }
 
   /* ---- field 3: the stage --------------------------------------------------------------- */
   .hv-field { padding-bottom: var(--space-band); }
-  .hv-ways { padding-top: var(--space-band); }
-  .hv-quote, .hv-closing { padding-top: var(--space-sheet-band); }
+  .hv-ways, .hv-process { padding-top: var(--space-band); }
   .hv-field .hv-meta { color: var(--on-ground-muted); }
   .hv-way-list { gap: 40px; }
   .hv-way { display: flex; flex-direction: column; gap: 4px; }
@@ -206,7 +213,15 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
   .hv-way:hover .hv-title { text-decoration-color: var(--on-ground); }
   .hv-way:hover .hv-arrow { color: var(--on-ground); }
   .hv-link-end { margin-top: 40px; }
-  .hv-close-btn { margin-top: 32px; }
+
+  /* ---- field 4: the ask ----------------------------------------------------------------- */
+  /* A white callout that takes over the end of the page: display-size title on the grid's left
+     edge, one large brand-red button under it. */
+  .sheet.hv-close { padding-top: 144px; padding-bottom: 152px; }
+  .hv-close-inner { max-width: 980px; }
+  .hv-close-eyebrow { font-weight: 500; color: var(--on-sheet-muted); margin-bottom: 20px; }
+  .hv-close-title { color: var(--on-sheet); max-width: 15.5em; text-wrap: balance; }
+  .hv-close-btn { margin-top: 48px; font-size: 19px; padding: 20px 36px; min-height: 64px; }
 
   @media (max-width: 1100px) {
     .hv-head { grid-column: 1 / span 5; }
@@ -226,21 +241,23 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
     .hv-band .t-item { font-size: 19px; }
     .hv-band .t-body { font-size: 16px; }
 
-    /* About: a 72px portrait beside the eyebrow and the title. */
-    .hv-about .section-head { display: grid; grid-template-columns: 72px minmax(0, 1fr); column-gap: 16px; }
-    .hv-about .section-head > * { grid-column: 2; }
-    .hv-about .hv-portrait { grid-column: 1; grid-row: 1 / span 2; width: 72px; height: 72px; margin-top: 0; }
+    /* About: a 104px portrait on the right of the opening lines, the text wrapping beside it. */
+    .hv-portrait { width: 104px; height: 104px; margin: 4px 0 12px 16px; }
+    .hv-quote blockquote { padding-left: 20px; }
+    .hv-quote .quote-cite { padding-left: 23px; }
 
     /* How I work: "01  Understand" on one line, body 15/22. */
-    .hv-steps .hv-item { padding-top: 14px; }
-    .hv-steps .t-body { font-size: 15px; line-height: 22px; }
+    .hv-steps { row-gap: 28px; }
+    .hv-steps .t-body { font-size: 16px; line-height: 24px; }
     .hv-num { min-width: 36px; vertical-align: 3px; }
 
     .hv-field { padding-bottom: var(--space-band-sm); }
-    .hv-ways { padding-top: var(--space-band-sm); }
-    .hv-quote, .hv-closing { padding-top: var(--space-band-sm); }
+    .hv-ways, .hv-process { padding-top: var(--space-band-sm); }
     .hv-way-list { gap: 28px; }
     .hv-link-end { margin-top: 32px; }
-    .hv-close-btn { margin-top: 24px; }
+    .sheet.hv-close { padding-top: 72px; padding-bottom: 80px; }
+    .hv-close-eyebrow { margin-bottom: 14px; }
+    .hv-close-title { font-size: 34px; }
+    .hv-close-btn { margin-top: 32px; font-size: 18px; padding: 18px 28px; min-height: 60px; display: flex; width: 100%; }
   }
 </style>
