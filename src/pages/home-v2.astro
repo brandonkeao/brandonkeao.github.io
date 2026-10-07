@@ -144,8 +144,10 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
        dedicated component that is a very clear call to action"). -->
   <Sheet class="hv-close" label="Start a conversation">
     <div class="hv-close-inner">
-      <p class="t-caption hv-close-eyebrow">Start a conversation</p>
-      <h2 class="t-display hv-close-title" id="hv-close">If you're stuck, let's talk about what to try first.</h2>
+      <div class="hv-close-text">
+        <p class="t-caption hv-close-eyebrow">Start a conversation</p>
+        <h2 class="t-page-title hv-close-title" id="hv-close">If you're stuck, let's talk about what to try first.</h2>
+      </div>
       <a href="/contact/" class="btn btn-brand hv-close-btn">Let's talk</a>
     </div>
   </Sheet>
@@ -218,11 +220,13 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
   /* ---- field 4: the ask ----------------------------------------------------------------- */
   /* A white callout that takes over the end of the page: display-size title on the grid's left
      edge, one large brand-red button under it. */
-  .sheet.hv-close { padding-top: 144px; padding-bottom: 152px; }
-  .hv-close-inner { max-width: 980px; }
+  /* The ask: text on the left, the button on the right in the same row (Brandon, 2026-10-07); stacked on phones. */
+  .sheet.hv-close { padding-top: 120px; padding-bottom: 128px; }
+  .hv-close-inner { display: flex; align-items: center; justify-content: space-between; gap: 64px; }
+  .hv-close-text { max-width: 760px; }
   .hv-close-eyebrow { font-weight: 500; color: var(--on-sheet-muted); margin-bottom: 20px; }
   .hv-close-title { color: var(--on-sheet); max-width: 15.5em; text-wrap: balance; }
-  .hv-close-btn { margin-top: 48px; font-size: 19px; padding: 20px 36px; min-height: 64px; }
+  .hv-close-btn { flex: none; font-size: 19px; padding: 20px 36px; min-height: 64px; }
 
   @media (max-width: 1100px) {
     .hv-head { grid-column: 1 / span 5; }
@@ -257,8 +261,9 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
     .hv-way-list { gap: 28px; }
     .hv-link-end { margin-top: 32px; }
     .sheet.hv-close { padding-top: 72px; padding-bottom: 80px; }
+    .hv-close-inner { flex-direction: column; align-items: stretch; gap: 0; }
     .hv-close-eyebrow { margin-bottom: 14px; }
-    .hv-close-title { font-size: 34px; }
+    .hv-close-title { font-size: 32px; }
     .hv-close-btn { margin-top: 32px; font-size: 18px; padding: 18px 28px; min-height: 60px; display: flex; width: 100%; }
   }
 </style>
