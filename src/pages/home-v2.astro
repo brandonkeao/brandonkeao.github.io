@@ -193,7 +193,8 @@ const engagements = SETS.home.map((w, i) => ({ meta: meta[i], title: w.name, bod
   .hv-about-text::after { content: ''; display: block; clear: both; }
   .hv-portrait { float: right; width: 200px; height: 200px; margin: 6px 0 20px 40px; }
 
-  /* The client's words close the paper: the quote in the content column, a red rule beside it. */
+  /* The client's words close the paper: the quote spans the whole sheet (Brandon, 2026-10-07), a red rule beside it. */
+  .hv-quote .hv-body { grid-column: 1 / -1; }
   .hv-quote blockquote { border-left: 3px solid var(--accent); padding-left: 28px; color: var(--on-sheet); }
   .hv-quote .quote-cite { padding-left: 31px; color: var(--on-sheet-muted); }
 
