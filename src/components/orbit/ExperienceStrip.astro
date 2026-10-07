@@ -38,7 +38,9 @@ const ground = surface === 'ground';
   .experience-names li { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; color: var(--on-sheet); white-space: nowrap; }
 
   /* Ground: the close of the hero's field. */
-  .experience--ground { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; align-items: start; padding-top: 40px; padding-bottom: 96px; }
+  /* Iteration 2: the strip closes the hero on the first screen; the space after it is a margin,
+     so the strip's own box is its content. */
+  .experience--ground { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; align-items: start; padding-top: 24px; padding-bottom: 0; margin-bottom: 96px; }
   .experience--ground .experience-figure { grid-column: 1 / span 4; padding-right: 0; gap: 16px; }
   .experience--ground .experience-years { font-size: clamp(40px, 4vw, 56px); color: var(--on-ground); }
   .experience--ground .experience-note { max-width: 220px; }
@@ -58,7 +60,7 @@ const ground = surface === 'ground';
     .experience-names ul { gap: 6px 20px; }
     .experience-names li { font-size: 18px; }
 
-    .experience--ground { padding-top: 32px; padding-bottom: 56px; row-gap: 24px; }
+    .experience--ground { padding-top: 32px; padding-bottom: 0; margin-bottom: 56px; row-gap: 24px; }
     .experience--ground .experience-figure, .experience--ground .experience-names { grid-column: 1 / -1; }
     .experience--ground .experience-years { font-size: 40px; }
     .experience--ground .experience-names { border-top: 0; padding-top: 0; }

@@ -240,8 +240,10 @@ function rustTexture() {
 }
 
 /** Close-up framing on top of the fitted pose: `zoom` divides the camera distance; `offsetX`/`offsetY`
- * shift the image in NDC without changing perspective (Home's "Quiet orbit" close-up, 2026-10-06). */
-export type Framing = { zoom: number; offsetX: number; offsetY: number; maxPixelRatio: number };
+ * shift the image in NDC without changing perspective (Home's "Quiet orbit" close-up, 2026-10-06).
+ * `moonScale` multiplies the moons' overview size for this stage only (Home: smaller moons, Brandon
+ * 2026-10-07 "decrease the moon sizes"); a chosen moon still grows to its usual centred size. */
+export type Framing = { zoom: number; offsetX: number; offsetY: number; maxPixelRatio: number; moonScale?: number };
 
 /** `speed` scales the ambient motion (orbits, steps, planet surface); flights keep their timing. */
 export function createMap(
@@ -258,6 +260,7 @@ export function createMap(
   });
   renderer.setClearColor(clearColor);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, framing.maxPixelRatio));
+  const moonScale = framing.moonScale ?? 1;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   host.appendChild(renderer.domElement);
@@ -1119,7 +1122,9 @@ export function createMap(
       const cue = depthCue(m.position, ORBITS[i].a * 1.05);
       const cueScale = THREE.MathUtils.lerp(cue.scale, 1, blend);
       m.scale.setScalar(
-        i === selectedIndex ? cueScale + blend * (CENTER[i] - 1) : systemScale * cueScale,
+        i === selectedIndex
+          ? cueScale * THREE.MathUtils.lerp(moonScale, 1, blend) + blend * (CENTER[i] - 1)
+          : systemScale * cueScale * moonScale,
       );
       m.rotation.x = 0.3 + simT * 0.045;
       m.rotation.y = 0.5 + simT * 0.1;
