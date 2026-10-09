@@ -93,8 +93,12 @@ const steps = [
 
       const io = new IntersectionObserver((entries) => {
         for (const en of entries) {
-          const el = en.target as HTMLElement;
           if (!en.isIntersecting) continue;
+          // The copy block is the reading region. Observing the tall step section instead
+          // would swap the media's side while the previous copy is still onscreen in the
+          // destination column, sliding the image over text mid-read.
+          const el = (en.target as HTMLElement).closest<HTMLElement>('[data-story-step]');
+          if (!el) continue;
           const key = (el.dataset.storyStep ?? 'overview') as FocusKey;
           story.dataset.active = key;
           story.dataset.side = el.classList.contains('is-alt') ? 'right' : 'left';
@@ -107,7 +111,10 @@ const steps = [
           });
         }
       }, { rootMargin: '-42% 0px -42% 0px', threshold: 0 });
-      steps.forEach((st) => io.observe(st));
+      steps.forEach((st) => {
+        const copy = st.querySelector<HTMLElement>('.step-copy');
+        io.observe(copy ?? st);
+      });
       observers.push(io);
     }
 
@@ -166,9 +173,12 @@ const steps = [
   .wwm-story.is-enhanced .story-step.is-alt .step-copy { grid-column: 1 / span 5; }
   .story-step .t-title { margin-top: 10px; }
   .story-step .wwm-fits, .story-step .wwm-measure { margin-top: 18px; }
-  /* First-activation reveal (enhanced only). */
+  /* The entrance rise plays once (is-in), but full brightness belongs to the current beat
+     only: during hand-offs an adjacent copy can sit under the sticky media's column, and at
+     0.25 it reads as the receding/upcoming ghost rather than covered text. */
   .wwm-story.is-enhanced .story-step .step-copy { opacity: 0.25; transform: translateY(14px); transition: opacity 0.6s ease, transform 0.6s ease; }
-  .wwm-story.is-enhanced .story-step.is-in .step-copy { opacity: 1; transform: none; }
+  .wwm-story.is-enhanced .story-step.is-in .step-copy { transform: none; }
+  .wwm-story.is-enhanced .story-step.is-current .step-copy { opacity: 1; }
 
   /* The scroll thread: motion-line language, drawn by progress. */
   .story-thread { position: absolute; top: 4svh; bottom: 4svh; left: calc(50% + 16px); width: 2px; border-radius: 1px; background: var(--accent-on-ground); opacity: 0; transform: scaleY(0); transform-origin: 50% 0; z-index: 2; }
