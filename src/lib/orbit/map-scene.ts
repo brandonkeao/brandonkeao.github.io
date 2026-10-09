@@ -400,13 +400,13 @@ export function createMap(
     return mesh;
   }
   /**
-   * Review switch (Brandon, 2026-10-09): `?body=vessel` renders the Fractional body as a
-   * rocket ship instead of the rust moon — a B1-style exploration behind a URL switch, never
-   * the default. Built from primitives in the rust/copper family; bounding size matches the
-   * rust moon so orbits, labels, depth cues and zoom scales hold. Its nose follows the orbit
-   * (set per frame); the rust descending-vessel hint is hidden since the body is the vessel.
+   * The Fractional body is the rocket ship (Brandon, 2026-10-09: "I love the rocket" →
+   * default on both stages). Built from primitives in the rust/copper family; bounding size
+   * matches the old rust moon so orbits, labels, depth cues and zoom scales hold. Its nose
+   * follows the orbit (set per frame); the rust descending-vessel hint stays retired since
+   * the body is the vessel. `?body=moon` restores the moon for comparison.
    */
-  const vesselMode = typeof location !== 'undefined' && new URLSearchParams(location.search).get('body') === 'vessel';
+  const vesselMode = !(typeof location !== 'undefined' && new URLSearchParams(location.search).get('body') === 'moon');
   function vesselBody(): THREE.Mesh {
     const s = MOON_SCALE;
     const hullGeo = new THREE.CapsuleGeometry(0.115 * s, 0.3 * s, 6, 20);
