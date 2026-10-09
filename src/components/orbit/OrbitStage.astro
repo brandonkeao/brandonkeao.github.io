@@ -52,6 +52,8 @@ const poster = closeup
       <img src={poster.desktop} alt="" width="840" height="700" decoding="async" fetchpriority={size === 'small' ? 'auto' : 'high'} />
     </picture>
     <div class="scene-host"></div>
+    <!-- Page-supplied stage layers (e.g. the Work with me surface landings, ticket #10). -->
+    <slot name="stage" />
     <!-- No visible text over the planet (Brandon, 2026-10-06); the title stays for screen readers. -->
     <div class="sr-only" aria-live="polite">
       <h2 id="map-current-title" tabindex="-1" data-title>Your outcome</h2>

@@ -399,7 +399,72 @@ export function createMap(
     mesh.userData.edgeLit = 0.62;
     return mesh;
   }
+  /**
+   * The Fractional body is the rocket ship (Brandon, 2026-10-09: "I love the rocket" →
+   * default on both stages). Built from primitives in the rust/copper family; bounding size
+   * matches the old rust moon so orbits, labels, depth cues and zoom scales hold. Its nose
+   * follows the orbit (set per frame); the rust descending-vessel hint stays retired since
+   * the body is the vessel. `?body=moon` restores the moon for comparison.
+   */
+  const vesselMode = !(typeof location !== 'undefined' && new URLSearchParams(location.search).get('body') === 'moon');
+  function vesselBody(): THREE.Mesh {
+    const s = MOON_SCALE;
+    const hullGeo = new THREE.CapsuleGeometry(0.115 * s, 0.3 * s, 6, 20);
+    hullGeo.rotateX(Math.PI / 2); // nose along +Z for lookAt
+    const hull = new THREE.Mesh(
+      hullGeo,
+      new THREE.MeshPhysicalMaterial({
+        color: 0x9a5f43, metalness: 0.45, roughness: 0.55, roughnessMap: rust, bumpMap: rust,
+        bumpScale: 1.2, clearcoat: 0.2, clearcoatRoughness: 0.5, emissive: 0x8b3512, emissiveIntensity: 0,
+      }),
+    );
+    const ivory = new THREE.MeshPhysicalMaterial({ color: 0xd8d2c4, metalness: 0.2, roughness: 0.5, emissive: 0x8b3512, emissiveIntensity: 0 });
+    const dark = new THREE.MeshPhysicalMaterial({ color: 0x2e2a26, metalness: 0.7, roughness: 0.4, emissive: 0x8b3512, emissiveIntensity: 0 });
+    const noseGeo = new THREE.ConeGeometry(0.1 * s, 0.16 * s, 20);
+    noseGeo.rotateX(Math.PI / 2);
+    const nose = new THREE.Mesh(noseGeo, ivory);
+    nose.position.z = 0.31 * s;
+    hull.add(nose);
+    const bellGeo = new THREE.ConeGeometry(0.085 * s, 0.12 * s, 16);
+    bellGeo.rotateX(-Math.PI / 2);
+    const bell = new THREE.Mesh(bellGeo, dark);
+    bell.position.z = -0.29 * s;
+    hull.add(bell);
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2 + Math.PI / 6;
+      const fin = new THREE.Mesh(new THREE.BoxGeometry(0.018 * s, 0.11 * s, 0.16 * s), dark);
+      fin.position.set(Math.cos(a) * 0.13 * s, Math.sin(a) * 0.13 * s, -0.18 * s);
+      fin.rotation.z = a + Math.PI / 2;
+      hull.add(fin);
+    }
+    const porthole = new THREE.Mesh(new THREE.SphereGeometry(0.024 * s, 12, 8), ivory);
+    porthole.position.set(0, 0.1 * s, 0.12 * s);
+    hull.add(porthole);
+    // Engine ember + short trail: the meteor's language at the nozzle.
+    const emberGeo = new THREE.BufferGeometry();
+    emberGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, -0.34 * s], 3));
+    const ember = new THREE.Points(emberGeo, new THREE.PointsMaterial({
+      color: 0xffe1de, size: 3.5, sizeAttenuation: false, transparent: true, opacity: 0.95,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+    ember.renderOrder = 5;
+    hull.add(ember);
+    const trail = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, -0.34 * s), new THREE.Vector3(0, 0, -0.62 * s)]),
+      new THREE.LineBasicMaterial({ color: ORBIT_RED, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }),
+    );
+    trail.renderOrder = 5;
+    hull.add(trail);
+    hull.userData.vessel = true;
+    return hull;
+  }
   function body(index: number, scale = 1) {
+    if (index === 1 && scale === 1 && vesselMode) {
+      const mesh = vesselBody();
+      (mesh.material as THREE.MeshPhysicalMaterial).envMapIntensity = 0.7;
+      mesh.userData.envBase = 0.7;
+      return mesh;
+    }
     let mesh: THREE.Mesh;
     const s = MOON_SCALE;
     const styled = styledBody(index, s);
@@ -483,9 +548,106 @@ export function createMap(
     scene.add(r);
     return r;
   });
+  /**
+   * B2 orbital hints (Brandon, 2026-10-09): each overview moon shows its human presence from
+   * orbit — settlement lights on the basalt moon, a vessel descending a red approach at the
+   * rust moon, an instrument ring around the ivory moon. Each has its own motion driven by
+   * the shared sim clock (so Pause and reduced motion stop them too): the lights breathe, the
+   * vessel flies its approach on a loop, the ring turns against the moon's own spin. Additive,
+   * depth-tested against the body so the far side hides them. Children carry none.
+   */
+  const hintTickers: ((t: number) => void)[] = [];
+  const vesselAhead = new THREE.Vector3();
+  function attachHints(mesh: THREE.Mesh, index: number) {
+    // Bounding radii per style: sphere radii, or the boxed bodies' (cube half-diagonal,
+    // sphere, octahedron) so the hints sit just off the surface in every moon style.
+    const r = (moonStyle === 'spheres' ? SPHERE_RADII[index] : [0.451, 0.29, 0.37][index]) * MOON_SCALE;
+    const pts = (parent: THREE.Object3D, positions: number[], color: number, size: number, opacity: number) => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      const p = new THREE.Points(g, new THREE.PointsMaterial({
+        color, size, sizeAttenuation: false, transparent: true, opacity,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      }));
+      p.renderOrder = 5;
+      parent.add(p);
+      return p;
+    };
+    if (index === 0) {
+      // Settlement lights: a loose cluster of warm pinpricks that breathe like a lived-in base.
+      const d = new THREE.Vector3(0.55, -0.2, 0.8).normalize();
+      const up = new THREE.Vector3(0, 1, 0);
+      const t1 = new THREE.Vector3().crossVectors(d, up).normalize();
+      const t2 = new THREE.Vector3().crossVectors(d, t1).normalize();
+      const positions: number[] = [];
+      const spread = [[0, 0], [0.3, 0.12], [-0.22, 0.26], [0.14, -0.3], [-0.3, -0.14], [0.42, -0.08], [0.06, 0.34], [-0.4, 0.06]];
+      for (const [a, b2] of spread) {
+        const v = new THREE.Vector3().copy(d).addScaledVector(t1, a).addScaledVector(t2, b2).normalize().multiplyScalar(r * 1.01);
+        positions.push(v.x, v.y, v.z);
+      }
+      const lights = pts(mesh, positions, 0xffd9a8, 3.2, 1);
+      const mat = lights.material as THREE.PointsMaterial;
+      hintTickers.push((t) => { mat.opacity = 0.82 + 0.18 * Math.sin(t * 1.7); });
+    } else if (index === 1) {
+      // Descending vessel: the ember flies the approach line down to the surface and loops,
+      // reusing the meteor's language (a glint on a red trajectory).
+      const from = new THREE.Vector3(0.9, 0.75, 0.5).normalize();
+      const a = from.clone().multiplyScalar(r * 2.0);
+      const b2 = from.clone().multiplyScalar(r * 1.08);
+      const line = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([a, b2]),
+        new THREE.LineBasicMaterial({ color: ORBIT_RED, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }),
+      );
+      line.renderOrder = 5;
+      mesh.add(line);
+      const ember = pts(mesh, [a.x, a.y, a.z], 0xffe1de, 4, 1);
+      const pos = ember.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const mat = ember.material as THREE.PointsMaterial;
+      const v = new THREE.Vector3();
+      hintTickers.push((t) => {
+        // 6s approach, brief blackout, repeat. Ease-in: gravity gathers it up.
+        const k = (t % 7.5) / 6;
+        if (k >= 1) { mat.opacity = 0; return; }
+        const e = k * k * (3 - 2 * k);
+        v.lerpVectors(a, b2, e);
+        pos.setXYZ(0, v.x, v.y, v.z);
+        pos.needsUpdate = true;
+        mat.opacity = k > 0.88 ? (1 - k) / 0.12 : Math.min(1, k / 0.08);
+      });
+    } else {
+      // Instrument ring: a visible band of satellites that turns against the moon's own spin.
+      const ring = new THREE.Group();
+      mesh.add(ring);
+      const incline = 0.5;
+      const axis = new THREE.Vector3(1, 0, 0);
+      const positions: number[] = [];
+      for (let k = 0; k < 16; k++) {
+        const a = (k / 16) * Math.PI * 2;
+        const v = new THREE.Vector3(Math.cos(a), 0, Math.sin(a)).multiplyScalar(r * 1.55);
+        v.applyAxisAngle(axis, incline);
+        positions.push(v.x, v.y, v.z);
+      }
+      pts(ring, positions, 0xe8e2d4, 2.4, 0.9);
+      // The band itself, faint, so the ring reads as a structure and not stray dust.
+      const bandPts = Array.from({ length: 65 }, (_, k) => {
+        const a = (k / 64) * Math.PI * 2;
+        return new THREE.Vector3(Math.cos(a), 0, Math.sin(a)).multiplyScalar(r * 1.55).applyAxisAngle(axis, incline);
+      });
+      const band = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(bandPts),
+        new THREE.LineBasicMaterial({ color: 0xe8e2d4, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false }),
+      );
+      band.renderOrder = 5;
+      ring.add(band);
+      hintTickers.push((t) => { ring.rotation.y = -t * 0.55; });
+    }
+  }
+
   const moons = CATEGORIES.map((c, i) => {
     const b = body(i);
     b.userData.category = c.id;
+    // In vessel mode the Fractional body IS the vessel; its descent hint would be redundant.
+    if (!(i === 1 && vesselMode)) attachHints(b, i);
     scene.add(b);
     return b;
   });
@@ -1109,8 +1271,18 @@ export function createMap(
           ? cueScale * THREE.MathUtils.lerp(moonScale, 1, blend) + blend * (CENTER[i] - 1)
           : systemScale * cueScale * moonScale,
       );
-      m.rotation.x = 0.3 + simT * 0.045;
-      m.rotation.y = 0.5 + simT * 0.1;
+      if (m.userData.vessel) {
+        // Flight attitude: nose along the orbit's velocity, with a slight bank. Frozen while
+        // a zoom transition holds the body (position is lerped then, so headings would lie).
+        if (!transition && blend === 0) {
+          vesselAhead.set(...orbitPosition(ORBITS[i], simT + 0.6));
+          m.lookAt(vesselAhead);
+          m.rotateZ(0.35);
+        }
+      } else {
+        m.rotation.x = 0.3 + simT * 0.045;
+        m.rotation.y = 0.5 + simT * 0.1;
+      }
       const lit = emphasized === id;
       setGlow(
         m,
@@ -1130,6 +1302,8 @@ export function createMap(
       ring.visible = ringOpacity > 0.01;
       setTrace(ring, ORBITS[i].a, ringOpacity, lit ? 1.1 : 0);
     });
+    // Hint motion runs on the sim clock, so Pause and reduced motion freeze it with the orbits.
+    hintTickers.forEach((f) => f(simT));
 
     childGroup.visible = childrenShown && !empty;
     host.dataset.childrenVisible = String(childGroup.visible);

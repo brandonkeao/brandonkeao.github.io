@@ -23,7 +23,7 @@ const model = (id: CategoryId, slug: EngagementSlug, tag: string, name: string, 
   ...way(id, name, summary, [
     step('fits', 'When this fits', sections[0], `/services/?engagement=${slug}#wwm-${slug}-fits`, 'When this fits'),
     step('take-on', 'What I would take on', sections[1], `/services/?engagement=${slug}#wwm-${slug}-work`, 'What I would take on'),
-    step('together', 'How we would work together', sections[2], `/services/?engagement=${slug}#wwm-${slug}-work`, 'How we would work together'),
+    step('together', 'How we would work together', sections[2], `/services/?engagement=${slug}#wwm-${slug}-together`, 'How we would work together'),
   ]),
   tag,
   slug,

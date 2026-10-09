@@ -1,0 +1,112 @@
+---
+// Surface landing (ticket #10, Direction B iteration): the selected engagement's top-down
+// base over the Work with me stage — three pre-rendered parallax plates per surface
+// (terrain / structures / traces), exported by the plate renderer kept in Brandon OS
+// (analysis/2026-10-09-wwm-stage-metaphor/renders/renderer.html). No buttons here (Brandon,
+// Oct 9): the scroll story below the switcher carries the narrative; the landing is the
+// establishing shot. Desktop only — on phones the stage stays orbital.
+import type { EngagementSlug } from '../../../lib/orbit/orbit-data';
+import { SURFACES, plateBase } from './surfaces';
+
+interface Props { slug: EngagementSlug }
+
+const { slug } = Astro.props;
+const s = SURFACES[slug];
+const base = plateBase(s);
+---
+
+<div class="wwm-surface" data-wwm-surface={slug}>
+  <div class="surface-box">
+    <img class="pl" data-depth="0" src={`${base}-terrain.webp`} alt="" width="1920" height="1290" loading="lazy" decoding="async" />
+    <img class="pl" data-depth="1" src={`${base}-structures.webp`} alt="" width="1920" height="1290" loading="lazy" decoding="async" />
+    <img class="pl" data-depth="2" src={`${base}-traces.webp`} alt="" width="1920" height="1290" loading="lazy" decoding="async" />
+  </div>
+</div>
+
+<script>
+  // Pointer parallax on the landed surface: layers drift against the cursor at depth-scaled
+  // amounts. Skipped entirely under reduced motion; the descent itself is CSS.
+  let ctl: AbortController | undefined;
+
+  function init() {
+    ctl?.abort();
+    ctl = undefined;
+    const stage = document.querySelector<HTMLElement>('.map-stage[data-orbit="work"]');
+    if (!stage || !stage.querySelector('[data-wwm-surface]')) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    ctl = new AbortController();
+    const { signal } = ctl;
+    let raf = 0;
+    stage.addEventListener('pointermove', (e) => {
+      const r = stage.getBoundingClientRect();
+      const tx = (e.clientX - r.left) / r.width - 0.5;
+      const ty = (e.clientY - r.top) / r.height - 0.5;
+      if (!raf) raf = requestAnimationFrame(() => {
+        raf = 0;
+        stage.querySelectorAll<HTMLElement>('.wwm-surface[data-on] .pl').forEach((p) => {
+          const k = [2.5, 6, 10][Number(p.dataset.depth ?? 0)];
+          p.style.translate = `${(-tx * k).toFixed(1)}px ${(-ty * k).toFixed(1)}px`;
+        });
+      });
+    }, { signal });
+    stage.addEventListener('pointerleave', () => {
+      // Ease the layers home instead of snapping: translate gets a transition only for
+      // this reset (a standing one would smear the per-frame pointer updates).
+      stage.querySelectorAll<HTMLElement>('.wwm-surface .pl').forEach((p) => {
+        p.style.transition = 'transform 1.2s cubic-bezier(0.22, 0.8, 0.3, 1), translate 0.5s ease';
+        p.style.translate = '';
+        setTimeout(() => { p.style.transition = ''; }, 520);
+      });
+    }, { signal });
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => { ctl?.abort(); ctl = undefined; });
+</script>
+
+<style is:global>
+  /* The surface sits over the scene (z 1) and under the dock (z 4), covering the stage box.
+     Its edges fade out (the Home closeup's mask idiom) and the orbit scene fades away
+     beneath, so the plate melts into the stage's ground instead of reading as a pasted box. */
+  .wwm-surface {
+    position: absolute; inset: 0; z-index: 2; overflow: hidden; visibility: hidden; opacity: 0;
+    transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 100px, #000 calc(100% - 110px), transparent 100%), linear-gradient(180deg, transparent 0, #000 100px, #000 calc(100% - 100px), transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent 0, #000 100px, #000 calc(100% - 110px), transparent 100%), linear-gradient(180deg, transparent 0, #000 100px, #000 calc(100% - 100px), transparent 100%);
+    mask-composite: intersect;
+  }
+  .wwm-surface[data-on] { visibility: visible; opacity: 1; transition: opacity 0.9s ease 0.3s, visibility 0s; }
+  /* Ground-toned vignette over the plates finishes the blend. */
+  .wwm-surface::after { content: ''; position: absolute; inset: -2px; z-index: 1; pointer-events: none; box-shadow: inset 0 0 150px 48px var(--ground); }
+  /* While landed, the orbit scene under the plate steps aside — only where the surface
+     exists to replace it (the landing is a desktop device; phones keep the orbital scene,
+     which marks the selection itself). */
+  @media (min-width: 861px) {
+    .map-stage[data-landed] .scene-host, .map-stage[data-landed] .stage-poster img { opacity: 0; transition: opacity 0.7s ease 0.15s; }
+  }
+  .map-stage .scene-host { transition: opacity 0.5s ease; }
+  /* No jump buttons on the landed stage (Brandon, Oct 9): the scroll story below carries it. */
+  .map-stage[data-landed] [data-steps] { display: none; }
+  /* Cover box: keeps the plate's aspect so the callout percentages always align with the art. */
+  .surface-box { position: absolute; left: 50%; top: 50%; translate: -50% -50%; aspect-ratio: 1920 / 1290; min-width: 101%; min-height: 101%; }
+  .wwm-surface .pl { position: absolute; inset: 0; width: 100%; height: 100%; will-change: transform; transition: transform 1.2s cubic-bezier(0.22, 0.8, 0.3, 1); }
+  /* Descent: the plates start closer (bigger) and settle to depth-staggered rests — the
+     difference between the layers' travel is the parallax. */
+  .wwm-surface .pl[data-depth='0'] { transform: scale(1.14); }
+  .wwm-surface .pl[data-depth='1'] { transform: scale(1.19); }
+  .wwm-surface .pl[data-depth='2'] { transform: scale(1.24); }
+  .wwm-surface[data-on] .pl[data-depth='0'] { transform: scale(1.02); }
+  .wwm-surface[data-on] .pl[data-depth='1'] { transform: scale(1.045); }
+  .wwm-surface[data-on] .pl[data-depth='2'] { transform: scale(1.07); }
+  @media (prefers-reduced-motion: reduce) {
+    .wwm-surface, .wwm-surface[data-on], .wwm-surface .pl { transition: none; }
+    .wwm-surface .pl[data-depth='0'] { transform: scale(1.02); }
+    .wwm-surface .pl[data-depth='1'] { transform: scale(1.045); }
+    .wwm-surface .pl[data-depth='2'] { transform: scale(1.07); }
+  }
+  /* Phones restructure the stage into the flow; the landing stays a desktop device. */
+  @media (max-width: 860px) {
+    .wwm-surface { display: none; }
+  }
+</style>
