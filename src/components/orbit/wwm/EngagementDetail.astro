@@ -2,10 +2,11 @@
 // Work with me (ticket #8, Direction B): one engagement model's detail, shown in place under the
 // sticky switcher. Server-rendered and visible by default, so with JavaScript off all three
 // details read stacked; the page script hides the ones not selected.
-// Order (copy pack): intro → When this fits → take on / work together (white sheet) →
-// Relevant work and methods → one closing sheet with the one brand-red button.
-// DRAFT COPY under Brandon's review; it lives in ./content.ts.
+// Order (Brandon, Oct 9): intro → the scrolly surface story (When this fits / take on /
+// together, told over the landed plate) → Relevant work and methods → one closing sheet
+// with the one brand-red button. DRAFT COPY under Brandon's review; it lives in ./content.ts.
 import Sheet from '../Sheet.astro';
+import SurfaceStory from './SurfaceStory.astro';
 import type { Engagement } from './content';
 
 interface Props { e: Engagement }
@@ -24,25 +25,9 @@ const id = `wwm-${e.slug}`;
     </div>
   </div>
 
-  <div class="wwm-band ground-pad" id={`${id}-fits`}>
-    <div class="wwm-head"><h3 class="t-title">When this fits</h3></div>
-    <ul class="wwm-body wwm-fits">
-      {e.fits.map((f) => <li class="t-body">{f}</li>)}
-    </ul>
+  <div class="ground-pad">
+    <SurfaceStory e={e} />
   </div>
-
-  <Sheet id={`${id}-work`} class="wwm-sheet" label={`${e.name}: the work`}>
-    <div class="row wwm-work">
-      <div class="col">
-        <h3 class="t-item">What I would take on</h3>
-        <p class="t-body muted-s wwm-measure">{e.takeOn}</p>
-      </div>
-      <div class="col">
-        <h3 class="t-item">How we would work together</h3>
-        <p class="t-body muted-s wwm-measure">{e.together}</p>
-      </div>
-    </div>
-  </Sheet>
 
   <div class="wwm-band ground-pad wwm-evidence" id={`${id}-evidence`}>
     <div class="wwm-head">

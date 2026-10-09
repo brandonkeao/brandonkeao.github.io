@@ -399,7 +399,72 @@ export function createMap(
     mesh.userData.edgeLit = 0.62;
     return mesh;
   }
+  /**
+   * Review switch (Brandon, 2026-10-09): `?body=vessel` renders the Fractional body as a
+   * rocket ship instead of the rust moon — a B1-style exploration behind a URL switch, never
+   * the default. Built from primitives in the rust/copper family; bounding size matches the
+   * rust moon so orbits, labels, depth cues and zoom scales hold. Its nose follows the orbit
+   * (set per frame); the rust descending-vessel hint is hidden since the body is the vessel.
+   */
+  const vesselMode = typeof location !== 'undefined' && new URLSearchParams(location.search).get('body') === 'vessel';
+  function vesselBody(): THREE.Mesh {
+    const s = MOON_SCALE;
+    const hullGeo = new THREE.CapsuleGeometry(0.115 * s, 0.3 * s, 6, 20);
+    hullGeo.rotateX(Math.PI / 2); // nose along +Z for lookAt
+    const hull = new THREE.Mesh(
+      hullGeo,
+      new THREE.MeshPhysicalMaterial({
+        color: 0x9a5f43, metalness: 0.45, roughness: 0.55, roughnessMap: rust, bumpMap: rust,
+        bumpScale: 1.2, clearcoat: 0.2, clearcoatRoughness: 0.5, emissive: 0x8b3512, emissiveIntensity: 0,
+      }),
+    );
+    const ivory = new THREE.MeshPhysicalMaterial({ color: 0xd8d2c4, metalness: 0.2, roughness: 0.5, emissive: 0x8b3512, emissiveIntensity: 0 });
+    const dark = new THREE.MeshPhysicalMaterial({ color: 0x2e2a26, metalness: 0.7, roughness: 0.4, emissive: 0x8b3512, emissiveIntensity: 0 });
+    const noseGeo = new THREE.ConeGeometry(0.1 * s, 0.16 * s, 20);
+    noseGeo.rotateX(Math.PI / 2);
+    const nose = new THREE.Mesh(noseGeo, ivory);
+    nose.position.z = 0.31 * s;
+    hull.add(nose);
+    const bellGeo = new THREE.ConeGeometry(0.085 * s, 0.12 * s, 16);
+    bellGeo.rotateX(-Math.PI / 2);
+    const bell = new THREE.Mesh(bellGeo, dark);
+    bell.position.z = -0.29 * s;
+    hull.add(bell);
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2 + Math.PI / 6;
+      const fin = new THREE.Mesh(new THREE.BoxGeometry(0.018 * s, 0.11 * s, 0.16 * s), dark);
+      fin.position.set(Math.cos(a) * 0.13 * s, Math.sin(a) * 0.13 * s, -0.18 * s);
+      fin.rotation.z = a + Math.PI / 2;
+      hull.add(fin);
+    }
+    const porthole = new THREE.Mesh(new THREE.SphereGeometry(0.024 * s, 12, 8), ivory);
+    porthole.position.set(0, 0.1 * s, 0.12 * s);
+    hull.add(porthole);
+    // Engine ember + short trail: the meteor's language at the nozzle.
+    const emberGeo = new THREE.BufferGeometry();
+    emberGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, -0.34 * s], 3));
+    const ember = new THREE.Points(emberGeo, new THREE.PointsMaterial({
+      color: 0xffe1de, size: 3.5, sizeAttenuation: false, transparent: true, opacity: 0.95,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+    ember.renderOrder = 5;
+    hull.add(ember);
+    const trail = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, -0.34 * s), new THREE.Vector3(0, 0, -0.62 * s)]),
+      new THREE.LineBasicMaterial({ color: ORBIT_RED, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }),
+    );
+    trail.renderOrder = 5;
+    hull.add(trail);
+    hull.userData.vessel = true;
+    return hull;
+  }
   function body(index: number, scale = 1) {
+    if (index === 1 && scale === 1 && vesselMode) {
+      const mesh = vesselBody();
+      (mesh.material as THREE.MeshPhysicalMaterial).envMapIntensity = 0.7;
+      mesh.userData.envBase = 0.7;
+      return mesh;
+    }
     let mesh: THREE.Mesh;
     const s = MOON_SCALE;
     const styled = styledBody(index, s);
@@ -492,6 +557,7 @@ export function createMap(
    * depth-tested against the body so the far side hides them. Children carry none.
    */
   const hintTickers: ((t: number) => void)[] = [];
+  const vesselAhead = new THREE.Vector3();
   function attachHints(mesh: THREE.Mesh, index: number) {
     // Bounding radii per style: sphere radii, or the boxed bodies' (cube half-diagonal,
     // sphere, octahedron) so the hints sit just off the surface in every moon style.
@@ -580,7 +646,8 @@ export function createMap(
   const moons = CATEGORIES.map((c, i) => {
     const b = body(i);
     b.userData.category = c.id;
-    attachHints(b, i);
+    // In vessel mode the Fractional body IS the vessel; its descent hint would be redundant.
+    if (!(i === 1 && vesselMode)) attachHints(b, i);
     scene.add(b);
     return b;
   });
@@ -1204,8 +1271,18 @@ export function createMap(
           ? cueScale * THREE.MathUtils.lerp(moonScale, 1, blend) + blend * (CENTER[i] - 1)
           : systemScale * cueScale * moonScale,
       );
-      m.rotation.x = 0.3 + simT * 0.045;
-      m.rotation.y = 0.5 + simT * 0.1;
+      if (m.userData.vessel) {
+        // Flight attitude: nose along the orbit's velocity, with a slight bank. Frozen while
+        // a zoom transition holds the body (position is lerped then, so headings would lie).
+        if (!transition && blend === 0) {
+          vesselAhead.set(...orbitPosition(ORBITS[i], simT + 0.6));
+          m.lookAt(vesselAhead);
+          m.rotateZ(0.35);
+        }
+      } else {
+        m.rotation.x = 0.3 + simT * 0.045;
+        m.rotation.y = 0.5 + simT * 0.1;
+      }
       const lit = emphasized === id;
       setGlow(
         m,
