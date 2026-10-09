@@ -1,0 +1,99 @@
+---
+// Work with me (ticket #8, Direction B): one engagement model's detail, shown in place under the
+// sticky switcher. Server-rendered and visible by default, so with JavaScript off all three
+// details read stacked; the page script hides the ones not selected.
+// Order (copy pack): intro → When this fits → take on / work together (white sheet) →
+// Relevant work and methods → one closing sheet with the one brand-red button.
+// DRAFT COPY under Brandon's review; it lives in ./content.ts.
+import Sheet from '../Sheet.astro';
+import type { Engagement } from './content';
+
+interface Props { e: Engagement }
+const { e } = Astro.props;
+const id = `wwm-${e.slug}`;
+---
+
+<section class="wwm-detail" id={id} data-wwm-detail={e.slug} aria-labelledby={`${id}-title`}>
+  <div class="wwm-band ground-pad wwm-detail-intro">
+    <div class="wwm-head">
+      <p class="t-caption wwm-eyebrow"><i class={`dot dot-${e.dot}`} aria-hidden="true"></i>{e.tag}</p>
+      <h2 class="t-section" id={`${id}-title`} tabindex="-1">{e.name}</h2>
+    </div>
+    <div class="wwm-body">
+      <p class="t-lead wwm-measure">{e.intro}</p>
+    </div>
+  </div>
+
+  <div class="wwm-band ground-pad" id={`${id}-fits`}>
+    <div class="wwm-head"><h3 class="t-title">When this fits</h3></div>
+    <ul class="wwm-body wwm-fits">
+      {e.fits.map((f) => <li class="t-body">{f}</li>)}
+    </ul>
+  </div>
+
+  <Sheet id={`${id}-work`} class="wwm-sheet" label={`${e.name}: the work`}>
+    <div class="row wwm-work">
+      <div class="col">
+        <h3 class="t-item">What I would take on</h3>
+        <p class="t-body muted-s wwm-measure">{e.takeOn}</p>
+      </div>
+      <div class="col">
+        <h3 class="t-item">How we would work together</h3>
+        <p class="t-body muted-s wwm-measure">{e.together}</p>
+      </div>
+    </div>
+  </Sheet>
+
+  <div class="wwm-band ground-pad wwm-evidence" id={`${id}-evidence`}>
+    <div class="wwm-head">
+      <h3 class="t-title">Relevant work and methods</h3>
+      <p class="t-body muted-g wwm-follow">{e.evidenceLead}</p>
+    </div>
+    <div class="wwm-body wwm-groups">
+      <div class="wwm-group">
+        <p class="t-caption wwm-group-label">From the Portfolio</p>
+        <ul class="wwm-ev-list">
+          {e.portfolio.map((p) => (
+            <li>
+              <a class="wwm-ev" href={p.href}>
+                <span class="wwm-ev-title"><span class="t-item wwm-ev-name">{p.title}</span><span class="wwm-arrow" aria-hidden="true">→</span></span>
+                {p.origin && <span class="tag wwm-origin">{p.origin}</span>}
+                <span class="t-small muted-g">{p.note}</span>
+              </a>
+            </li>
+          ))}
+          {e.reserved && (
+            <li>
+              <div class="wwm-ev wwm-reserved">
+                <span class="t-item wwm-ev-name">{e.reserved.title}</span>
+                <span class="t-small faint-g">{e.reserved.note}</span>
+              </div>
+            </li>
+          )}
+        </ul>
+      </div>
+      <div class="wwm-group">
+        <p class="t-caption wwm-group-label">From the Playbooks</p>
+        {e.playbooks.length > 0 && (
+          <ul class="wwm-ev-list">
+            {e.playbooks.map((p) => (
+              <li>
+                <a class="wwm-ev" href={p.href}>
+                  <span class="wwm-ev-title"><span class="t-item wwm-ev-name">{p.title}</span><span class="wwm-arrow" aria-hidden="true">→</span></span>
+                  <span class="t-small muted-g">{p.note}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+        {e.playbooksLink && <p class="wwm-group-link"><a class="link-ground" href={e.playbooksLink.href}>{e.playbooksLink.label} →</a></p>}
+      </div>
+    </div>
+  </div>
+
+  <Sheet class="wwm-close" label={`Let's talk about ${e.name}`}>
+    <p class="t-caption wwm-close-eyebrow">Let's talk</p>
+    <h3 class="t-title wwm-close-title">{e.cta.title}</h3>
+    <a href={e.cta.href} class="btn btn-brand wwm-close-btn">{e.cta.button}</a>
+  </Sheet>
+</section>
