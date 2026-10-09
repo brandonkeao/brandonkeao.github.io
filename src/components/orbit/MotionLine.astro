@@ -1,0 +1,205 @@
+---
+// Red line marks under page titles, brought back from the earlier site at Brandon's
+// request (2026-10-06). Each draws once when it comes into view; it never replays.
+// The final drawing is plain SVG, so reduced motion and no-JS readers see it still.
+interface Props {
+  kind: 'momentum' | 'map' | 'align' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
+  /** align only: size the mark to its container; the fork is half, the single line the other half (Brandon, 2026-10-06). */
+  stretch?: boolean;
+}
+const { kind, stretch = false } = Astro.props;
+---
+
+{stretch && kind === 'align' ? (
+  // One SVG, three continuous paths (Brandon, 2026-10-09: the piecewise span/SVG build read
+  // "segmented... I can visually see where the lines are drawn and overlap"). A script sizes the
+  // viewBox to the container so curves stay undistorted; without JS the default geometry
+  // stretches mildly. The glow underlay echoes the orbital traces' softness.
+  <div class="motion-line motion-line-align motion-line-stretch" data-motion data-ml-stretch aria-hidden="true">
+    <svg width="100%" height="40" viewBox="0 0 720 40" preserveAspectRatio="none" fill="none" focusable="false">
+      <defs>
+        <filter id="mls-glow-f" x="-10%" y="-200%" width="120%" height="500%">
+          <feGaussianBlur stdDeviation="2.4" />
+        </filter>
+        <linearGradient id="mls-fade-g" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="currentColor" />
+          <stop offset="0.86" stop-color="currentColor" />
+          <stop offset="1" stop-color="currentColor" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <g class="mls-glow" filter="url(#mls-glow-f)">
+        <path class="mls-path" data-ml="top" pathLength="1" d="M 1 6 H 296 C 327 6 327 20 360 20" />
+        <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717 M 711 14 l 6 6 -6 6" />
+        <path class="mls-path" data-ml="bottom" pathLength="1" d="M 1 34 H 296 C 327 34 327 20 360 20" />
+      </g>
+      <g class="mls-sharp">
+        <path class="mls-path mls-soft" data-ml="top" pathLength="1" d="M 1 6 H 296 C 327 6 327 20 360 20" />
+        <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717 M 711 14 l 6 6 -6 6" />
+        <path class="mls-path mls-soft" data-ml="bottom" pathLength="1" d="M 1 34 H 296 C 327 34 327 20 360 20" />
+      </g>
+    </svg>
+  </div>
+) : (
+<svg class={`motion-line motion-line-${kind}`} data-motion aria-hidden="true" focusable="false" viewBox="0 0 234 40" width="234" height="40" fill="none">
+  {kind === 'momentum' && <>
+    <path class="ml-track" d="M4 20H228" />
+    <path class="ml-draw" pathLength="1" d="M4 20H228" />
+    <circle class="ml-traveller" cx="4" cy="20" r="3" />
+    <path class="ml-resolve" d="m222 14 6 6-6 6" />
+  </>}
+  {kind === 'map' && <>
+    <path class="ml-draw" pathLength="1" d="M22 26h34V10h42m16 0h38v20h54" />
+    <rect class="ml-arrive" x="8" y="20" width="14" height="12" rx="1" />
+    <rect class="ml-arrive ml-d1" x="98" y="4" width="16" height="12" rx="1" />
+    <rect class="ml-arrive ml-d2" x="206" y="24" width="16" height="12" rx="1" />
+  </>}
+  {kind === 'align' && <>
+    <path class="ml-draw ml-soft" pathLength="1" d="M8 6h48c25 0 25 14 52 14" />
+    <path class="ml-draw ml-d1" pathLength="1" d="M8 20h214m-6-6 6 6-6 6" />
+    <path class="ml-draw ml-soft ml-d2" pathLength="1" d="M8 34h48c25 0 25-14 52-14" />
+  </>}
+  {kind === 'books' && <>
+    <path class="ml-draw ml-soft" pathLength="1" d="M4 36h222" />
+    <g class="ml-place"><rect x="14" y="10" width="22" height="26" rx="1" /><path d="M20 15h10" /></g>
+    <g class="ml-place ml-d1"><rect x="42" y="4" width="18" height="32" rx="1" /><path d="M48 10h6" /></g>
+    <g class="ml-place ml-d2"><rect x="66" y="8" width="26" height="28" rx="1" /><path d="M73 14h12" /></g>
+    <g class="ml-place ml-d3"><rect x="98" y="2" width="20" height="34" rx="1" /><path d="M104 9h8" /></g>
+    <g class="ml-place ml-d4"><rect x="124" y="12" width="28" height="24" rx="1" /><path d="M132 18h12" /></g>
+  </>}
+  {kind === 'exchange' && <>
+    <path class="ml-draw" pathLength="1" d="M8 12h170m-6-6 6 6-6 6" />
+    <path class="ml-draw ml-d2" pathLength="1" d="M226 28H56m6-6-6 6 6 6" />
+  </>}
+  {kind === 'connect' && <>
+    <path class="ml-draw" pathLength="1" d="M12 20h96" />
+    <path class="ml-draw" pathLength="1" d="M222 20h-96" />
+    <circle class="ml-dot" cx="8" cy="20" r="3" /><circle class="ml-dot" cx="226" cy="20" r="3" />
+    <circle class="ml-meet" cx="117" cy="20" r="6" />
+  </>}
+  {kind === 'converge' && <>
+    <path class="ml-draw ml-d1" pathLength="1" d="M22 20h80m18 0h92" />
+    <g class="ml-team" style="--ml-offset:-5px"><circle cx="14" cy="20" r="8" /><circle class="ml-dot" cx="14" cy="20" r="2" /></g>
+    <g class="ml-team ml-d1"><circle cx="111" cy="20" r="8" /><circle class="ml-dot" cx="111" cy="20" r="2" /></g>
+    <g class="ml-team ml-d2" style="--ml-offset:5px"><circle cx="220" cy="20" r="8" /><circle class="ml-dot" cx="220" cy="20" r="2" /></g>
+  </>}
+  {kind === 'build' && <>
+    <path class="ml-draw ml-soft" pathLength="1" d="M4 36h222" />
+    <rect class="ml-place" x="14" y="20" width="32" height="16" rx="1" />
+    <rect class="ml-place ml-d1" x="52" y="20" width="32" height="16" rx="1" />
+    <rect class="ml-place ml-d2" x="90" y="20" width="32" height="16" rx="1" />
+    <rect class="ml-place ml-d3" x="33" y="2" width="32" height="12" rx="1" />
+    <rect class="ml-place ml-d4" x="71" y="2" width="32" height="12" rx="1" />
+  </>}
+</svg>
+)}
+
+<script>
+  const played = new WeakSet<Element>();
+  let observer: IntersectionObserver | undefined;
+  let resizer: ResizeObserver | undefined;
+
+  /**
+   * The stretched mark's geometry, pixel-true for the container width: three continuous
+   * paths — two outer strands that run straight and curve into the midpoint, fading as they
+   * merge, and a centre line that carries on to the arrowhead. One path each means no joints.
+   */
+  function buildStretch(root: HTMLElement) {
+    const svg = root.querySelector('svg');
+    if (!svg) return;
+    const W = Math.max(220, Math.round(root.clientWidth));
+    svg.setAttribute('viewBox', `0 0 ${W} 40`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    const mx = Math.round(W * 0.5);
+    const cw = Math.min(64, Math.round(mx * 0.4));
+    const outer = (y0: number) =>
+      `M 1 ${y0} H ${mx - cw} C ${mx - cw + cw * 0.48} ${y0} ${mx - cw * 0.52} 20 ${mx} 20`;
+    const d: Record<string, string> = {
+      top: outer(6),
+      bottom: outer(34),
+      center: `M 1 20 H ${W - 3} M ${W - 9} 14 l 6 6 -6 6`,
+    };
+    svg.querySelectorAll<SVGPathElement>('.mls-path').forEach((p) => p.setAttribute('d', d[p.dataset.ml ?? 'center']));
+    // Equal speed everywhere: each path's duration follows its real length, so the two outer
+    // heads reach the merge exactly as the centre head passes it — one gesture, no stages.
+    const center = svg.querySelector<SVGPathElement>('.mls-sharp [data-ml="center"]');
+    const lenC = center?.getTotalLength() || W;
+    svg.querySelectorAll<SVGPathElement>('.mls-path').forEach((p) => {
+      p.style.setProperty('--mls-dur', `${Math.round(950 * (p.getTotalLength() / lenC))}ms`);
+    });
+  }
+
+  function init() {
+    observer?.disconnect();
+    resizer?.disconnect();
+    const stretches = document.querySelectorAll<HTMLElement>('[data-ml-stretch]');
+    stretches.forEach(buildStretch);
+    if ('ResizeObserver' in window) {
+      resizer = new ResizeObserver((es) => es.forEach((e) => buildStretch(e.target as HTMLElement)));
+      stretches.forEach((el) => resizer?.observe(el));
+    }
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+    observer = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        // A mark another animation drives (the Home meteor) is started by that animation.
+        if (e.target.hasAttribute('data-motion-hold')) continue;
+        observer?.unobserve(e.target);
+        played.add(e.target);
+        e.target.setAttribute('data-motion-play', '');
+      }
+    }, { threshold: 0.25 });
+    document.querySelectorAll('.motion-line[data-motion]').forEach((el) => {
+      if (!played.has(el)) {
+        el.setAttribute('data-motion-armed', '');
+        observer?.observe(el);
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => { observer?.disconnect(); resizer?.disconnect(); });
+</script>
+
+<style is:global>
+  .motion-line { display: block; width: 234px; max-width: 100%; height: 40px; margin-top: 20px; overflow: visible; color: var(--accent-on-ground); stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .ml-draw { stroke-dasharray: 1; stroke-dashoffset: 0; }
+  /* Stretched align mark: one SVG, three continuous paths (no joints). The outer strands fade
+     out as they merge so density never doubles on the centre line; a blurred underlay gives the
+     lines the orbital traces' soft texture. */
+  .motion-line-stretch { width: 100%; height: 40px; }
+  .motion-line-stretch svg { display: block; overflow: visible; }
+  .mls-path { stroke-dasharray: 1; stroke-dashoffset: 0; }
+  .mls-sharp .mls-soft { opacity: 0.65; stroke: url(#mls-fade-g); }
+  .mls-glow { opacity: 0.42; stroke-width: 4; }
+  .mls-glow .mls-path[data-ml='top'], .mls-glow .mls-path[data-ml='bottom'] { opacity: 0.6; stroke: url(#mls-fade-g); }
+  .ml-dot { fill: currentColor; stroke: none; }
+  .ml-soft { opacity: 0.65; }
+  .ml-track { opacity: 0.25; }
+  .ml-traveller { fill: currentColor; stroke: none; opacity: 0; }
+  .ml-meet { transform-origin: 117px 20px; }
+  .ml-d1 { --ml-delay: 100ms; } .ml-d2 { --ml-delay: 200ms; } .ml-d3 { --ml-delay: 300ms; } .ml-d4 { --ml-delay: 400ms; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Armed marks wait hidden for their one play; unarmed (no JS) marks show final. */
+    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-draw { stroke-dashoffset: 1; }
+    .motion-line[data-motion-play] .ml-draw { animation: ml-draw 850ms ease-out var(--ml-delay, 0ms) both; }
+    /* Stretched mark: every path draws at the same speed (durations set per length by the
+       script), so the strands land on the merge as the centre head passes — one gesture. */
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mls-path { stroke-dashoffset: 1; }
+    .motion-line[data-motion-play] .mls-path { animation: ml-draw var(--mls-dur, 950ms) linear both; }
+    .motion-line[data-motion-play] .ml-arrive { animation: ml-arrive 650ms ease-out var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-play] .ml-place { animation: ml-place 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-play] .ml-meet { animation: ml-meet 950ms ease-out both; }
+    .motion-line[data-motion-play] .ml-team { animation: ml-align 850ms ease-out var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-play] .ml-traveller { animation: ml-travel 1100ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .motion-line[data-motion-play] .ml-resolve { animation: ml-resolve 1100ms ease-out both; }
+  }
+
+  @keyframes ml-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes ml-arrive { from { opacity: 0.45; } to { opacity: 1; } }
+  @keyframes ml-place { from { transform: translateY(-4px); } to { transform: translateY(0); } }
+  @keyframes ml-meet { from { transform: scale(0.6); opacity: 0.45; } to { transform: scale(1); opacity: 1; } }
+  @keyframes ml-align { from { transform: translateY(var(--ml-offset, 0px)); } to { transform: translateY(0); } }
+  @keyframes ml-travel { 0% { opacity: 1; transform: translateX(0); } 85% { opacity: 1; transform: translateX(218px); } 100% { opacity: 0; transform: translateX(218px); } }
+  @keyframes ml-resolve { 0%, 75% { opacity: 0; } 100% { opacity: 1; } }
+</style>

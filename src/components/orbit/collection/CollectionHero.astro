@@ -1,0 +1,18 @@
+---
+// Collection hero on the ground: H1, the pack's intro lines, then the trace strip.
+import TraceStrip from './TraceStrip.astro';
+import './collection.css';
+
+interface Props { title: string; lead: string; body: string; note: string }
+const { title, lead, body, note } = Astro.props;
+---
+
+<section class="cl-hero" aria-labelledby="cl-hero-title">
+  <div class="cl-hero-text">
+    <h1 id="cl-hero-title" class="t-page-title">{title}</h1>
+    <p class="t-lead cl-hero-lead">{lead}</p>
+    <p class="t-body muted-g cl-hero-body">{body}</p>
+    <p class="t-small faint-g cl-hero-note">{note}</p>
+  </div>
+  <TraceStrip />
+</section>

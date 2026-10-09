@@ -1,0 +1,7 @@
+---
+// A white sheet on the deep stone ground.
+interface Props { id?: string; class?: string; label?: string }
+const { id, class: extra, label } = Astro.props;
+---
+
+<section id={id} class:list={['sheet', extra]} aria-label={label}><slot /></section>

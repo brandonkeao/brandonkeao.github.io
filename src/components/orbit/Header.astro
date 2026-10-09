@@ -1,0 +1,65 @@
+---
+// Orbit site header: brand, primary nav and one call to action ("Let's talk", C-G1).
+
+// Five-page IA (accepted 2026-10-08): Home / Work with me / Portfolio / Playbooks / About.
+// Manager README and Bookshelf keep their routes but leave the primary nav.
+const navLinks = [
+  { href: '/services/', label: 'Work with me' },
+  { href: '/portfolio/', label: 'Portfolio' },
+  { href: '/playbooks/', label: 'Playbooks' },
+  { href: '/about/', label: 'About' },
+];
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const current = (href: string) => {
+  const h = href.replace(/\/$/, '') || '/';
+  return path === h || path.startsWith(h + '/') ? 'page' : undefined;
+};
+---
+
+<header class="site-header">
+  <nav class="nav" aria-label="Primary navigation">
+    <a href="/" class="brand" aria-label="Brandon Keao, home"><span class="mark" aria-hidden="true">bk</span>Brandon Keao</a>
+    <div class="nav-desktop">
+      <ul class="nav-links">
+        {navLinks.map((l) => <li><a href={l.href} aria-current={current(l.href)}>{l.label}</a></li>)}
+      </ul>
+      <a href="/contact/" class="btn btn-ground btn-sm" aria-current={current('/contact/')}>Let's talk</a>
+    </div>
+    <button class="menu-btn" type="button" aria-controls="mobile-menu" aria-expanded="false" data-menu-toggle>Menu</button>
+  </nav>
+  <div id="mobile-menu" class="mobile-menu" hidden>
+    <ul class="t-title">
+      {navLinks.map((l) => <li><a href={l.href} aria-current={current(l.href)}>{l.label}</a></li>)}
+    </ul>
+    <a href="/contact/" class="btn btn-ground" aria-current={current('/contact/')}>Let's talk</a>
+  </div>
+</header>
+
+<script>
+  let dispose: (() => void) | undefined;
+
+  function initMenu() {
+    dispose?.();
+    const btn = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+    const menu = document.getElementById('mobile-menu');
+    if (!btn || !menu) return;
+    const ctl = new AbortController();
+    const opts = { signal: ctl.signal };
+    const setOpen = (open: boolean) => {
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Close' : 'Menu';
+    };
+    setOpen(false);
+    btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'), opts);
+    menu.addEventListener('click', (e) => { if ((e.target as Element).closest('a')) setOpen(false); }, opts);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') { setOpen(false); btn.focus(); }
+    }, opts);
+    matchMedia('(min-width: 1024px)').addEventListener('change', () => setOpen(false), opts);
+    dispose = () => ctl.abort();
+  }
+
+  document.addEventListener('astro:page-load', initMenu);
+  document.addEventListener('astro:before-swap', () => dispose?.());
+</script>

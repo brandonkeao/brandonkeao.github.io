@@ -1,138 +1,210 @@
 ---
+// Work with me (ticket #8, Direction B: one page, "compress to switcher").
+// Overview: intro, the orbit (assistive; it reuses the Home motion, per Brandon's ask to
+// "leverage the current animation direction"), the three ways as rows (the canonical path),
+// the shared body of work, and one closing sheet. Choosing a way compresses the rows into a
+// sticky switcher and reveals that model's detail in place; ?engagement= makes it shareable.
+// All copy is verbatim from analysis/2026-10-09-hifi-directions/COPY_PACK.md and is DRAFT
+// under Brandon's review. Layout choices are AI-made and reversible.
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HeroMotion from '../components/HeroMotion.astro';
+import OrbitStage from '../components/orbit/OrbitStage.astro';
+import Sheet from '../components/orbit/Sheet.astro';
+import MotionLine from '../components/orbit/MotionLine.astro';
+import EngagementDetail from '../components/orbit/wwm/EngagementDetail.astro';
+import { ENGAGEMENTS } from '../components/orbit/wwm/content';
 
-const serviceAreas = [
-  {
-    title: 'Product Vision, Strategy & Positioning',
-    items: ['Vision development', 'Strategic planning', 'Positioning', 'Roadmapping', 'Go-to-market strategy', 'Strategy summits']
-  },
-  {
-    title: 'Product Design & User Research',
-    items: ['User personas', 'Experience research', 'Customer journeys', 'Interviews', 'Usability testing', 'Opportunity mapping']
-  },
-  {
-    title: 'Product Operations & Organization Design',
-    items: ['Organizational assessments', 'Team structure', 'Competency frameworks', 'Analytics reviews', 'Decision practices', 'Operating cadence']
-  },
-  {
-    title: 'Coaching & Mentoring',
-    items: ['Product coaching', 'Team hiring', 'Communication', 'Prioritization', 'Functional training', 'Leadership development']
-  }
-];
+const lead = 'Bring me into your team full time, work with me on a product outcome, or get help with a business problem.';
 ---
 
-<BaseLayout title="Work With Me" description="Product strategy, discovery, assessment, and fractional product leadership with Brandon Keao.">
-  <section class="page-hero">
-    <div class="container">
-      <p class="kicker">Work with me</p>
-      <h1 class="page-title">Get unstuck.<br />Build momentum.</h1>
-      <HeroMotion kind="align" />
-      <p class="page-dek">I work with leadership teams when an important product or growth problem is not moving. The cause may be unclear, the data may not settle the debate, or the work may need several teams to move together. I help the team find what is getting in the way, decide what to do next, and see it through.</p>
-    </div>
-  </section>
-
-  <section class="v2-section">
-    <div class="container">
-      <div class="v2-section-heading">
-        <p class="kicker">Ways to work together</p>
-        <h2 class="v2-section-title">Start with the problem.</h2>
+<BaseLayout title="Work with me" description={lead}>
+  <div class="wwm" data-wwm data-state="overview">
+    {/* speed matches the Home hero so a moon moves at the same rate on both pages
+        (Brandon, 2026-10-09); per-moon variety comes from Kepler periods in orbits.ts. */}
+    <OrbitStage set="work" size="large" controls="stage" speed={2}>
+      <div slot="headline" style="width:fit-content;max-width:100%">
+        <h1 class="t-page-title">Work with me</h1>
+        <MotionLine kind="align" stretch />
       </div>
+      <p class="t-lead muted-g wwm-hero-lead">{lead}</p>
+      <p class="t-caption faint-g wwm-hero-caption">Choose a way of working — or use the list below.</p>
+    </OrbitStage>
 
-      <div class="v2-engagements">
-        <article class="v2-engagement">
-          <span class="v2-number">01</span>
-          <div>
-            <span class="v2-engagement-meta">Explore the problem</span>
-            <h3>Initial conversation</h3>
-          </div>
-          <p>Tell me what you are trying to accomplish and where the work is getting stuck. I will give you an honest view of whether I can help and what a useful next step could be.</p>
-          <span class="v2-engagement-symbol" aria-hidden="true">◎</span>
-        </article>
-
-        <article class="v2-engagement">
-          <span class="v2-number">02</span>
-          <div>
-            <span class="v2-engagement-meta">Find the constraint</span>
-            <h3>Focused diagnostic</h3>
-          </div>
-          <p>A focused engagement to understand the system, test the competing explanations, and leave the team with a clear direction and next move.</p>
-          <span class="v2-engagement-symbol" aria-hidden="true">↗</span>
-        </article>
-
-        <article class="v2-engagement">
-          <span class="v2-number">03</span>
-          <div>
-            <span class="v2-engagement-meta">Own the outcome</span>
-            <h3>Embedded product leadership</h3>
-          </div>
-          <p>Hands-on senior leadership for a critical initiative or transition. I connect the decisions, teams, and delivery needed to create momentum and make the change real.</p>
-          <span class="v2-engagement-symbol" aria-hidden="true">∞</span>
-        </article>
-      </div>
-
-    </div>
-  </section>
-
-  <section class="v2-section v2-dark">
-    <div class="container">
-      <div class="v2-split-heading">
-        <div>
-          <p class="kicker">Where I can help</p>
-          <h2 class="v2-section-title">The product is only one part of the system.</h2>
+    <div class="wwm-flow" data-wwm-flow>
+      <!-- Overview: the three ways, full-width rows. Real links, so they work without JavaScript. -->
+      <section class="wwm-band ground-pad wwm-select" aria-labelledby="wwm-ways-title" data-wwm-select>
+        <div class="wwm-head">
+          <h2 class="t-section" id="wwm-ways-title">Ways to work together</h2>
+          <p class="t-lead muted-g wwm-follow">Choose an option to see how we could work together.</p>
         </div>
-        <p class="v2-lead">I work across teams to solve customer and business problems.</p>
-      </div>
+        <ul class="wwm-body wwm-rows">
+          {ENGAGEMENTS.map((e) => (
+            <li>
+              <a class="wwm-row" href={`/services/?engagement=${e.slug}#wwm-${e.slug}`} data-wwm-choose={e.slug}>
+                <span class="wwm-row-tag"><i class={`dot dot-${e.dot}`} aria-hidden="true"></i>{e.tag}</span>
+                <span class="wwm-row-title"><span class="t-item wwm-row-name">{e.name}</span><span class="wwm-arrow" aria-hidden="true">→</span></span>
+                <span class="t-body muted-g wwm-measure">{e.summary}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      <div class="service-area-grid">
-        {serviceAreas.map((area, index) => (
-          <article class="service-area">
-            <span>0{index + 1}</span>
-            <h3>{area.title}</h3>
-            <ul>
-              {area.items.map(item => <li>{item}</li>)}
-            </ul>
-          </article>
-        ))}
-      </div>
-    </div>
-  </section>
+      <!-- Selected: the rows compress into this sticky switcher (shown by the script only). -->
+      <nav class="wwm-switcher ground-pad" aria-label="Switch way of working" data-wwm-switcher hidden>
+        <div class="wwm-tabs">
+          {ENGAGEMENTS.map((e) => (
+            <button class="wwm-tab" type="button" data-wwm-tab={e.slug} aria-pressed="false" aria-controls={`wwm-${e.slug}`}>
+              <i class={`dot dot-${e.dot}`} aria-hidden="true"></i>{e.name}
+            </button>
+          ))}
+        </div>
+        <a class="link-ground wwm-restore" href="/services/" data-wwm-restore>↑ All ways to work together</a>
+      </nav>
 
-  <section class="v2-section">
-    <div class="container v2-about-grid">
-      <div>
-        <p class="kicker">What working together feels like</p>
-        <h2 class="v2-section-title service-values-title">
-          <span>Clear expectations.</span>
-          <span>Honest feedback.</span>
-          <span>Shared ownership.</span>
-        </h2>
-      </div>
-      <div>
-        <p class="v2-lead">I believe leadership comes from everywhere. My role is to help make the problem clear, create the conditions for good work, and support the people doing it.</p>
-        <p class="service-body">The full version includes how I run one-on-ones, give feedback, think about development, and hold myself accountable when my behavior does not match the values on the page.</p>
-        <a class="text-link" href="/manager-readme">Read my Manager README <span aria-hidden="true">↗</span></a>
-      </div>
+      {ENGAGEMENTS.map((e) => <EngagementDetail e={e} />)}
     </div>
-  </section>
 
-  <section class="v2-section v2-contact">
-    <div class="container">
-      <p class="kicker">Start a conversation</p>
-      <h2>Tell me what you're trying to move.</h2>
-      <a class="btn btn-primary" href="/contact">Get in touch <span aria-hidden="true">↗</span></a>
+    <section class="wwm-band ground-pad wwm-shared" aria-labelledby="wwm-shared-title" data-wwm-overview>
+      <div class="wwm-head">
+        <h2 class="t-section" id="wwm-shared-title">One shared body of work</h2>
+        <p class="t-lead muted-g wwm-follow">Whichever way we work together, the same work backs it up.</p>
+      </div>
+      <div class="wwm-body">
+        <p class="t-body muted-g wwm-measure">The Portfolio shows applied work in its original context; the Playbooks explain reusable methods. Both support all three ways of working together — a project from one kind of role can inform a different kind of engagement without changing what it was.</p>
+        <p class="wwm-links">
+          <a class="link-ground" href="/portfolio/">Browse the Portfolio →</a>
+          <a class="link-ground" href="/playbooks/">Explore the Playbooks →</a>
+        </p>
+      </div>
+    </section>
+
+    <div data-wwm-overview>
+      <Sheet class="wwm-close" label="Let's talk">
+        <p class="t-caption wwm-close-eyebrow">Let's talk</p>
+        <h2 class="t-title wwm-close-title">Not sure where your work fits? Tell me what you're trying to do.</h2>
+        <a href="/contact/" class="btn btn-brand wwm-close-btn">Let's talk</a>
+      </Sheet>
     </div>
-  </section>
+  </div>
+  <script is:inline data-astro-rerun>
+    /* First paint: apply a deep link's ?engagement= before the module script loads, so the
+       overview and the other details do not flash (mirrors apply() in wwm/state.ts). */
+    (function () {
+      var s = document.currentScript, r = s && s.previousElementSibling;
+      if (!r || !r.hasAttribute('data-wwm')) return;
+      var v = new URLSearchParams(location.search).get('engagement');
+      var ds = r.querySelectorAll('[data-wwm-detail]'), ok = false;
+      ds.forEach(function (d) { if (d.getAttribute('data-wwm-detail') === v) ok = true; });
+      if (!ok) return;
+      r.setAttribute('data-state', 'selected');
+      r.querySelector('[data-wwm-select]').hidden = true;
+      r.querySelector('[data-wwm-switcher]').hidden = false;
+      ds.forEach(function (d) { d.hidden = d.getAttribute('data-wwm-detail') !== v; });
+      r.querySelectorAll('[data-wwm-overview]').forEach(function (el) { el.hidden = true; });
+      r.querySelectorAll('[data-wwm-tab]').forEach(function (t) { t.setAttribute('aria-pressed', String(t.getAttribute('data-wwm-tab') === v)); });
+    })();
+  </script>
 </BaseLayout>
 
+<script>
+  import { initWorkWithMe } from '../components/orbit/wwm/state';
 
-<style>
-  .service-values-title {
-    font-size: clamp(1.75rem, 3.4vw, 2.75rem);
-    line-height: 1.16;
+  let teardown: (() => void) | undefined;
+  document.addEventListener('astro:page-load', () => { teardown?.(); teardown = initWorkWithMe(); });
+  document.addEventListener('astro:before-swap', () => { teardown?.(); teardown = undefined; });
+</script>
+
+<style is:global>
+  /* Work with me: one 12-column grid, heading in 1-4, content in 6-12 (the Home v2 idiom). */
+  .wwm-band { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; padding-top: var(--space-band); padding-bottom: var(--space-band-sm); }
+  .wwm-head { grid-column: 1 / span 4; }
+  .wwm-body { grid-column: 6 / -1; min-width: 0; }
+  .wwm-measure { max-width: 60ch; }
+  .wwm-follow { margin-top: 16px; }
+  .wwm-hero-lead { max-width: 560px; }
+  .wwm-hero-caption { margin-top: 20px; }
+  .wwm-arrow { font-size: 20px; line-height: 1; color: var(--on-ground-faint); transition: color 0.15s; }
+  .wwm-eyebrow, .wwm-row-tag { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.4; font-weight: 500; color: var(--on-ground-muted); margin-bottom: 12px; }
+  .wwm h2[tabindex='-1']:focus { outline: none; }
+  .wwm h2[tabindex='-1']:focus-visible { outline: 2px solid var(--accent-on-ground); }
+
+  /* ---- overview rows: full width, each one link ----------------------------------------- */
+  .wwm-select { padding-bottom: var(--space-band); }
+  .wwm-rows { list-style: none; margin: 0; padding: 0; }
+  .wwm-rows li { border-top: 1px solid var(--line-on-ground); }
+  .wwm-rows li:last-child { border-bottom: 1px solid var(--line-on-ground); }
+  .wwm-row { display: flex; flex-direction: column; gap: 4px; padding: 24px 0; }
+  .wwm-row .wwm-row-tag { margin-bottom: 4px; }
+  .wwm-row-title { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+  .wwm-row-name, .wwm-ev-name { text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1.5px; text-underline-offset: 4px; transition: text-decoration-color 0.15s; }
+  .wwm-row:hover .wwm-row-name, .wwm-ev:hover .wwm-ev-name { text-decoration-color: var(--on-ground); }
+  .wwm-row:hover .wwm-arrow, .wwm-ev:hover .wwm-arrow { color: var(--on-ground); }
+
+  /* ---- sticky switcher ------------------------------------------------------------------ */
+  .wwm-switcher { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; padding-top: 14px; padding-bottom: 14px; background: var(--ground); border-bottom: 1px solid var(--line-on-ground); }
+  .wwm-tabs { display: flex; gap: 8px; min-width: 0; }
+  .wwm-tab { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 10px 16px; border-radius: var(--r-pill); border: 1px solid var(--control-line-on-ground); font-size: 15px; color: var(--on-ground-muted); white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
+  .wwm-tab:hover { color: var(--on-ground); }
+  .wwm-tab[aria-pressed='true'] { color: var(--on-ground); border-color: var(--accent-on-ground); }
+  .wwm-restore { white-space: nowrap; }
+
+  /* ---- a selected model's detail -------------------------------------------------------- */
+  .wwm-detail-intro { padding-top: var(--space-band-sm); }
+  .wwm-fits { list-style: none; margin: 0; padding: 0; }
+  .wwm-fits li { padding: 16px 0; border-top: 1px solid var(--line-on-ground); color: var(--on-ground-muted); }
+  .wwm-fits li:last-child { border-bottom: 1px solid var(--line-on-ground); }
+  .sheet.wwm-sheet { margin-top: var(--space-band-sm); padding-top: var(--space-sheet-band-sm); padding-bottom: var(--space-sheet-band-sm); }
+  .wwm-work .t-item + p { margin-top: 12px; }
+
+  .wwm-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+  .wwm-group-label { font-weight: 500; color: var(--on-ground-muted); margin-bottom: 12px; }
+  .wwm-ev-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .wwm-ev { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px; border: 1px solid var(--line-on-ground); border-radius: var(--r-sheet); background: var(--ground-raised); transition: border-color 0.15s; }
+  a.wwm-ev:hover { border-color: var(--control-line-on-ground); }
+  .wwm-ev-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; }
+  .wwm-ev .wwm-ev-name { font-size: 19px; }
+  .wwm-origin { margin: 0; font-size: 13px; padding: 4px 10px; }
+  /* Advisory's reserved slot: a dashed outline, nothing to click. */
+  .wwm-reserved { background: none; border: 1.5px dashed var(--control-line-on-ground); }
+  .wwm-reserved .wwm-ev-name { color: var(--on-ground-muted); }
+  .wwm-group-link { margin-top: 4px; }
+
+  /* ---- closing sheets: one brand-red button per field ----------------------------------- */
+  .sheet.wwm-close { margin-top: var(--space-band-sm); padding-top: var(--space-sheet-band); padding-bottom: var(--space-sheet-band); }
+  .wwm-close-eyebrow { font-weight: 500; color: var(--on-sheet-muted); margin-bottom: 16px; }
+  .wwm-close-title { color: var(--on-sheet); max-width: 24em; text-wrap: balance; }
+  .wwm-close-btn { margin-top: 40px; }
+
+  /* ---- shared body ---------------------------------------------------------------------- */
+  .wwm-links { display: flex; flex-wrap: wrap; gap: 16px 32px; margin-top: 28px; }
+
+  /* Swaps are instant under reduced motion; otherwise a short fade as a detail appears. */
+  @media (prefers-reduced-motion: no-preference) {
+    .wwm[data-state='selected'] .wwm-detail:not([hidden]) { animation: wwm-in 0.28s ease-out; }
+    @keyframes wwm-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   }
 
-  .service-values-title span {
-    display: block;
+  @media (max-width: 1100px) {
+    .wwm-head { grid-column: 1 / span 5; }
+    .wwm-body { grid-column: 7 / -1; }
+    .wwm-groups { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  /* Phones: one column, full-width choices and inline detail; the switcher's tabs scroll sideways. */
+  @media (max-width: 860px) {
+    .wwm-band { grid-template-columns: minmax(0, 1fr); row-gap: 20px; padding-top: var(--space-band-sm); padding-bottom: 0; }
+    .wwm-head, .wwm-body { grid-column: 1 / -1; }
+    .wwm-select { padding-bottom: var(--space-band-sm); }
+    .wwm-row { padding: 18px 0; }
+    .wwm-band .t-item { font-size: 19px; }
+    .wwm-band .t-body { font-size: 16px; }
+    .wwm-detail-intro { padding-top: 32px; }
+    .wwm-switcher { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 8px; padding-top: 10px; padding-bottom: 10px; padding-right: 0; }
+    .wwm-tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; padding: 2px var(--gutter) 4px 2px; scroll-snap-type: x proximity; }
+    .wwm-tabs::-webkit-scrollbar { display: none; }
+    .wwm-tab { scroll-snap-align: start; font-size: 14px; padding: 8px 14px; }
+    .wwm-restore { align-self: flex-start; font-size: 14px; }
+    .sheet.wwm-close { padding-top: 56px; padding-bottom: 64px; }
+    .wwm-close-btn { margin-top: 28px; display: flex; width: 100%; }
   }
 </style>

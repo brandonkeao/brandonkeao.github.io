@@ -1,0 +1,7 @@
+---
+// Sheet breadcrumb: "Parent › <b>Current</b>". The current item takes the accent.
+interface Props { parent: string; current: string; id?: string }
+const { parent, current, id } = Astro.props;
+---
+
+<p class="crumb">{parent} › <b id={id}>{current}</b></p>

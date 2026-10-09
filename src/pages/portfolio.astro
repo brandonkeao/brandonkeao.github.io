@@ -1,0 +1,144 @@
+---
+// Portfolio, Direction B "Orbital stage" (brandonkeao.github.io #8, lane C, 2026-10-09).
+// Copy: Brandon OS projects/personal-website/analysis/2026-10-09-hifi-directions/COPY_PACK.md,
+// verbatim and draft under Brandon's review. Ora / Sears and Bitly are at bounded depth: only
+// the pack's lines, plus its "fuller story" line where Role depth would go.
+// Layout choices are AI-made and reversible.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sheet from '../components/orbit/Sheet.astro';
+import CollectionHero from '../components/orbit/collection/CollectionHero.astro';
+import Collection from '../components/orbit/collection/Collection.astro';
+import CollectionRow from '../components/orbit/collection/CollectionRow.astro';
+import DetailHead from '../components/orbit/collection/DetailHead.astro';
+import DetailBlock from '../components/orbit/collection/DetailBlock.astro';
+import RelevanceList from '../components/orbit/collection/RelevanceList.astro';
+import LibraryNote from '../components/orbit/collection/LibraryNote.astro';
+import Prefooter from '../components/orbit/collection/Prefooter.astro';
+import type { StoryId } from '../components/orbit/collection/origins';
+
+const FT = 'Full time Senior IC Roles';
+const FR = 'Fractional Product Leadership';
+const AD = 'Advisory and Consulting';
+const FULLER = 'The fuller story is being reconstructed and reviewed.';
+
+const stories: { id: StoryId; tab: string; title: string; description: string; relevant: string[] }[] = [
+  {
+    id: 'pie',
+    tab: 'Pie Insurance',
+    title: 'Pie Insurance · Carrier platform',
+    description: 'Platform transition from an MGA operating model toward carrier capabilities — policy, billing, and cross-functional coordination.',
+    relevant: [FT, FR],
+  },
+  {
+    id: 'ora',
+    tab: 'Ora / Sears',
+    title: 'Ora / Sears · Embedded product leadership',
+    description: "Product lead for Ora's consulting team working inside the Sears organization on Shop Your Way and WinIt.",
+    relevant: [FR, AD],
+  },
+  {
+    id: 'bitly',
+    tab: 'Bitly',
+    title: 'Bitly · Core product and growth',
+    description: 'Core-product redesign and product-led growth work; sequence and scope still being bounded.',
+    relevant: [FT, FR],
+  },
+];
+const [pie, ora, bitly] = stories;
+---
+
+<BaseLayout title="Portfolio" description="Product work, in context. A closer look at the problems, decisions, and teams behind the work.">
+  <CollectionHero
+    title="Portfolio"
+    lead="Product work, in context."
+    body="A closer look at the problems, decisions, and teams behind the work."
+    note="Three public stories. Each one supports more than one way of working together."
+  />
+
+  <Sheet class="cl-sheet" label="Selected project stories">
+    <Collection param="story" label="Project stories" items={stories.map((s) => ({ id: s.id, label: s.tab }))} restoreLabel="↑ All projects">
+      <Fragment slot="overview">
+        <h2 class="t-section cl-section-title">Selected project stories</h2>
+        <ol class="cl-rows">
+          {stories.map((s, i) => (
+            <CollectionRow
+              id={s.id}
+              index={i + 1}
+              controls={`story-${s.id}`}
+              title={s.title}
+              action="View story →"
+              origin={s.id}
+              description={s.description}
+              relevant={s.relevant}
+            />
+          ))}
+        </ol>
+      </Fragment>
+
+      <section class="cl-detail" id="story-pie" data-cl-detail="pie" aria-label={pie.title}>
+        <DetailHead title={pie.title} chips={['Operating model', 'Platform transition', 'Continuity + controls']} origin="pie" />
+        <DetailBlock num="01" label="Context">
+          <p>A working story about the transition from a third-party MGA operating model toward carrier platform capabilities. The current record connects the work to policy, billing, and cross-functional coordination; the exact initiative boundaries are still being reconstructed.</p>
+        </DetailBlock>
+        <DetailBlock num="02" label="Role">
+          <p>The working record places Brandon on roadmap, sequencing, and risk mitigation. Decision rights and team attribution still need confirmation.</p>
+        </DetailBlock>
+        <DetailBlock label="Where this is relevant">
+          <RelevanceList entries={[
+            { model: FT, text: 'Cross-functional product decisions and complex platform scope — the kind of ownership a senior IC role needs.' },
+            { model: FR, text: 'Sequencing and leadership around a defined product outcome.' },
+            { model: `${AD} — conditional`, text: "A bounded operational problem, Brandon's action, and an observable change still need to be established before this story supports the broader consulting path.", conditional: true },
+          ]} />
+        </DetailBlock>
+        <DetailBlock label="Related playbooks">
+          <div class="cl-related">
+            <a class="link-sheet" href="/playbooks/?playbook=rice">RICE with an opportunity backlog →</a>
+            <p>Relevant to this kind of prioritization work. No verified application yet.</p>
+          </div>
+        </DetailBlock>
+      </section>
+
+      <section class="cl-detail" id="story-ora" data-cl-detail="ora" aria-label={ora.title}>
+        <DetailHead title={ora.title} origin="ora" />
+        <DetailBlock num="01" label="Context"><p>{ora.description}</p></DetailBlock>
+        <DetailBlock num="02" label="Role"><p class="muted-s">{FULLER}</p></DetailBlock>
+        <DetailBlock label="Where this is relevant">
+          <RelevanceList entries={[
+            { model: FR, text: 'Working inside a client team.' },
+            { model: AD, text: 'Client-team context and business-to-product translation.' },
+          ]} />
+        </DetailBlock>
+        <DetailBlock label="Related playbooks">
+          <div class="cl-related">
+            <a class="link-sheet" href="/playbooks/?playbook=ost">Opportunity Solution Trees →</a>
+            <p>Framing the product opportunity. No verified application yet.</p>
+          </div>
+        </DetailBlock>
+      </section>
+
+      <section class="cl-detail" id="story-bitly" data-cl-detail="bitly" aria-label={bitly.title}>
+        <DetailHead title={bitly.title} origin="bitly" />
+        <DetailBlock num="01" label="Context"><p>{bitly.description}</p></DetailBlock>
+        <DetailBlock num="02" label="Role"><p class="muted-s">{FULLER}</p></DetailBlock>
+        <DetailBlock label="Where this is relevant">
+          <RelevanceList entries={[
+            { model: FT, text: 'Product ownership — judgment and execution across teams.' },
+            { model: FR, text: 'Coordinating a defined product initiative.' },
+          ]} />
+        </DetailBlock>
+        <DetailBlock label="Related playbooks">
+          <div class="cl-related">
+            <a class="link-sheet" href="/playbooks/?playbook=ost">Opportunity Solution Trees →</a>
+            <p>Exploring customer needs. No verified application yet.</p>
+          </div>
+        </DetailBlock>
+      </section>
+    </Collection>
+    <p class="t-small muted-s cl-gate">Dates, outcomes, and public permissions for all three stories remain under review.</p>
+  </Sheet>
+
+  <LibraryNote title="More context in the library." />
+
+  <Prefooter prompt="Not sure which story matters for your problem?" />
+  <Prefooter when="pie" prompt="Want the fuller story behind this work?" />
+</BaseLayout>

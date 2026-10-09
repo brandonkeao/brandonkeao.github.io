@@ -1,0 +1,10 @@
+---
+// Two-column clause: label on the left, body in the default slot.
+interface Props { title: string; as?: 'h2' | 'h3' | 'p'; id?: string }
+const { title, as: Tag = 'h3', id } = Astro.props;
+---
+
+<div class="clause" id={id}>
+  <Tag class="t-item">{title}</Tag>
+  <div><slot /></div>
+</div>

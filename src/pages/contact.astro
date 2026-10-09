@@ -1,58 +1,39 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HeroMotion from '../components/HeroMotion.astro';
-import EmailContact from '../components/EmailContact.astro';
+import Sheet from '../components/orbit/Sheet.astro';
+import ContactCard from '../components/orbit/ContactCard.astro';
+import MotionLine from '../components/orbit/MotionLine.astro';
+// The "What are you reaching out about?" selector was removed (Brandon, 2026-10-09: it only
+// shaped the mailto subject, which the visible actions never show — "just remove for now").
+// If a real integration appears later (e.g. prefilled message body), it may return.
 ---
 
 <BaseLayout title="Contact" description="Get in touch with Brandon Keao about product leadership, your team, or a project.">
-  <section class="page-hero contact-hero">
-    <div class="container">
-      <h1 class="page-title">Let's talk</h1>
-      <HeroMotion kind="connect" />
-      <p class="page-dek">
-        Whether you have a specific project in mind or just want to explore fit, I'd like to hear from you.
-      </p>
-    </div>
-  </section>
+  <div class="contact-layout">
+    <header class="contact-intro">
+      <h1 class="t-page-title">Let's talk</h1>
+      <MotionLine kind="connect" />
+      <p class="t-lead muted-g" style="margin-top:20px;max-width:520px">Whether you have a specific project in mind or just want to explore fit, I'd like to hear from you.</p>
+    </header>
 
-  <section class="v2-section">
-    <div class="container reveal">
-      <div class="contact-methods">
-        <EmailContact />
-        <a
-          class="contact-method"
-          href="https://linkedin.com/in/brandonkeao"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span>LinkedIn</span>
-          <strong>/in/brandonkeao</strong>
-          <span aria-hidden="true">↗</span>
-        </a>
+    <Sheet label="Contact methods" class="contact-sheet">
+      <div class="stack" style="gap:12px">
+        <ContactCard kind="email" label="Email" value="brandon.keao@gmail.com" />
+        <ContactCard kind="link" label="LinkedIn" value="/in/brandonkeao" href="https://www.linkedin.com/in/brandonkeao/" action="Open LinkedIn" />
       </div>
-      <p class="contact-note">
-        I typically respond within 48 hours. If we're a good fit, we'll set up a discovery call.
-      </p>
-    </div>
-  </section>
+      <p class="t-body muted-s" style="margin-top:20px">I typically respond within 48 hours. If we're a good fit, we'll set up a discovery call.</p>
+    </Sheet>
+  </div>
 </BaseLayout>
 
-
 <style>
-  .contact-hero {
-    background: #a9432c;
-    border-bottom-color: #a9432c;
-  }
-
-  .contact-hero .page-dek {
-    color: var(--bg-primary);
-  }
-
-  /* A short invitation needs less space than the longer page introductions. */
-  @media (min-width: 721px) {
-    .contact-hero {
-      min-height: 0;
-      padding-block: clamp(3.5rem, 8vh, 5rem);
-    }
+  /* Brandon, 2026-10-06: "Let's talk" on the left, the contact card in the column on the right. */
+  :global(#main-content):has(.contact-layout) { display: flex; flex-direction: column; justify-content: center; }
+  .contact-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 600px); gap: 56px; align-items: center; padding: 56px var(--gutter) 96px; }
+  .contact-layout :global(.contact-sheet) { margin: 0; padding: 32px; }
+  @media (max-width: 860px) {
+    .contact-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 16px 0 var(--inset); }
+    .contact-intro { padding: 0 var(--gutter); }
+    .contact-layout :global(.contact-sheet) { margin: 0 var(--inset); padding: 20px 16px; }
   }
 </style>

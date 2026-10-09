@@ -1,14 +1,14 @@
 ---
 import '../styles/global.css';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import Header from '../components/orbit/Header.astro';
+import Footer from '../components/orbit/Footer.astro';
 import SiteHead from '../components/SiteHead.astro';
-import MotionController from '../components/MotionController.astro';
 
 interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  noindex?: boolean;
 }
 ---
 
@@ -17,44 +17,14 @@ interface Props {
   <head>
     <SiteHead {...Astro.props} />
   </head>
-  <body class="min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-primary)]">
+  <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
-    <Header />
-    <main class="flex-1" id="main-content">
-      <slot />
-    </main>
-    <Footer />
-    <MotionController />
-
-    <!-- Content is visible by default; fades are an optional enhancement. -->
-    <script>
-      let revealObserver: IntersectionObserver | undefined;
-
-      function initRevealAnimations() {
-        revealObserver?.disconnect();
-        if (!('IntersectionObserver' in window) ||
-            window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-        revealObserver = new IntersectionObserver((entries, observer) => {
-          for (const entry of entries) {
-            if (!entry.isIntersecting) continue;
-            observer.unobserve(entry.target);
-            if (!entry.target.contains(document.activeElement)) {
-              entry.target.animate?.([{ opacity: 0 }, { opacity: 1 }], {
-                duration: 300,
-                easing: 'ease-out'
-              });
-            }
-          }
-        }, { threshold: 0 });
-
-        document.querySelectorAll('.reveal, .reveal-stagger > *').forEach((el) => {
-          revealObserver?.observe(el);
-        });
-      }
-
-      document.addEventListener('astro:page-load', initRevealAnimations);
-      document.addEventListener('astro:before-swap', () => revealObserver?.disconnect());
-    </script>
+    <div class="page-frame">
+      <Header />
+      <main id="main-content">
+        <slot />
+      </main>
+      <Footer />
+    </div>
   </body>
 </html>

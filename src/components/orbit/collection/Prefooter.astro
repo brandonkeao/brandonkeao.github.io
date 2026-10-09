@@ -1,0 +1,19 @@
+---
+// Pre-footer: white sheet, "Next step", a prompt and the page's one brand-red button.
+// `when` ties a variant to a selected item (space-separated ids) or "default" (overview and any
+// item without its own variant). Non-default variants are server-hidden so a no-JS page shows
+// exactly one closing button; the collection controller swaps them.
+import Sheet from '../Sheet.astro';
+import './collection.css';
+
+interface Props { prompt: string; when?: string }
+const { prompt, when = 'default' } = Astro.props;
+---
+
+<div data-cl-when={when} hidden={when !== 'default'}>
+  <Sheet class="cl-close" label="Next step">
+    <p class="cl-close-eyebrow">Next step</p>
+    <h2 class="t-section">{prompt}</h2>
+    <a href="/contact/" class="btn btn-brand">Start a conversation</a>
+  </Sheet>
+</div>

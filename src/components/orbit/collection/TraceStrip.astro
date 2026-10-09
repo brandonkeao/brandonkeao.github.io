@@ -1,0 +1,17 @@
+---
+// Direction B collection motif: two thin trace lines (one straight, one arc) in the on-ground red
+// at low opacity, with three planets in the moon colours sitting on them. Planets are placed at
+// points that lie exactly on the paths (straight line y = 28; arc apex and t = 0.2), and they
+// come after the SVG so they draw over the lines. Decorative; hidden from assistive tech.
+import './collection.css';
+---
+
+<div class="cl-trace" aria-hidden="true">
+  <svg viewBox="0 0 1200 120" preserveAspectRatio="none" focusable="false">
+    <path class="cl-trace-a" d="M0 28H1200" vector-effect="non-scaling-stroke" />
+    <path class="cl-trace-b" d="M0 100Q600 36 1200 100" vector-effect="non-scaling-stroke" />
+  </svg>
+  <span class="cl-planet cl-planet-2" style="left:76%;top:23.33%"></span>
+  <span class="cl-planet cl-planet-3" style="left:50%;top:56.67%"></span>
+  <span class="cl-planet cl-planet-1" style="left:20%;top:66.27%"></span>
+</div>

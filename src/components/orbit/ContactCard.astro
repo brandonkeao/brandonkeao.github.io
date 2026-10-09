@@ -1,0 +1,74 @@
+---
+// Contact method card. The email card keeps the copy-to-clipboard behaviour of the
+// earlier EmailContact component; the link card opens its destination.
+interface Props { kind: 'email' | 'link'; label: string; value: string; href?: string; action?: string }
+const { kind, label, value, href, action } = Astro.props;
+---
+
+{kind === 'email' ? (
+  <email-contact class="contact-card col" data-email={value}>
+    <div>
+      <p class="t-caption muted-s">{label}</p>
+      <p class="t-item"><a href={`mailto:${value}`}>{value}</a></p>
+      <p class="t-caption muted-s" data-copy-status role="status" aria-atomic="true"></p>
+    </div>
+    <button class="btn btn-action btn-sm" type="button" data-copy hidden>Copy address</button>
+  </email-contact>
+) : (
+  <div class="contact-card col">
+    <div>
+      <p class="t-caption muted-s">{label}</p>
+      <p class="t-item">{value}</p>
+    </div>
+    <a class="btn btn-outline-sheet btn-sm" href={href} target="_blank" rel="noopener noreferrer">{action}</a>
+  </div>
+)}
+
+<script>
+  class EmailContact extends HTMLElement {
+    private timer: ReturnType<typeof setTimeout> | undefined;
+    private busy = false;
+
+    connectedCallback() {
+      const btn = this.querySelector<HTMLButtonElement>('[data-copy]');
+      if (!btn || !navigator.clipboard) return;
+      btn.hidden = false;
+      btn.addEventListener('click', this.copy);
+    }
+
+    disconnectedCallback() {
+      clearTimeout(this.timer);
+      this.querySelector('[data-copy]')?.removeEventListener('click', this.copy);
+    }
+
+    private copy = async () => {
+      const btn = this.querySelector<HTMLButtonElement>('[data-copy]');
+      const status = this.querySelector('[data-copy-status]');
+      const email = this.dataset.email;
+      if (this.busy || !btn || !status || !email) return;
+      this.busy = true;
+      clearTimeout(this.timer);
+      try {
+        // Write within the click gesture.
+        await navigator.clipboard.writeText(email);
+        if (!this.isConnected) return;
+        btn.textContent = 'Copied';
+        status.textContent = 'Email address copied.';
+      } catch {
+        if (!this.isConnected) return;
+        btn.textContent = 'Copy failed';
+        status.textContent = 'Copy unavailable. Select the address to copy it.';
+      } finally {
+        this.busy = false;
+        this.timer = setTimeout(() => { btn.textContent = 'Copy address'; status.textContent = ''; }, 2500);
+      }
+    };
+  }
+
+  if (!customElements.get('email-contact')) customElements.define('email-contact', EmailContact);
+</script>
+
+<style>
+  email-contact { display: flex; }
+  [data-copy-status]:empty { display: none; }
+</style>
