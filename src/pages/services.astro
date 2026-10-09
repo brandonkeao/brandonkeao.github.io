@@ -18,7 +18,9 @@ const lead = 'Bring me into your team full time, work with me on a product outco
 
 <BaseLayout title="Work with me" description={lead}>
   <div class="wwm" data-wwm data-state="overview">
-    <OrbitStage set="work" size="large" controls="stage">
+    {/* speed matches the Home hero so a moon moves at the same rate on both pages
+        (Brandon, 2026-10-09); per-moon variety comes from Kepler periods in orbits.ts. */}
+    <OrbitStage set="work" size="large" controls="stage" speed={2}>
       <div slot="headline" style="width:fit-content;max-width:100%">
         <h1 class="t-page-title">Work with me</h1>
         <MotionLine kind="align" stretch />

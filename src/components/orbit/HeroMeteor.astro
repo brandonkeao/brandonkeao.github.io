@@ -50,24 +50,25 @@
       const cx = p.x - h.left, cy = p.y - h.top, r = p.r;
       // Gravity, not a launch (Brandon 2026-10-07: "continue with the momentum straight and then
       // curve as it gets pulled into the planet's gravity and ultimately hits the planet").
-      // The head keeps the line's heading past the copy, then bends late, with growing curvature,
-      // and strikes the limb that faces its approach.
+      // The head keeps the line's heading past the copy, then falls in one long shallow arc and
+      // strikes the face of the disc near its centre (Brandon 2026-10-09: "not off too much to
+      // the left side but hits more of the center of the planet from the current viewpoint").
       let path: string;
       let tx: number, ty: number;
       const room = cx - r - x1;
       if (room > 80) {
-        // Desktop: the planet is ahead, level with the line. The head keeps the line's heading for
-        // a long run, then falls in a bend that tightens toward the end and strikes the lower-left
-        // limb, the side facing its approach.
-        const fall = Math.min(Math.max(y + r * 0.6, cy - r * 0.5), cy + r * 0.72);
-        ty = fall;
-        tx = cx - Math.sqrt(Math.max(0, r * r - (ty - cy) ** 2)) * 0.97;
-        const xs = x1 + (tx - x1) * 0.42;
+        // Desktop: the planet is ahead, level with the line. The impact sits low-left of the
+        // disc centre — on the face, not the limb — and the bend starts earlier and stays
+        // shallow (~30 degrees at impact) so it reads as a ballistic fall, not a hook.
+        tx = cx - r * 0.2;
+        ty = Math.max(cy + r * 0.25, y + 36);
+        const xs = x1 + (tx - x1) * 0.3;
         const d = Math.hypot(tx - xs, ty - y);
-        // The first handle stays on the heading (momentum); the second sits close to the impact
-        // along the final, steeper heading (about 50 degrees down), so the curvature grows late.
-        const c1x = xs + d * 0.6;
-        const c2x = tx - d * 0.2 * 0.64, c2y = ty - d * 0.2 * 0.77;
+        // The first handle stays on the heading (momentum); the second sits back from the impact
+        // along the final shallow heading (~20 degrees), kept at or below the line's level so
+        // the descent is monotonic — the head must never rise against the pull.
+        const c1x = xs + d * 0.55;
+        const c2x = tx - d * 0.25 * 0.94, c2y = Math.max(ty - d * 0.25 * 0.34, y + 2);
         path = `M ${x0} ${y} L ${xs} ${y} C ${c1x} ${y} ${c2x} ${c2y} ${tx} ${ty}`;
       } else {
         // Phones: the planet sits under the end of the line. The head runs off the end of the

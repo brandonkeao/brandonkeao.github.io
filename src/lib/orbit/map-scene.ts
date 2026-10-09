@@ -85,8 +85,10 @@ const RIM_DIR = new THREE.Vector3(2.6, 1.8, -6).normalize();
  * Orbit trace as a real 3D tube. The geometry is a unit-radius TubeGeometry,
  * so `position - normal` recovers the centreline; the shader re-inflates it to
  * a pixel-true radius that grows on the near side (about 2.2 px) and thins on
- * the far side (about 0.9 px). Depth-tested against the planet, additive,
- * brighter in front, soft at the silhouette, and stronger just behind its body.
+ * the far side (about 0.9 px). Depth-tested against the opaque bodies, so the
+ * line vanishes at a body's limb and reappears at the other — it runs through
+ * the body (Brandon, 2026-10-09). Additive, brighter in front, soft at the
+ * silhouette.
  */
 /** Orbit lines and dust in the brand red on ground, matching the motion lines (Brandon, 2026-10-06). */
 const ORBIT_RED = 0xf16b65;
@@ -96,21 +98,18 @@ function traceMaterial(opacity: number) {
     uniforms: {
       uColor: { value: new THREE.Color(ORBIT_RED) },
       uOpacity: { value: opacity },
-      uBody: { value: new THREE.Vector3() },
       uNear: { value: 8 },
       uFar: { value: 16 },
       uBoost: { value: 0 },
-      uScale: { value: 1 },
       uPx: { value: 0.001 },
     },
-    vertexShader: `uniform vec3 uBody;uniform float uOpacity;uniform float uNear;uniform float uFar;uniform float uBoost;uniform float uScale;uniform float uPx;varying float vA;varying float vEdge;
+    vertexShader: `uniform float uOpacity;uniform float uNear;uniform float uFar;uniform float uBoost;uniform float uPx;varying float vA;varying float vEdge;
     void main(){vec4 c=modelMatrix*vec4(position-normal,1.);vec4 mc=viewMatrix*c;float depth=-mc.z;
     float front=1.-smoothstep(uNear,uFar,depth);
     vec3 n=normalize(mat3(modelMatrix)*normal);
     vec4 mv=viewMatrix*vec4(c.xyz+n*uPx*depth*mix(.45,1.25,front),1.);
     vEdge=abs(dot(normalize(mat3(viewMatrix)*n),normalize(-mv.xyz)));
-    float b=distance(c.xyz,uBody)/uScale;float near=exp(-b*b*.9);
-    vA=uOpacity*((.16+.84*front*front)*(1.+uBoost)+near*.75);gl_Position=projectionMatrix*mv;}`,
+    vA=uOpacity*(.16+.84*front*front)*(1.+uBoost);gl_Position=projectionMatrix*mv;}`,
     fragmentShader: `uniform vec3 uColor;varying float vA;varying float vEdge;void main(){float soft=smoothstep(0.,.55,vEdge);gl_FragColor=vec4(uColor*min(vA,.95)*soft,1.);}`,
     transparent: true,
     depthWrite: false,
@@ -118,20 +117,10 @@ function traceMaterial(opacity: number) {
   });
 }
 
-/**
- * Planets sit on top of orbit lines (Brandon, 2026-10-06). three.js draws opaque objects
- * before transparent ones whatever their renderOrder, so a body joins the transparent pass
- * (still fully opaque and depth-writing) and sorts after the traces (2) and dust (3).
- * Additive glows keep their own order.
- */
-function drawOverTraces(root: THREE.Object3D) {
-  root.traverse((o) => {
-    const m = (o as THREE.Mesh).material as THREE.Material | undefined;
-    if (!m || Array.isArray(m) || m.blending === THREE.AdditiveBlending) return;
-    m.transparent = true;
-    o.renderOrder = 4;
-  });
-}
+// Bodies stay in the opaque pass, so the depth-tested traces vanish where a body covers
+// them: the orbit line runs through the planet and moons instead of the bodies sitting on
+// top of it (Brandon, 2026-10-09 — supersedes his 2026-10-06 "planets sit on top of orbit
+// lines", which forced bodies into the transparent pass at renderOrder 4 via drawOverTraces).
 
 /**
  * Dust wake: fine points strung along the last ~12% of a moon's own orbit,
@@ -308,7 +297,6 @@ export function createMap(
   });
   const planet = planetBody.body;
   const atmosphere = planetBody.glow;
-  drawOverTraces(planet);
   scene.add(planetBody.group);
   let planetT = 0;
 
@@ -498,7 +486,6 @@ export function createMap(
   const moons = CATEGORIES.map((c, i) => {
     const b = body(i);
     b.userData.category = c.id;
-    drawOverTraces(b);
     scene.add(b);
     return b;
   });
@@ -563,7 +550,6 @@ export function createMap(
   });
   const children = [0, 1, 2].map((i) => {
     const b = body(i, CHILD_SCALE);
-    drawOverTraces(b);
     childGroup.add(b);
     return b;
   });
@@ -997,7 +983,6 @@ export function createMap(
 
   function setTrace(
     line: THREE.Mesh,
-    bodyPosition: THREE.Vector3,
     a: number,
     opacity: number,
     boost: number,
@@ -1007,10 +992,8 @@ export function createMap(
     const reach = a * 1.05 * line.scale.x;
     u.uNear.value = dc - reach;
     u.uFar.value = dc + reach;
-    u.uBody.value.copy(bodyPosition);
     u.uOpacity.value = opacity;
     u.uBoost.value = boost;
-    u.uScale.value = line.scale.x;
     // World units per CSS pixel per unit of view depth.
     u.uPx.value = (2 * Math.tan(((FOV_Y / 2) * Math.PI) / 180)) / Math.max(dims.height, 1);
   }
@@ -1145,7 +1128,7 @@ export function createMap(
       const ringOpacity =
         traceOpacity[i] * (i === selectedIndex ? 1 - blend : 1 - blend * 0.55);
       ring.visible = ringOpacity > 0.01;
-      setTrace(ring, m.position, ORBITS[i].a, ringOpacity, lit ? 1.1 : 0);
+      setTrace(ring, ORBITS[i].a, ringOpacity, lit ? 1.1 : 0);
     });
 
     childGroup.visible = childrenShown && !empty;
@@ -1156,7 +1139,7 @@ export function createMap(
       m.position.set(...orbitPosition(CHILD_ORBITS[i], childT));
       m.scale.setScalar(CHILD_SCALE * depthCue(m.position, CHILD_ORBITS[i].a * 1.05).scale);
       m.rotation.y = childT * 0.1 + i;
-      setTrace(childRings[i], m.position, CHILD_ORBITS[i].a, 0.3, 0);
+      setTrace(childRings[i], CHILD_ORBITS[i].a, 0.3, 0);
     });
 
     // Path toward the world an answer points to, when that is not the centre.

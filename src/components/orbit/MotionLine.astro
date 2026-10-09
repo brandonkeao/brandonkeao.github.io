@@ -11,19 +11,33 @@ const { kind, stretch = false } = Astro.props;
 ---
 
 {stretch && kind === 'align' ? (
-  <div class="motion-line motion-line-align motion-line-stretch" data-motion aria-hidden="true">
-    <span class="ml-strands">
-      <span class="ml-strand ml-soft"></span>
-      <span class="ml-strand ml-d1"></span>
-      <span class="ml-strand ml-soft ml-d2"></span>
-    </span>
-    <svg class="ml-curve" viewBox="0 0 52 40" width="52" height="40" fill="none" focusable="false">
-      <path class="ml-draw ml-soft" pathLength="1" d="M0 6c25 0 25 14 52 14" />
-      <path class="ml-draw ml-d1" pathLength="1" d="M0 20h52" />
-      <path class="ml-draw ml-soft ml-d2" pathLength="1" d="M0 34c25 0 25-14 52-14" />
+  // One SVG, three continuous paths (Brandon, 2026-10-09: the piecewise span/SVG build read
+  // "segmented... I can visually see where the lines are drawn and overlap"). A script sizes the
+  // viewBox to the container so curves stay undistorted; without JS the default geometry
+  // stretches mildly. The glow underlay echoes the orbital traces' softness.
+  <div class="motion-line motion-line-align motion-line-stretch" data-motion data-ml-stretch aria-hidden="true">
+    <svg width="100%" height="40" viewBox="0 0 720 40" preserveAspectRatio="none" fill="none" focusable="false">
+      <defs>
+        <filter id="mls-glow-f" x="-10%" y="-200%" width="120%" height="500%">
+          <feGaussianBlur stdDeviation="2.4" />
+        </filter>
+        <linearGradient id="mls-fade-g" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="currentColor" />
+          <stop offset="0.86" stop-color="currentColor" />
+          <stop offset="1" stop-color="currentColor" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <g class="mls-glow" filter="url(#mls-glow-f)">
+        <path class="mls-path" data-ml="top" pathLength="1" d="M 1 6 H 296 C 327 6 327 20 360 20" />
+        <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717 M 711 14 l 6 6 -6 6" />
+        <path class="mls-path" data-ml="bottom" pathLength="1" d="M 1 34 H 296 C 327 34 327 20 360 20" />
+      </g>
+      <g class="mls-sharp">
+        <path class="mls-path mls-soft" data-ml="top" pathLength="1" d="M 1 6 H 296 C 327 6 327 20 360 20" />
+        <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717 M 711 14 l 6 6 -6 6" />
+        <path class="mls-path mls-soft" data-ml="bottom" pathLength="1" d="M 1 34 H 296 C 327 34 327 20 360 20" />
+      </g>
     </svg>
-    <span class="ml-stretch"></span>
-    <svg class="ml-arrow" viewBox="0 0 10 40" width="10" height="40" fill="none" focusable="false"><path d="M2 14l6 6-6 6" /></svg>
   </div>
 ) : (
 <svg class={`motion-line motion-line-${kind}`} data-motion aria-hidden="true" focusable="false" viewBox="0 0 234 40" width="234" height="40" fill="none">
@@ -82,9 +96,47 @@ const { kind, stretch = false } = Astro.props;
 <script>
   const played = new WeakSet<Element>();
   let observer: IntersectionObserver | undefined;
+  let resizer: ResizeObserver | undefined;
+
+  /**
+   * The stretched mark's geometry, pixel-true for the container width: three continuous
+   * paths — two outer strands that run straight and curve into the midpoint, fading as they
+   * merge, and a centre line that carries on to the arrowhead. One path each means no joints.
+   */
+  function buildStretch(root: HTMLElement) {
+    const svg = root.querySelector('svg');
+    if (!svg) return;
+    const W = Math.max(220, Math.round(root.clientWidth));
+    svg.setAttribute('viewBox', `0 0 ${W} 40`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    const mx = Math.round(W * 0.5);
+    const cw = Math.min(64, Math.round(mx * 0.4));
+    const outer = (y0: number) =>
+      `M 1 ${y0} H ${mx - cw} C ${mx - cw + cw * 0.48} ${y0} ${mx - cw * 0.52} 20 ${mx} 20`;
+    const d: Record<string, string> = {
+      top: outer(6),
+      bottom: outer(34),
+      center: `M 1 20 H ${W - 3} M ${W - 9} 14 l 6 6 -6 6`,
+    };
+    svg.querySelectorAll<SVGPathElement>('.mls-path').forEach((p) => p.setAttribute('d', d[p.dataset.ml ?? 'center']));
+    // Equal speed everywhere: each path's duration follows its real length, so the two outer
+    // heads reach the merge exactly as the centre head passes it — one gesture, no stages.
+    const center = svg.querySelector<SVGPathElement>('.mls-sharp [data-ml="center"]');
+    const lenC = center?.getTotalLength() || W;
+    svg.querySelectorAll<SVGPathElement>('.mls-path').forEach((p) => {
+      p.style.setProperty('--mls-dur', `${Math.round(950 * (p.getTotalLength() / lenC))}ms`);
+    });
+  }
 
   function init() {
     observer?.disconnect();
+    resizer?.disconnect();
+    const stretches = document.querySelectorAll<HTMLElement>('[data-ml-stretch]');
+    stretches.forEach(buildStretch);
+    if ('ResizeObserver' in window) {
+      resizer = new ResizeObserver((es) => es.forEach((e) => buildStretch(e.target as HTMLElement)));
+      stretches.forEach((el) => resizer?.observe(el));
+    }
     if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
     observer = new IntersectionObserver((entries) => {
       for (const e of entries) {
@@ -105,20 +157,21 @@ const { kind, stretch = false } = Astro.props;
   }
 
   document.addEventListener('astro:page-load', init);
-  document.addEventListener('astro:before-swap', () => observer?.disconnect());
+  document.addEventListener('astro:before-swap', () => { observer?.disconnect(); resizer?.disconnect(); });
 </script>
 
 <style is:global>
   .motion-line { display: block; width: 234px; max-width: 100%; height: 40px; margin-top: 20px; overflow: visible; color: var(--accent-on-ground); stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .ml-draw { stroke-dasharray: 1; stroke-dashoffset: 0; }
-  /* Stretched align mark: three straight strands, a fixed curve that merges them at the
-     horizontal midpoint, a single line for the other half, then the arrowhead. */
-  .motion-line-stretch { display: flex; align-items: center; width: 100%; height: 40px; }
-  .motion-line-stretch svg { flex: none; overflow: visible; }
-  .ml-strands { position: relative; flex: 0 0 calc(50% - 52px); height: 40px; }
-  .ml-strand { position: absolute; left: 0; right: -1px; height: 1.5px; border-radius: 1px; background: currentColor; transform-origin: 0 50%; }
-  .ml-strand:nth-child(1) { top: 5.25px; } .ml-strand:nth-child(2) { top: 19.25px; } .ml-strand:nth-child(3) { top: 33.25px; }
-  .ml-stretch { flex: 1; height: 1.5px; margin-left: -1px; background: currentColor; transform-origin: 0 50%; }
+  /* Stretched align mark: one SVG, three continuous paths (no joints). The outer strands fade
+     out as they merge so density never doubles on the centre line; a blurred underlay gives the
+     lines the orbital traces' soft texture. */
+  .motion-line-stretch { width: 100%; height: 40px; }
+  .motion-line-stretch svg { display: block; overflow: visible; }
+  .mls-path { stroke-dasharray: 1; stroke-dashoffset: 0; }
+  .mls-sharp .mls-soft { opacity: 0.65; stroke: url(#mls-fade-g); }
+  .mls-glow { opacity: 0.42; stroke-width: 4; }
+  .mls-glow .mls-path[data-ml='top'], .mls-glow .mls-path[data-ml='bottom'] { opacity: 0.6; stroke: url(#mls-fade-g); }
   .ml-dot { fill: currentColor; stroke: none; }
   .ml-soft { opacity: 0.65; }
   .ml-track { opacity: 0.25; }
@@ -130,14 +183,10 @@ const { kind, stretch = false } = Astro.props;
     /* Armed marks wait hidden for their one play; unarmed (no JS) marks show final. */
     .motion-line[data-motion-armed]:not([data-motion-play]) .ml-draw { stroke-dashoffset: 1; }
     .motion-line[data-motion-play] .ml-draw { animation: ml-draw 850ms ease-out var(--ml-delay, 0ms) both; }
-    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-stretch,
-    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-strand { transform: scaleX(0); }
-    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-arrow { opacity: 0; }
-    /* Stretched mark runs in sequence: strands, merge, single line, arrowhead. */
-    .motion-line[data-motion-play] .ml-strand { animation: ml-stretch 600ms cubic-bezier(0.3, 0, 0.2, 1) var(--ml-delay, 0ms) both; }
-    .motion-line-stretch[data-motion-play] .ml-curve .ml-draw { animation: ml-draw 500ms ease-out calc(550ms + var(--ml-delay, 0ms)) both; }
-    .motion-line[data-motion-play] .ml-stretch { animation: ml-stretch 600ms cubic-bezier(0.3, 0, 0.2, 1) 1150ms both; }
-    .motion-line[data-motion-play] .ml-arrow { animation: ml-fade 300ms ease-out 1700ms both; }
+    /* Stretched mark: every path draws at the same speed (durations set per length by the
+       script), so the strands land on the merge as the centre head passes — one gesture. */
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mls-path { stroke-dashoffset: 1; }
+    .motion-line[data-motion-play] .mls-path { animation: ml-draw var(--mls-dur, 950ms) linear both; }
     .motion-line[data-motion-play] .ml-arrive { animation: ml-arrive 650ms ease-out var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-place { animation: ml-place 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-meet { animation: ml-meet 950ms ease-out both; }
@@ -146,8 +195,6 @@ const { kind, stretch = false } = Astro.props;
     .motion-line[data-motion-play] .ml-resolve { animation: ml-resolve 1100ms ease-out both; }
   }
 
-  @keyframes ml-stretch { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-  @keyframes ml-fade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes ml-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
   @keyframes ml-arrive { from { opacity: 0.45; } to { opacity: 1; } }
   @keyframes ml-place { from { transform: translateY(-4px); } to { transform: translateY(0); } }
