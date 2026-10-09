@@ -483,9 +483,71 @@ export function createMap(
     scene.add(r);
     return r;
   });
+  /**
+   * B2 orbital hints (Brandon, 2026-10-09): each overview moon shows its human presence from
+   * orbit — settlement lights on the basalt moon's dark side, a descending-vessel glint on a
+   * short red trajectory at the rust moon, a thin instrument ring around the ivory moon. They
+   * ride the moon (rotating with it, like real surface lights and satellites), stay additive
+   * and tiny, and depth-test against the body so the far side hides them. Children carry none.
+   */
+  function attachHints(mesh: THREE.Mesh, index: number) {
+    // Bounding radii per style: sphere radii, or the boxed bodies' (cube half-diagonal,
+    // sphere, octahedron) so the hints sit just off the surface in every moon style.
+    const r = (moonStyle === 'spheres' ? SPHERE_RADII[index] : [0.451, 0.29, 0.37][index]) * MOON_SCALE;
+    const pts = (positions: number[], color: number, size: number, opacity: number) => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      const p = new THREE.Points(g, new THREE.PointsMaterial({
+        color, size, sizeAttenuation: false, transparent: true, opacity,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      }));
+      p.renderOrder = 5;
+      mesh.add(p);
+      return p;
+    };
+    if (index === 0) {
+      // Settlement lights: a loose cluster on one face, warm pinpricks.
+      const d = new THREE.Vector3(0.55, -0.2, 0.8).normalize();
+      const up = new THREE.Vector3(0, 1, 0);
+      const t1 = new THREE.Vector3().crossVectors(d, up).normalize();
+      const t2 = new THREE.Vector3().crossVectors(d, t1).normalize();
+      const positions: number[] = [];
+      const spread = [[0, 0], [0.3, 0.12], [-0.22, 0.26], [0.14, -0.3], [-0.3, -0.14], [0.42, -0.08]];
+      for (const [a, b2] of spread) {
+        const v = new THREE.Vector3().copy(d).addScaledVector(t1, a).addScaledVector(t2, b2).normalize().multiplyScalar(r * 1.01);
+        positions.push(v.x, v.y, v.z);
+      }
+      pts(positions, 0xffd9a8, 2.4, 0.9);
+    } else if (index === 1) {
+      // Descending vessel: one ember on a short red approach line, reusing the meteor's language.
+      const from = new THREE.Vector3(0.9, 0.75, 0.5).normalize();
+      const a = from.clone().multiplyScalar(r * 1.75);
+      const b2 = from.clone().multiplyScalar(r * 1.12);
+      const line = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([a, b2]),
+        new THREE.LineBasicMaterial({ color: ORBIT_RED, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }),
+      );
+      line.renderOrder = 5;
+      mesh.add(line);
+      pts([a.x, a.y, a.z], 0xffe1de, 3, 0.95);
+    } else {
+      // Instrument ring: a band of tiny satellites, inclined, catching the light as it turns.
+      const positions: number[] = [];
+      const incline = 0.5;
+      for (let k = 0; k < 12; k++) {
+        const a = (k / 12) * Math.PI * 2;
+        const v = new THREE.Vector3(Math.cos(a), 0, Math.sin(a)).multiplyScalar(r * 1.55);
+        v.applyAxisAngle(new THREE.Vector3(1, 0, 0), incline);
+        positions.push(v.x, v.y, v.z);
+      }
+      pts(positions, 0xe8e2d4, 1.8, 0.75);
+    }
+  }
+
   const moons = CATEGORIES.map((c, i) => {
     const b = body(i);
     b.userData.category = c.id;
+    attachHints(b, i);
     scene.add(b);
     return b;
   });

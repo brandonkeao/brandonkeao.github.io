@@ -1,0 +1,138 @@
+---
+// Surface landing (ticket #10, Direction B iteration): the selected engagement's top-down
+// base over the Work with me stage. Three pre-rendered parallax plates per surface
+// (terrain / structures / traces), exported by the plate renderer kept in Brandon OS
+// (analysis/2026-10-09-wwm-stage-metaphor/renders/renderer.html). The art is assistive:
+// the callout pills are real links into the detail sections, so words keep carrying the
+// meaning. Desktop only — on phones the stage stays orbital and the rows do the work.
+import type { EngagementSlug } from '../../../lib/orbit/orbit-data';
+
+interface Callout { label: string; anchor: string; x: number; y: number }
+interface Props { slug: EngagementSlug }
+
+const SURFACES: Record<EngagementSlug, { plate: string; name: string; callouts: Callout[] }> = {
+  'full-time': {
+    plate: 'settlement',
+    name: 'The settlement',
+    callouts: [
+      { label: 'When this fits', anchor: 'fits', x: 18, y: 31 },
+      { label: 'What I would take on', anchor: 'work', x: 66.4, y: 73.8 },
+      { label: 'How we would work together', anchor: 'work', x: 46.9, y: 16.3 },
+    ],
+  },
+  fractional: {
+    plate: 'expedition',
+    name: 'The expedition',
+    callouts: [
+      { label: 'When this fits', anchor: 'fits', x: 18, y: 84 },
+      { label: 'What I would take on', anchor: 'work', x: 77, y: 15 },
+      { label: 'How we would work together', anchor: 'work', x: 39, y: 37 },
+    ],
+  },
+  advisory: {
+    plate: 'survey',
+    name: 'The survey array',
+    callouts: [
+      { label: 'When this fits', anchor: 'fits', x: 18, y: 70 },
+      { label: 'What I would take on', anchor: 'work', x: 50, y: 80.8 },
+      { label: 'How we would work together', anchor: 'work', x: 75, y: 51.7 },
+    ],
+  },
+};
+
+const { slug } = Astro.props;
+const s = SURFACES[slug];
+const base = `/images/orbit/surfaces/${s.plate}`;
+---
+
+<div class="wwm-surface" data-wwm-surface={slug}>
+  <div class="surface-box">
+    <img class="pl" data-depth="0" src={`${base}-terrain.webp`} alt="" width="1920" height="1290" loading="lazy" decoding="async" />
+    <img class="pl" data-depth="1" src={`${base}-structures.webp`} alt="" width="1920" height="1290" loading="lazy" decoding="async" />
+    <img class="pl" data-depth="2" src={`${base}-traces.webp`} alt="" width="1920" height="1290" loading="lazy" decoding="async" />
+    <nav class="surface-callouts" aria-label={`${s.name}: jump to a section`}>
+      {s.callouts.map((c, i) => (
+        <a class="surface-pill" style={`left:${c.x}%; top:${c.y}%; --i:${i}`} href={`#wwm-${slug}-${c.anchor}`}>{c.label}</a>
+      ))}
+    </nav>
+  </div>
+</div>
+
+<script>
+  // Pointer parallax on the landed surface: layers drift against the cursor at depth-scaled
+  // amounts. Skipped entirely under reduced motion; the descent itself is CSS.
+  let ctl: AbortController | undefined;
+
+  function init() {
+    ctl?.abort();
+    ctl = undefined;
+    const stage = document.querySelector<HTMLElement>('.map-stage[data-orbit="work"]');
+    if (!stage || !stage.querySelector('[data-wwm-surface]')) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    ctl = new AbortController();
+    const { signal } = ctl;
+    let raf = 0;
+    stage.addEventListener('pointermove', (e) => {
+      const r = stage.getBoundingClientRect();
+      const tx = (e.clientX - r.left) / r.width - 0.5;
+      const ty = (e.clientY - r.top) / r.height - 0.5;
+      if (!raf) raf = requestAnimationFrame(() => {
+        raf = 0;
+        stage.querySelectorAll<HTMLElement>('.wwm-surface[data-on] .pl').forEach((p) => {
+          const k = [2.5, 6, 10][Number(p.dataset.depth ?? 0)];
+          p.style.translate = `${(-tx * k).toFixed(1)}px ${(-ty * k).toFixed(1)}px`;
+        });
+      });
+    }, { signal });
+    stage.addEventListener('pointerleave', () => {
+      // Ease the layers home instead of snapping: translate gets a transition only for
+      // this reset (a standing one would smear the per-frame pointer updates).
+      stage.querySelectorAll<HTMLElement>('.wwm-surface .pl').forEach((p) => {
+        p.style.transition = 'transform 1.2s cubic-bezier(0.22, 0.8, 0.3, 1), translate 0.5s ease';
+        p.style.translate = '';
+        setTimeout(() => { p.style.transition = ''; }, 520);
+      });
+    }, { signal });
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => { ctl?.abort(); ctl = undefined; });
+</script>
+
+<style is:global>
+  /* The surface sits over the scene (z 1) and under the dock (z 4), covering the stage box. */
+  .wwm-surface { position: absolute; inset: 0; z-index: 2; overflow: hidden; background: var(--ground); visibility: hidden; opacity: 0; transition: opacity 0.6s ease, visibility 0s linear 0.6s; }
+  .wwm-surface[data-on] { visibility: visible; opacity: 1; transition: opacity 0.9s ease 0.3s, visibility 0s; }
+  /* Cover box: keeps the plate's aspect so the callout percentages always align with the art. */
+  .surface-box { position: absolute; left: 50%; top: 50%; translate: -50% -50%; aspect-ratio: 1920 / 1290; min-width: 101%; min-height: 101%; }
+  .wwm-surface .pl { position: absolute; inset: 0; width: 100%; height: 100%; will-change: transform; transition: transform 1.2s cubic-bezier(0.22, 0.8, 0.3, 1); }
+  /* Descent: the plates start closer (bigger) and settle to depth-staggered rests — the
+     difference between the layers' travel is the parallax. */
+  .wwm-surface .pl[data-depth='0'] { transform: scale(1.14); }
+  .wwm-surface .pl[data-depth='1'] { transform: scale(1.19); }
+  .wwm-surface .pl[data-depth='2'] { transform: scale(1.24); }
+  .wwm-surface[data-on] .pl[data-depth='0'] { transform: scale(1.02); }
+  .wwm-surface[data-on] .pl[data-depth='1'] { transform: scale(1.045); }
+  .wwm-surface[data-on] .pl[data-depth='2'] { transform: scale(1.07); }
+  .surface-callouts { position: absolute; inset: 0; }
+  .surface-pill {
+    position: absolute; translate: -50% -50%; white-space: nowrap;
+    padding: 9px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 500;
+    color: var(--on-ground); background: #1d1f1be8; border: 1px solid var(--control-line-on-ground);
+    box-shadow: 0 6px 22px #0004; text-decoration: none;
+    opacity: 0; transition: opacity 0.4s ease, border-color 0.15s;
+  }
+  .surface-pill:hover { border-color: var(--on-ground); }
+  .surface-pill:focus-visible { outline: 2px solid var(--accent-on-ground); outline-offset: 2px; }
+  .wwm-surface[data-on] .surface-pill { opacity: 1; transition: opacity 0.45s ease calc(0.8s + var(--i, 0) * 0.12s), border-color 0.15s; }
+  @media (prefers-reduced-motion: reduce) {
+    .wwm-surface, .wwm-surface[data-on], .wwm-surface .pl, .wwm-surface[data-on] .surface-pill { transition: none; }
+    .wwm-surface .pl[data-depth='0'] { transform: scale(1.02); }
+    .wwm-surface .pl[data-depth='1'] { transform: scale(1.045); }
+    .wwm-surface .pl[data-depth='2'] { transform: scale(1.07); }
+  }
+  /* Phones restructure the stage into the flow; the landing stays a desktop device. */
+  @media (max-width: 860px) {
+    .wwm-surface { display: none; }
+  }
+</style>

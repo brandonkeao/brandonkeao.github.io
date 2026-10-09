@@ -11,6 +11,7 @@ import OrbitStage from '../components/orbit/OrbitStage.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import MotionLine from '../components/orbit/MotionLine.astro';
 import EngagementDetail from '../components/orbit/wwm/EngagementDetail.astro';
+import SurfaceLanding from '../components/orbit/wwm/SurfaceLanding.astro';
 import { ENGAGEMENTS } from '../components/orbit/wwm/content';
 
 const lead = 'Bring me into your team full time, work with me on a product outcome, or get help with a business problem.';
@@ -21,6 +22,11 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     {/* speed matches the Home hero so a moon moves at the same rate on both pages
         (Brandon, 2026-10-09); per-moon variety comes from Kepler periods in orbits.ts. */}
     <OrbitStage set="work" size="large" controls="stage" speed={2}>
+      {/* Selecting a model lands on its surface (ticket #10): the plates replace the orbit
+          as the selected-state visual; the rows below stay the canonical path. */}
+      <Fragment slot="stage">
+        {ENGAGEMENTS.map((e) => <SurfaceLanding slug={e.slug} />)}
+      </Fragment>
       <div slot="headline" style="width:fit-content;max-width:100%">
         <h1 class="t-page-title">Work with me</h1>
         <MotionLine kind="align" stretch />

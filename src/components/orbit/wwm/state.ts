@@ -44,6 +44,7 @@ export function initWorkWithMe(): (() => void) | undefined {
   const stage = hero?.querySelector<HTMLElement>('.map-stage[data-orbit="work"]') ?? null;
   const chips = hero ? [...hero.querySelectorAll<HTMLButtonElement>('.engagement-chip[data-id]')] : [];
   const stageBack = hero?.querySelector<HTMLButtonElement>('[data-back]') ?? null;
+  const surfaces = [...root.querySelectorAll<HTMLElement>('[data-wwm-surface]')];
 
   let current: Slug | null = null;
   // Where the page last asked the orbit to be; undefined once it is there.
@@ -93,6 +94,8 @@ export function initWorkWithMe(): (() => void) | undefined {
     switcher.hidden = !slug;
     details.forEach((d) => { d.hidden = d.dataset.wwmDetail !== slug; });
     overviewOnly.forEach((el) => { el.hidden = !!slug; });
+    // Land on the chosen model's surface (ticket #10); ascend back to orbit on restore.
+    surfaces.forEach((el) => el.toggleAttribute('data-on', el.dataset.wwmSurface === slug));
     tabs.forEach((t) => t.setAttribute('aria-pressed', String(t.dataset.wwmTab === slug)));
     // Phones: the tab row scrolls sideways; keep the pressed tab in view (horizontal only).
     const on = tabs.find((t) => t.dataset.wwmTab === slug);
