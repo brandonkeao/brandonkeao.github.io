@@ -34,8 +34,8 @@ export const SETS: Record<OrbitSet, Category[]> = {
   home: [
     way('portfolio', 'Find the real problem', 'A focused assessment when leadership knows something is wrong but the team does not yet agree on the cause or the next move.', [
       step('understand', 'Understand the customer', 'Start with customer and market needs.', '/services/', "Work with me"),
-      step('map', 'Map the system', 'Understand how the work really happens across product, engineering, finance, and operations.', '/services/#system', "Work with me"),
-      step('constraint', 'Name the constraint', 'Make the problem clear enough to act on, and leave the team with a clear direction and next move.', '/services/#system', "Work with me"),
+      step('map', 'Map the system', 'Understand how the work really happens across product, engineering, finance, and operations.', '/services/', "Work with me"),
+      step('constraint', 'Name the constraint', 'Make the problem clear enough to act on, and leave the team with a clear direction and next move.', '/services/', "Work with me"),
     ]),
     way('playbooks', 'Own the outcome', 'Time-bound leadership of an important initiative that needs one person to connect the problem, choices, teams, and delivery.', [
       step('connect', 'Connect the choices', 'One person connects the problem, choices, teams, and delivery.', '/services/', "Work with me"),
@@ -77,5 +77,6 @@ export const SETS: Record<OrbitSet, Category[]> = {
 export const CATEGORIES: Category[] = SETS.home.map((c) => ({ ...c, items: c.items.map((i) => ({ ...i })) }));
 
 export function useSet(set: OrbitSet): void {
-  SETS[set].forEach((c, i) => Object.assign(CATEGORIES[i], { ...c, items: c.items.map((x) => ({ ...x })) }));
+  // tag/slug are reset explicitly: Object.assign never clears keys a set without them leaves behind.
+  SETS[set].forEach((c, i) => Object.assign(CATEGORIES[i], { tag: undefined, slug: undefined, ...c, items: c.items.map((x) => ({ ...x })) }));
 }

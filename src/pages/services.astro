@@ -48,7 +48,7 @@ const lead = 'Bring me into your team full time, work with me on a product outco
       </section>
 
       <!-- Selected: the rows compress into this sticky switcher (shown by the script only). -->
-      <nav class="wwm-switcher ground-pad" aria-label="Ways to work together" data-wwm-switcher hidden>
+      <nav class="wwm-switcher ground-pad" aria-label="Switch way of working" data-wwm-switcher hidden>
         <div class="wwm-tabs">
           {ENGAGEMENTS.map((e) => (
             <button class="wwm-tab" type="button" data-wwm-tab={e.slug} aria-pressed="false" aria-controls={`wwm-${e.slug}`}>
@@ -84,6 +84,24 @@ const lead = 'Bring me into your team full time, work with me on a product outco
       </Sheet>
     </div>
   </div>
+  <script is:inline data-astro-rerun>
+    /* First paint: apply a deep link's ?engagement= before the module script loads, so the
+       overview and the other details do not flash (mirrors apply() in wwm/state.ts). */
+    (function () {
+      var s = document.currentScript, r = s && s.previousElementSibling;
+      if (!r || !r.hasAttribute('data-wwm')) return;
+      var v = new URLSearchParams(location.search).get('engagement');
+      var ds = r.querySelectorAll('[data-wwm-detail]'), ok = false;
+      ds.forEach(function (d) { if (d.getAttribute('data-wwm-detail') === v) ok = true; });
+      if (!ok) return;
+      r.setAttribute('data-state', 'selected');
+      r.querySelector('[data-wwm-select]').hidden = true;
+      r.querySelector('[data-wwm-switcher]').hidden = false;
+      ds.forEach(function (d) { d.hidden = d.getAttribute('data-wwm-detail') !== v; });
+      r.querySelectorAll('[data-wwm-overview]').forEach(function (el) { el.hidden = true; });
+      r.querySelectorAll('[data-wwm-tab]').forEach(function (t) { t.setAttribute('aria-pressed', String(t.getAttribute('data-wwm-tab') === v)); });
+    })();
+  </script>
 </BaseLayout>
 
 <script>

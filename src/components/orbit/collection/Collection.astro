@@ -43,6 +43,16 @@ const { param, label, items, restoreLabel } = Astro.props;
     r.querySelector('[data-cl-overview]').hidden = !!v;
     r.querySelector('[data-cl-switcher]').hidden = !v;
     r.querySelectorAll('[data-cl-tab]').forEach(function (t) { t.setAttribute('aria-pressed', String(t.getAttribute('data-cl-tab') === v)); });
+    // The pre-footer variants come later in the page than this script, so they are switched by a
+    // temporary rule (the controller removes it once it applies the state itself).
+    var old = document.querySelector('style[data-cl-pre]');
+    if (old) old.remove();
+    if (v) {
+      var w = '[data-cl-when~="' + CSS.escape(v) + '"]', st = document.createElement('style');
+      st.setAttribute('data-cl-pre', '');
+      st.textContent = ':root:has(' + w + ') [data-cl-when]:not(' + w + ') { display: none !important; } ' + w + '[hidden] { display: block !important; }';
+      document.head.appendChild(st);
+    }
     r.setAttribute('data-cl-js', '');
   })();
 </script>
@@ -95,12 +105,15 @@ const { param, label, items, restoreLabel } = Astro.props;
       const prev = read();
       if (id === prev) return;
       const wasInside = root.getBoundingClientRect().top < 0;
+      // Keep Astro's state shape (index, scroll) so the router can return to these entries later,
+      // and record the real positions so Back/Forward restore them.
+      if (history.state) history.replaceState({ ...history.state, scrollX, scrollY }, '');
       apply(id);
+      keepPlace(wasInside);
       const url = new URL(location.href);
       if (id) url.searchParams.set(param, id); else url.searchParams.delete(param);
-      // Keep Astro's state shape (index, scroll) so the router can return to this entry later.
-      history.pushState({ ...(history.state ?? {}), scrollX: 0, scrollY: 0 }, '', url);
-      keepPlace(wasInside);
+      url.hash = '';
+      history.pushState({ ...(history.state ?? {}), scrollX, scrollY }, '', url);
       if (focus === 'detail' && id) {
         details.find((d) => d.dataset.clDetail === id)?.querySelector<HTMLElement>('[data-cl-focus]')?.focus({ preventScroll: true });
       } else if (focus === 'row' && prev) {
@@ -109,15 +122,30 @@ const { param, label, items, restoreLabel } = Astro.props;
     };
 
     apply(read());
+    document.querySelectorAll('style[data-cl-pre]').forEach((s) => s.remove());
     root.setAttribute('data-cl-js', '');
+
+    const plainClick = (e: MouseEvent) => e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
 
     root.addEventListener('click', (e) => {
       const t = e.target as Element;
       const row = t.closest<HTMLElement>('[data-cl-select]');
-      if (row) { select(row.dataset.clSelect ?? null, 'detail'); return; }
+      if (row) {
+        // Rows are real links (they work without JS); a modified click keeps the browser's behavior.
+        if (!plainClick(e)) return;
+        e.preventDefault();
+        select(row.dataset.clSelect ?? null, 'detail');
+        return;
+      }
       const tab = t.closest<HTMLElement>('[data-cl-tab]');
       if (tab) { select(tab.dataset.clTab ?? null, 'none'); return; }
       if (t.closest('[data-cl-restore]')) select(null, 'row');
+    }, opts);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || e.defaultPrevented || read() === null) return;
+      if (document.querySelector('#mobile-menu:not([hidden])')) return;
+      select(null, 'row');
     }, opts);
 
     // Same-page back/forward between collection states: handle it here and keep the router out.
@@ -125,6 +153,8 @@ const { param, label, items, restoreLabel } = Astro.props;
       if (location.pathname !== pathname) return;
       e.stopImmediatePropagation();
       apply(read());
+      const st = e.state as { scrollX?: number; scrollY?: number } | null;
+      if (st && typeof st.scrollY === 'number') scrollTo(st.scrollX ?? 0, st.scrollY);
     }, { capture: true, signal: ctl.signal });
 
     dispose = () => ctl.abort();

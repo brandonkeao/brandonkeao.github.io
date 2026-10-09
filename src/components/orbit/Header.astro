@@ -31,7 +31,7 @@ const current = (href: string) => {
     <ul class="t-title">
       {navLinks.map((l) => <li><a href={l.href} aria-current={current(l.href)}>{l.label}</a></li>)}
     </ul>
-    <a href="/contact/" class="btn btn-ground">Let's talk</a>
+    <a href="/contact/" class="btn btn-ground" aria-current={current('/contact/')}>Let's talk</a>
   </div>
 </header>
 
