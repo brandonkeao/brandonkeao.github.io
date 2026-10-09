@@ -56,7 +56,7 @@ export const ENGAGEMENTS: Engagement[] = [
       { title: 'Opportunity Solution Trees', note: 'Exploring customer needs.', href: '/playbooks/?playbook=ost' },
       { title: 'RICE with an opportunity backlog', note: 'Making prioritization choices explicit.', href: '/playbooks/?playbook=rice' },
     ],
-    cta: { title: 'Have a role in mind? Tell me what the team is working on and what you need this person to own.', button: 'Talk about a role', href: '/contact/?about=full-time' },
+    cta: { title: 'Have a role in mind? Tell me what the team is working on and what you need this person to own.', button: 'Talk about a role', href: '/contact/' },
   },
   {
     ...base('fractional'),
@@ -77,7 +77,7 @@ export const ENGAGEMENTS: Engagement[] = [
       { title: 'Opportunity Solution Trees', note: 'Framing the product opportunity.', href: '/playbooks/?playbook=ost' },
       { title: 'Design Sprints', note: 'Testing a bounded product direction.', href: '/playbooks/?playbook=sprints' },
     ],
-    cta: { title: 'What product outcome needs an owner? Tell me where the work stands and where your team needs help.', button: 'Talk about a product engagement', href: '/contact/?about=fractional' },
+    cta: { title: 'What product outcome needs an owner? Tell me where the work stands and where your team needs help.', button: 'Talk about a product engagement', href: '/contact/' },
   },
   {
     ...base('advisory'),
@@ -97,6 +97,6 @@ export const ENGAGEMENTS: Engagement[] = [
     reserved: { title: 'Second example to be selected', note: 'Reserved for an operations / analytics case.' },
     playbooks: [],
     playbooksLink: { label: 'Explore the Playbooks', href: '/playbooks/' },
-    cta: { title: "What isn't working as well as it should? Tell me about the decision, process or business problem you want to tackle.", button: 'Talk through a business problem', href: '/contact/?about=advisory' },
+    cta: { title: "What isn't working as well as it should? Tell me about the decision, process or business problem you want to tackle.", button: 'Talk through a business problem', href: '/contact/' },
   },
 ];
