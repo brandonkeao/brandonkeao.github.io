@@ -14,6 +14,16 @@ import MotionLine from '../components/orbit/MotionLine.astro';
     </header>
 
     <Sheet label="Contact methods" class="contact-sheet">
+      <fieldset class="about-choice" data-about-choice>
+        <legend class="t-caption muted-s">What are you reaching out about?</legend>
+        <div class="about-options">
+          <label class="about-pill"><input type="radio" name="about" value="full-time" data-label="Full time Senior IC Roles" /><span>Full time Senior IC Roles</span></label>
+          <label class="about-pill"><input type="radio" name="about" value="fractional" data-label="Fractional Product Leadership" /><span>Fractional Product Leadership</span></label>
+          <label class="about-pill"><input type="radio" name="about" value="advisory" data-label="Advisory and Consulting" /><span>Advisory and Consulting</span></label>
+          <label class="about-pill"><input type="radio" name="about" value="" data-label="Not sure yet" checked /><span>Not sure yet</span></label>
+        </div>
+        <p class="t-caption muted-s" style="margin-top:12px">It only adds a subject to the email link. Nothing is sent.</p>
+      </fieldset>
       <div class="stack" style="gap:12px">
         <ContactCard kind="email" label="Email" value="brandon.keao@gmail.com" />
         <ContactCard kind="link" label="LinkedIn" value="/in/brandonkeao" href="https://www.linkedin.com/in/brandonkeao/" action="Open LinkedIn" />
@@ -23,11 +33,48 @@ import MotionLine from '../components/orbit/MotionLine.astro';
   </div>
 </BaseLayout>
 
+<script>
+  // Reads ?about=full-time|fractional|advisory to preselect a choice, and reflects the chosen
+  // label in the mailto subject. Static build, no backend, nothing is sent.
+  let ac: AbortController | undefined;
+  function init() {
+    ac?.abort();
+    ac = new AbortController();
+    const { signal } = ac;
+    const group = document.querySelector<HTMLElement>('[data-about-choice]');
+    const mail = document.querySelector<HTMLAnchorElement>('email-contact a[href^="mailto:"]');
+    if (!group) return;
+    const radios = Array.from(group.querySelectorAll<HTMLInputElement>('input[type="radio"]'));
+    const base = mail ? mail.getAttribute('href')!.split('?')[0] : '';
+    const sync = () => {
+      const r = radios.find((x) => x.checked);
+      if (!mail) return;
+      mail.href = r && r.value ? `${base}?subject=${encodeURIComponent(`Reaching out about: ${r.dataset.label}`)}` : base;
+    };
+    const wanted = new URLSearchParams(location.search).get('about') ?? '';
+    const match = radios.find((x) => x.value && x.value === wanted);
+    if (match) match.checked = true;
+    radios.forEach((x) => x.addEventListener('change', sync, { signal }));
+    sync();
+  }
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => ac?.abort());
+</script>
+
 <style>
   /* Brandon, 2026-10-06: "Let's talk" on the left, the contact card in the column on the right. */
   :global(#main-content):has(.contact-layout) { display: flex; flex-direction: column; justify-content: center; }
   .contact-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 600px); gap: 56px; align-items: center; padding: 56px var(--gutter) 96px; }
   .contact-layout :global(.contact-sheet) { margin: 0; padding: 32px; }
+  .about-choice { border: 0; margin: 0 0 24px; padding: 0; min-width: 0; }
+  .about-choice legend { padding: 0; margin-bottom: 10px; }
+  .about-options { display: flex; flex-wrap: wrap; gap: 8px; }
+  .about-pill { position: relative; cursor: pointer; }
+  .about-pill input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .about-pill span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid var(--line-on-sheet); border-radius: 999px; font-size: 15px; color: var(--on-sheet); transition: background 0.15s, border-color 0.15s; }
+  .about-pill:hover span { border-color: var(--on-sheet); }
+  .about-pill input:checked + span { background: var(--on-sheet); border-color: var(--on-sheet); color: var(--sheet, #fff); }
+  .about-pill input:focus-visible + span { outline: 2px solid var(--on-sheet); outline-offset: 2px; }
   @media (max-width: 860px) {
     .contact-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 16px 0 var(--inset); }
     .contact-intro { padding: 0 var(--gutter); }

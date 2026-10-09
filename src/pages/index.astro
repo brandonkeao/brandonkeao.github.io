@@ -1,142 +1,226 @@
 ---
+// Home (promoted from the Home v2 proposal, ticket #8 Direction B, 2026-10-09). Hero and Experience
+// strip are unchanged from v2. Structure: stage (hero + strip), one paper sheet (about, how I think,
+// quote), stage (ways to work together), then the closing callout with the one brand-red button.
+// One grid: 12 columns, heading in columns 1-4, content in 6-12; one column at 860 and below.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import OrbitStage from '../components/orbit/OrbitStage.astro';
-import Sheet from '../components/orbit/Sheet.astro';
-import StepList from '../components/orbit/StepList.astro';
-import WayRow from '../components/orbit/WayRow.astro';
-import Quote from '../components/orbit/Quote.astro';
-import Closing from '../components/orbit/Closing.astro';
-import ExperienceStrip from '../components/orbit/ExperienceStrip.astro';
-import { SETS } from '../lib/orbit/orbit-data';
-
-const ways = SETS.home;
-const meta = ['Diagnostic', 'Strategic initiative', 'Fractional leadership'];
-const first = ways[0];
-
-const clients = ['Rebrandly', 'Pie Insurance', 'Bitly', 'PAIRIN', 'Ora Interactive', 'Sears', 'Bridgewater', 'Bloomberg', 'Goldman Sachs', 'Deutsche Bank', 'Capital Group', 'Thomson Reuters', 'Saxo Bank'];
-
-const covers = ['inspired', 'empowered', 'continuous-discovery-habits', 'escaping-the-build-trap', 'high-output-management'];
-
-const process = [
-  { title: 'Understand', body: 'Start with customer and market needs. Map the system and make the problem clear enough to act on.' },
-  { title: 'Start', body: 'Starting is the best way to begin learning and make progress. Use judgment, but do not let endless debate become the work.' },
-  { title: 'Own', body: 'Leadership comes from everywhere. Own the problems in your world and make it easier for other people to lead.' },
-  { title: 'Improve', body: 'Give honest, timely feedback and keep fixing small things. The small fixes add up.' },
-];
 import HeroMeteor from '../components/orbit/HeroMeteor.astro';
+import Sheet from '../components/orbit/Sheet.astro';
+import SectionHead from '../components/orbit/SectionHead.astro';
+import Quote from '../components/orbit/Quote.astro';
+import ExperienceStrip from '../components/orbit/ExperienceStrip.astro';
+
+const companies = ['Rebrandly', 'Pie Insurance', 'Bitly', 'PAIRIN', 'Ora Interactive', 'Sears', 'Bridgewater', 'Bloomberg', 'Goldman Sachs', 'Deutsche Bank', 'Capital Group', 'Thomson Reuters', 'Saxo Bank'];
+
+const reading = [
+  { meta: 'Working together', title: 'Manager README', href: '/manager-readme/' },
+  { meta: 'Ideas and influences', title: 'Bookshelf', href: '/bookshelf/' },
+];
+
+// The three engagement models (copy pack, Direction B). Dots keep the hero moons' order.
+// Each row deep-links into that model's selected state on Work with me (?engagement=).
+const engagements = [
+  { meta: 'Hiring into the team', title: 'Full time Senior IC Roles', body: 'A senior product role with room to shape direction, own meaningful work, and stay close to the details.', href: '/services/?engagement=full-time' },
+  { meta: 'A product engagement', title: 'Fractional Product Leadership', body: 'Experienced product leadership for a defined outcome or initiative, from framing the problem through delivery.', href: '/services/?engagement=fractional' },
+  { meta: 'A business engagement', title: 'Advisory and Consulting', body: 'Focused help with business, operations and analytics, including putting changes into practice.', href: '/services/?engagement=advisory' },
+];
 ---
 
 <BaseLayout
   title="Senior product leadership making outcomes move."
-  description="I work with leadership teams when an important product or growth problem is not moving. Background in engineering, consulting, and product leadership."
+  description="I help teams build momentum toward better customer and business outcomes. My background is in engineering, consulting, and product leadership."
 >
+  <!-- Field 1: the stage. The hero and its proof are one dark field. -->
   <OrbitStage set="home" size="closeup" controls="none" speed={2}>
     <h1 slot="headline" class="t-display">Senior product<br /> leadership making<br /> outcomes move.</h1>
     <HeroMeteor slot="headline" />
     <p class="t-lead muted-g">Senior enough to shape the direction. Close enough to the work to help make it happen.</p>
-    <div style="display:flex;gap:20px;align-items:center;margin-top:28px;flex-wrap:wrap">
+    <div class="hv-hero-actions">
       <a href="/services/" class="btn btn-brand">Work with me</a>
       <a href="/contact/" class="link-ground">Let's talk</a>
     </div>
   </OrbitStage>
 
-  <ExperienceStrip names={clients} />
+  <ExperienceStrip surface="ground" names={companies} />
 
-  <Sheet id="way-in" label="Selected way in">
-    <p class="crumb">Your outcome › <b data-orbit-title>{first.name}</b></p>
-    <div class="row" style="margin-top:18px">
-      <div class="col">
-        <p data-orbit-body style="font-size:clamp(20px,1.7vw,24px);line-height:1.42;letter-spacing:-0.01em">{first.summary}</p>
-        <p style="margin-top:28px"><a class="link-sheet" href="/services/">See how we can work together</a></p>
+  <!-- Field 2: paper. The person: who I am, how I think, and a client's words. -->
+  <Sheet class="hv-sheet" label="About Brandon, how I think, and what a client said">
+    <section class="hv-band hv-about" aria-labelledby="hv-about">
+      <div class="hv-head">
+        <SectionHead id="hv-about" eyebrow="About Brandon" title="A builder who cares about things that actually work." />
       </div>
-      <div class="col"><StepList steps={first.items} data-orbit-steps /></div>
-    </div>
+      <div class="hv-body hv-about-text">
+        <img class="portrait hv-portrait" src="/images/brandon-keao-headshot.jpg" alt="Brandon Keao" width="300" height="300" loading="lazy" />
+        <p class="t-lead hv-measure">I have an engineering degree from Northwestern University and 18+ years in technology spanning consulting, product, design, research, and strategy.</p>
+        <p class="t-body muted-s hv-measure hv-follow">That foundation shapes how I work with AI and data today: understand the problem, decide what to try, build alongside the team, and check whether it helped.</p>
+        <p class="hv-link"><a class="link-sheet" href="/about/">More about me</a></p>
+      </div>
+    </section>
+
+    <section class="hv-band" aria-labelledby="hv-think">
+      <div class="hv-head">
+        <SectionHead id="hv-think" eyebrow="How I think" title="Where my approach comes from." lead="My Manager README says how I work with a team. My Bookshelf lists many of the ideas behind it." />
+      </div>
+      <ul class="hv-body hv-items hv-rows">
+        {reading.map((r) => (
+          <li class="hv-item">
+            <a class="hv-row" href={r.href}>
+              <span class="hv-row-text">
+                <span class="hv-meta">{r.meta}</span>
+                <h3 class="t-item hv-title">{r.title}</h3>
+              </span>
+              <span class="hv-arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="hv-band hv-quote" aria-label="What a client said">
+      <div class="hv-body">
+        <Quote
+          quote="“Finding someone who can translate business objectives into technical requirements is difficult. Finding someone who can also own the project, teams, and client relationship is rare.”"
+          cite="Andre Sugai, CTO and Partner, Ora Interactive"
+        />
+      </div>
+    </section>
   </Sheet>
 
-  <section class="section-ground" aria-label="Proof" data-proof>
-    <div style="max-width:960px">
-      <Quote
-        quote="“Finding someone who can translate business objectives into technical requirements is difficult. Finding someone who can also own the project, teams, and client relationship is rare.”"
-        cite="Andre Sugai, CTO and Partner, Ora Interactive"
-      />
-    </div>
-  </section>
+  <!-- Field 3: the stage again. The offer, then the method. -->
+  <div class="hv-field">
+    <section class="hv-band hv-ways ground-pad" aria-labelledby="hv-ways">
+      <div class="hv-head">
+        <SectionHead id="hv-ways" eyebrow="Work with me" title="Ways to work together" />
+      </div>
+      <div class="hv-body">
+        <ul class="hv-items hv-way-list">
+          {engagements.map((e, i) => (
+            <li class="hv-item">
+              <a class="hv-way" href={e.href}>
+                <span class="hv-meta"><i class={`dot dot-${i + 1}`} aria-hidden="true"></i>{e.meta}</span>
+                <span class="hv-way-title"><h3 class="t-item hv-title">{e.title}</h3><span class="hv-arrow" aria-hidden="true">↗</span></span>
+                <span class="t-body muted-g hv-measure hv-way-body">{e.body}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  </div>
 
-  <Sheet label="Ways to work together">
-    <h2 class="t-section">Ways to work together</h2>
-    <div style="margin-top:28px">
-      {ways.map((w, i) => (
-        <WayRow meta={meta[i]} title={w.name} description={w.summary} href="/services/" linkLabel="How it works" dot={(i + 1) as 1 | 2 | 3} />
-      ))}
+  <!-- Field 4: the ask. One white callout closes the page (Brandon 2026-10-07: "one large bottom
+       dedicated component that is a very clear call to action"). -->
+  <Sheet class="hv-close" label="Start a conversation">
+    <div class="hv-close-inner">
+      <div class="hv-close-text">
+        <p class="t-caption hv-close-eyebrow">Start a conversation</p>
+        <h2 class="t-page-title hv-close-title" id="hv-close">If you're stuck, let's talk about what to try first.</h2>
+      </div>
+      <a href="/contact/" class="btn btn-brand hv-close-btn">Let's talk</a>
     </div>
   </Sheet>
-
-  <Sheet label="Where my approach comes from">
-    <div class="row">
-      <div class="col">
-        <h2 class="t-section">Where my approach comes from.</h2>
-        <p class="t-lead muted-s" style="margin-top:18px;max-width:520px">My Manager README says how I work with a team. My Bookshelf lists many of the ideas behind it.</p>
-      </div>
-      <div class="col stack divider-list">
-        <div style="padding:24px 0;display:flex;justify-content:space-between;align-items:center;gap:16px">
-          <div><p class="t-caption muted-s">How I work with a team</p><h3 class="t-title">Manager README</h3></div>
-          <a class="link-sheet" href="/manager-readme/">Read it</a>
-        </div>
-        <div style="padding:24px 0;display:flex;justify-content:space-between;align-items:center;gap:16px">
-          <div>
-            <p class="t-caption muted-s">Ideas and influences</p>
-            <h3 class="t-title">Bookshelf</h3>
-            <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-              {covers.map((c) => <img src={`/images/books/${c}.jpg`} alt="" width="64" height="96" loading="lazy" style="height:96px;width:auto;border-radius:2px" />)}
-            </div>
-          </div>
-          <a class="link-sheet" href="/bookshelf/">Browse</a>
-        </div>
-      </div>
-    </div>
-  </Sheet>
-
-  <Sheet label="About">
-    <div class="row" style="align-items:center">
-      <img class="portrait" src="/images/brandon-keao-headshot.jpg" alt="Brandon Keao" width="300" height="300" loading="lazy" style="width:min(300px,100%);height:auto;aspect-ratio:1" />
-      <div class="col">
-        <h2 class="t-section">A builder who cares about things that actually work.</h2>
-        <p class="t-lead" style="margin-top:18px">I have an engineering degree from Northwestern University and 18+ years in technology spanning consulting, product, design, research, and strategy.</p>
-        <p class="t-body muted-s" style="margin-top:12px">That foundation shapes how I work with AI and data today: understand the problem, decide what to try, build alongside the team, and check whether it helped.</p>
-        <p style="margin-top:24px"><a class="link-sheet" href="/about/">More about me</a></p>
-      </div>
-    </div>
-  </Sheet>
-
-  <section class="section-ground" aria-labelledby="process-title">
-    <h2 id="process-title" class="t-section" style="max-width:700px">The minimum process needed to be effective.</h2>
-    <div class="grid-4" style="margin-top:40px">
-      {process.map((p) => (
-        <div class="area">
-          <h3 class="t-item">{p.title}</h3>
-          <p class="t-small muted-g" style="margin-top:10px">{p.body}</p>
-        </div>
-      ))}
-    </div>
-  </section>
-
-  <script is:inline>
-    // Home always opens at the top (Brandon, 2026-10-06), including reload and back/forward.
-    // Runs before the view-transition router restores a saved position, so there is no jump.
-    (function () {
-      if (location.pathname !== '/' || location.hash) return;
-      history.scrollRestoration = 'manual';
-      if (history.state) history.replaceState(Object.assign({}, history.state, { scrollX: 0, scrollY: 0 }), '');
-      scrollTo(0, 0);
-      if (window.__homeTop) return;
-      window.__homeTop = true;
-      var top = function () {
-        if (location.pathname === '/' && !location.hash) scrollTo({ left: 0, top: 0, behavior: 'instant' });
-      };
-      document.addEventListener('astro:after-swap', top);
-      document.addEventListener('astro:page-load', top);
-    })();
-  </script>
-
-  <Closing title="If you're stuck, let's talk about what to try first." />
 </BaseLayout>
+
+<style is:global>
+  /* ---- grid: 12 columns, heading 1-4, content 6-12 ---------------------------------------- */
+  .hv-band {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 32px;
+  }
+  .hv-head { grid-column: 1 / span 4; }
+  .hv-body { grid-column: 6 / -1; min-width: 0; }
+  .hv-measure { max-width: 60ch; }
+
+  .hv-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; margin-top: 28px; }
+
+  /* ---- field 2: paper ------------------------------------------------------------------- */
+  /* The sheet holds its bands edge to edge; 96 inside, a hairline between bands. */
+  .sheet.hv-sheet { padding-top: 0; padding-bottom: 0; }
+  .hv-sheet .hv-band { padding-top: var(--space-sheet-band); padding-bottom: var(--space-sheet-band); }
+  .hv-sheet .hv-band + .hv-band { border-top: 1px solid var(--line-on-sheet); }
+
+  /* Items: one hairline each on paper, none on the ground. */
+  .hv-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 28px; }
+  .hv-sheet .hv-item { border-top: 1px solid var(--line-on-sheet); padding-top: 16px; }
+  .hv-meta { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.4; color: var(--on-sheet-muted); }
+  .hv-item .t-item + p { margin-top: 8px; }
+  .hv-link { margin-top: 24px; }
+  .hv-follow { margin-top: 12px; }
+
+  /* How I think: each item is one link, title and meta on the left, the arrow on the right. */
+  .hv-rows { gap: 0; }
+  .hv-rows .hv-item { padding-top: 0; }
+  .hv-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 48px; padding: 20px 0; }
+  .hv-row-text { display: flex; flex-direction: column; gap: 4px; }
+  .hv-arrow { font-size: 20px; line-height: 1; color: var(--on-sheet-muted); transition: color 0.15s; }
+  .hv-title { text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1.5px; text-underline-offset: 4px; transition: text-decoration-color 0.15s; }
+  .hv-row:hover .hv-title { text-decoration-color: var(--accent); }
+  .hv-row:hover .hv-arrow { color: var(--on-sheet); }
+
+  /* About: the portrait sits on the right inside the text, which wraps beside it (Brandon
+     2026-10-07: "the image to be on the right and part of the text block"). */
+  .hv-about-text::after { content: ''; display: block; clear: both; }
+  .hv-portrait { float: right; width: 200px; height: 200px; margin: 6px 0 20px 40px; }
+
+  /* The client's words close the paper: the quote spans the whole sheet (Brandon, 2026-10-07), a red rule beside it. */
+  .hv-quote .hv-body { grid-column: 1 / -1; }
+  .hv-quote blockquote { border-left: 3px solid var(--accent); padding-left: 28px; color: var(--on-sheet); }
+  .hv-quote .quote-cite { padding-left: 31px; color: var(--on-sheet-muted); }
+
+  /* ---- field 3: the stage --------------------------------------------------------------- */
+  .hv-field { padding-bottom: var(--space-band); }
+  .hv-ways { padding-top: var(--space-band); }
+  .hv-field .hv-meta { color: var(--on-ground-muted); }
+  .hv-way-list { gap: 40px; }
+  .hv-way { display: flex; flex-direction: column; gap: 4px; }
+  .hv-way-title { display: flex; align-items: baseline; gap: 12px; }
+  .hv-way .hv-arrow { color: var(--on-ground-faint); }
+  .hv-way-body { display: block; margin-top: 4px; }
+  .hv-way:hover .hv-title { text-decoration-color: var(--on-ground); }
+  .hv-way:hover .hv-arrow { color: var(--on-ground); }
+  .hv-link-end { margin-top: 40px; }
+
+  /* ---- field 4: the ask ----------------------------------------------------------------- */
+  /* A white callout that takes over the end of the page: display-size title on the grid's left
+     edge, one large brand-red button under it. */
+  /* The ask: the button sits left, under the text (Brandon, 2026-10-07: smaller title, button back down). */
+  .sheet.hv-close { padding-top: 120px; padding-bottom: 128px; }
+  .hv-close-text { max-width: 760px; }
+  .hv-close-eyebrow { font-weight: 500; color: var(--on-sheet-muted); margin-bottom: 20px; }
+  .hv-close-title { color: var(--on-sheet); max-width: 15.5em; text-wrap: balance; }
+  .hv-close-btn { margin-top: 48px; font-size: 19px; padding: 20px 36px; min-height: 64px; }
+
+  @media (max-width: 1100px) {
+    .hv-head { grid-column: 1 / span 5; }
+    .hv-body { grid-column: 7 / -1; }
+  }
+
+  /* ---- phones: one column, designed rows ----------------------------------------------- */
+  @media (max-width: 860px) {
+    .hv-band { grid-template-columns: minmax(0, 1fr); row-gap: 24px; }
+    .hv-head, .hv-body { grid-column: 1 / -1; }
+    .hv-sheet .hv-band { padding-top: var(--space-sheet-band-sm); padding-bottom: var(--space-sheet-band-sm); padding-left: 0; padding-right: 0; }
+    .hv-items { gap: 20px; }
+    .hv-sheet .hv-item { padding-top: 14px; }
+    .hv-rows .hv-item { padding-top: 0; }
+    .hv-row { padding: 12px 0; }
+    .hv-band .t-item { font-size: 19px; }
+    .hv-band .t-body { font-size: 16px; }
+
+    /* About: a 104px portrait on the right of the opening lines, the text wrapping beside it. */
+    .hv-portrait { width: 104px; height: 104px; margin: 4px 0 12px 16px; }
+    .hv-quote blockquote { padding-left: 20px; }
+    .hv-quote .quote-cite { padding-left: 23px; }
+
+    .hv-field { padding-bottom: var(--space-band-sm); }
+    .hv-ways { padding-top: var(--space-band-sm); }
+    .hv-way-list { gap: 28px; }
+    .hv-link-end { margin-top: 32px; }
+    .sheet.hv-close { padding-top: 72px; padding-bottom: 80px; }
+    .hv-close-eyebrow { margin-bottom: 14px; }
+    .hv-close-title { font-size: 32px; }
+    .hv-close-btn { margin-top: 32px; font-size: 18px; padding: 18px 28px; min-height: 60px; display: flex; width: 100%; }
+  }
+</style>
