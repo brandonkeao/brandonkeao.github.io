@@ -305,9 +305,12 @@ const poster = closeup
   .orbit-hero--xl .map-stage { height: 780px; }
   /* Work with me: a narrower copy column kept left and a taller stage, so the orbit reads as
      the hero's subject (Brandon, 2026-10-09: "make the visual a bit more prominent… the text
-     section more on the left"). The camera auto-fits the stage box, so a bigger box = a bigger system. */
-  .orbit-hero--large { grid-template-columns: minmax(340px, 430px) minmax(0, 1fr); gap: 32px; }
-  .orbit-hero--large .map-stage { height: clamp(640px, calc(100svh - 150px), 820px); }
+     section more on the left"). The camera auto-fits the stage box, so a bigger box = a bigger
+     system. Desktop only: the phone block's plain .map-stage rule must keep winning there. */
+  @media (min-width: 861px) {
+    .orbit-hero--large { grid-template-columns: minmax(340px, 430px) minmax(0, 1fr); gap: 32px; }
+    .orbit-hero--large .map-stage { height: clamp(640px, calc(100svh - 150px), 820px); }
+  }
   /* Home close-up: the scene is full-bleed behind the copy; the planet sits right, cropped by the
      edge, and the canvas fades out before the copy column (like the Quiet orbit banner). */
   /* Iteration 2 (Brandon 2026-10-07): the stage is sized to the window so the Experience strip
