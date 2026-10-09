@@ -1,0 +1,15 @@
+---
+// Sticky switcher shown in a selected state: one toggle button per item and a restore button.
+// Server-rendered hidden; the collection controller shows it.
+import './collection.css';
+
+interface Props { label: string; items: { id: string; label: string }[]; restoreLabel: string }
+const { label, items, restoreLabel } = Astro.props;
+---
+
+<div class="cl-switcher" data-cl-switcher hidden>
+  <div class="cl-tabs" role="group" aria-label={label}>
+    {items.map((it) => <button type="button" class="cl-tab" data-cl-tab={it.id} aria-pressed="false">{it.label}</button>)}
+  </div>
+  <button type="button" class="cl-restore" data-cl-restore>{restoreLabel}</button>
+</div>

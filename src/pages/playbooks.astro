@@ -1,0 +1,143 @@
+---
+// Playbooks, Direction B "Orbital stage" (brandonkeao.github.io #8, lane C, 2026-10-09).
+// Copy: Brandon OS projects/personal-website/analysis/2026-10-09-hifi-directions/COPY_PACK.md,
+// verbatim and draft under Brandon's review. OST and Design Sprints are at bounded depth: the
+// row fields, the collection-level relevance line and "No verified application yet." only.
+// Method sources are plain text labels (no URLs); the ↗ is decoration.
+// Layout choices are AI-made and reversible.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sheet from '../components/orbit/Sheet.astro';
+import StepList from '../components/orbit/StepList.astro';
+import CollectionHero from '../components/orbit/collection/CollectionHero.astro';
+import Collection from '../components/orbit/collection/Collection.astro';
+import CollectionRow from '../components/orbit/collection/CollectionRow.astro';
+import DetailHead from '../components/orbit/collection/DetailHead.astro';
+import DetailBlock from '../components/orbit/collection/DetailBlock.astro';
+import RelevanceList from '../components/orbit/collection/RelevanceList.astro';
+import LibraryNote from '../components/orbit/collection/LibraryNote.astro';
+import Prefooter from '../components/orbit/collection/Prefooter.astro';
+
+const RELEVANCE = 'Methods support all three ways of working together. A link to a project means relevant — not "used there."';
+const NO_APPLICATION = 'No verified application yet.';
+
+const playbooks = [
+  {
+    id: 'ost',
+    category: 'Product discovery',
+    title: 'Opportunity Solution Trees',
+    description: 'Keep one desired outcome connected to customer opportunities, possible solutions, and the assumptions worth testing first.',
+    when: 'When a team converges too quickly on one idea, or loses the link between research and delivery.',
+    source: 'Method source: Product Talk',
+  },
+  {
+    id: 'rice',
+    category: 'Product strategy',
+    title: 'RICE with an opportunity backlog',
+    description: 'Make the assumptions behind a priority visible, then weigh evidence, dependencies, and strategy before deciding.',
+    when: 'When several evidence-linked opportunities compete for constrained capacity.',
+    source: 'Method source: Intercom',
+  },
+  {
+    id: 'sprints',
+    category: 'Product design',
+    title: 'Design Sprints',
+    description: 'Compress a consequential product question into a shared map, one testable prototype, and a decision about what to learn next.',
+    when: 'When a cross-functional group faces a risky, concrete question that can be tested quickly.',
+    source: 'Method source: the Sprint authors',
+  },
+];
+const [ost, rice, sprints] = playbooks;
+const bounded = [{ p: ost, n: '01' }, { p: sprints, n: '03' }];
+
+const riceSteps = [
+  { title: 'Keep opportunity records', description: 'Capture the outcome, evidence, affected people, unknowns, dependencies, and owner before scoring.' },
+  { title: 'Score comparable choices', description: 'Use the same reach unit, time window, impact scale, confidence rule, and effort unit across candidates.' },
+  { title: 'Review the ranking', description: 'Challenge false precision, correlated inputs, sequencing constraints, neglected risk, and strategic fit before deciding.' },
+];
+---
+
+<BaseLayout title="Playbooks" description="Methods for clearer product decisions. Three practical ways to connect evidence, choices, and learning.">
+  <CollectionHero
+    title="Playbooks"
+    lead="Methods for clearer product decisions."
+    body="Three practical ways to connect evidence, choices, and learning."
+    note={RELEVANCE}
+  />
+
+  <Sheet class="cl-sheet" label="Three playbooks">
+    <Collection param="playbook" label="Playbooks" items={playbooks.map((p) => ({ id: p.id, label: p.title }))} restoreLabel="↑ All playbooks">
+      <Fragment slot="overview">
+        <h2 class="t-section cl-section-title">Three playbooks</h2>
+        <ol class="cl-rows">
+          {playbooks.map((p, i) => (
+            <CollectionRow
+              id={p.id}
+              index={i + 1}
+              controls={`playbook-${p.id}`}
+              eyebrow={p.category}
+              title={p.title}
+              description={p.description}
+              when={p.when}
+              source={p.source}
+            />
+          ))}
+        </ol>
+      </Fragment>
+
+      {bounded.slice(0, 1).map(({ p, n }) => (
+        <section class="cl-detail" id={`playbook-${p.id}`} data-cl-detail={p.id} aria-label={p.title}>
+          <DetailHead eyebrow={`${n} · ${p.category}`} title={p.title} lead={p.description} />
+          <DetailBlock label="When it fits"><p>{p.when}</p></DetailBlock>
+          <DetailBlock label="Method source"><p class="cl-source">{p.source.replace('Method source: ', '')} <span aria-hidden="true">↗</span></p></DetailBlock>
+          <DetailBlock label="Relevant ways of working"><p class="muted-s">{RELEVANCE}</p></DetailBlock>
+          <DetailBlock label="Applications"><p>{NO_APPLICATION}</p></DetailBlock>
+        </section>
+      ))}
+
+      <section class="cl-detail" id="playbook-rice" data-cl-detail="rice" aria-label={rice.title}>
+        <DetailHead eyebrow="02 · Product strategy" title={rice.title} />
+        <p class="cl-formula">( R × I × C ) ÷ E — define units and the time horizon before comparing anything.</p>
+        <div style="margin-top:32px">
+          <DetailBlock label="How I approach it"><StepList steps={riceSteps} /></DetailBlock>
+          <DetailBlock label="When to use">
+            <p>Use when several evidence-linked opportunities compete for constrained capacity and the team needs a transparent starting point for tradeoffs.</p>
+          </DetailBlock>
+          <DetailBlock label="Limits">
+            <p>RICE cannot decide strategy, compare unrelated outcomes fairly, or turn weak evidence into confidence. Re-score only when inputs materially change.</p>
+          </DetailBlock>
+          <DetailBlock label="Relevant ways of working">
+            <RelevanceList entries={[
+              { model: 'Full time Senior IC Roles', text: 'Prioritization with explicit tradeoffs inside an owned product area.' },
+              { model: 'Fractional Product Leadership', text: 'Choosing where a defined product engagement should focus first.' },
+              { model: 'Advisory and Consulting', text: 'Conditional — when the actual decision warrants this approach; it is not a substitute for financial or operational analysis.', conditional: true },
+            ]} />
+          </DetailBlock>
+          <DetailBlock label="Applications">
+            <p>{NO_APPLICATION}</p>
+            {/* The candidate pairing (Pie) stays in review notes, per the collection's own drafts
+                line — naming it here contradicted that rule, so visitor copy keeps only the
+                verified-application status and the relevance link below. */}
+            <p>Related project context: <a class="link-sheet" href="/portfolio/?story=pie">Pie Insurance · Carrier platform →</a></p>
+          </DetailBlock>
+          <DetailBlock label="Method source"><p class="cl-source">Intercom <span aria-hidden="true">↗</span></p></DetailBlock>
+        </div>
+      </section>
+
+      {bounded.slice(1).map(({ p, n }) => (
+        <section class="cl-detail" id={`playbook-${p.id}`} data-cl-detail={p.id} aria-label={p.title}>
+          <DetailHead eyebrow={`${n} · ${p.category}`} title={p.title} lead={p.description} />
+          <DetailBlock label="When it fits"><p>{p.when}</p></DetailBlock>
+          <DetailBlock label="Method source"><p class="cl-source">{p.source.replace('Method source: ', '')} <span aria-hidden="true">↗</span></p></DetailBlock>
+          <DetailBlock label="Relevant ways of working"><p class="muted-s">{RELEVANCE}</p></DetailBlock>
+          <DetailBlock label="Applications"><p>{NO_APPLICATION}</p></DetailBlock>
+        </section>
+      ))}
+    </Collection>
+    <p class="t-small muted-s cl-gate">All three are provisional drafts. No company application is verified; candidate pairings stay in review notes, not visitor copy.</p>
+  </Sheet>
+
+  <LibraryNote title="More methods in the library." />
+
+  <Prefooter prompt="Have a decision these methods could help with?" />
+  <Prefooter when="rice" prompt="Facing a prioritization decision like this?" />
+</BaseLayout>

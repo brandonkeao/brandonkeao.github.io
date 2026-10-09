@@ -1,0 +1,12 @@
+---
+// A labelled block in a detail, on the shared .clause grid (label left, content right).
+import './collection.css';
+
+interface Props { label: string; num?: string }
+const { label, num } = Astro.props;
+---
+
+<div class="clause cl-block">
+  <h3 class="cl-block-label">{num && <span class="cl-num">{num}</span>}{label}</h3>
+  <div class="cl-block-body t-body"><slot /></div>
+</div>
