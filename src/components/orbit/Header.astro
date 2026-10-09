@@ -1,10 +1,12 @@
 ---
 // Orbit site header: brand, primary nav and one call to action ("Let's talk", C-G1).
 
+// Five-page IA (accepted 2026-10-08): Home / Work with me / Portfolio / Playbooks / About.
+// Manager README and Bookshelf keep their routes but leave the primary nav.
 const navLinks = [
   { href: '/services/', label: 'Work with me' },
-  { href: '/manager-readme/', label: 'Manager README' },
-  { href: '/bookshelf/', label: 'Bookshelf' },
+  { href: '/portfolio/', label: 'Portfolio' },
+  { href: '/playbooks/', label: 'Playbooks' },
   { href: '/about/', label: 'About' },
 ];
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
