@@ -95,7 +95,10 @@ export function initWorkWithMe(): (() => void) | undefined {
     details.forEach((d) => { d.hidden = d.dataset.wwmDetail !== slug; });
     overviewOnly.forEach((el) => { el.hidden = !!slug; });
     // Land on the chosen model's surface (ticket #10); ascend back to orbit on restore.
+    // data-landed fades the orbit scene beneath, so the plate's masked edges melt into the
+    // stage's own ground instead of framing a box over the running scene.
     surfaces.forEach((el) => el.toggleAttribute('data-on', el.dataset.wwmSurface === slug));
+    stage?.toggleAttribute('data-landed', !!slug);
     tabs.forEach((t) => t.setAttribute('aria-pressed', String(t.dataset.wwmTab === slug)));
     // Phones: the tab row scrolls sideways; keep the pressed tab in view (horizontal only).
     const on = tabs.find((t) => t.dataset.wwmTab === slug);

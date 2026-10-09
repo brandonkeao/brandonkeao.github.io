@@ -15,7 +15,7 @@ const SURFACES: Record<EngagementSlug, { plate: string; name: string; callouts: 
     plate: 'settlement',
     name: 'The settlement',
     callouts: [
-      { label: 'When this fits', anchor: 'fits', x: 18, y: 31 },
+      { label: 'When this fits', anchor: 'fits', x: 20.5, y: 31 },
       { label: 'What I would take on', anchor: 'work', x: 66.4, y: 73.8 },
       { label: 'How we would work together', anchor: 'work', x: 46.9, y: 16.3 },
     ],
@@ -24,7 +24,7 @@ const SURFACES: Record<EngagementSlug, { plate: string; name: string; callouts: 
     plate: 'expedition',
     name: 'The expedition',
     callouts: [
-      { label: 'When this fits', anchor: 'fits', x: 18, y: 84 },
+      { label: 'When this fits', anchor: 'fits', x: 20.5, y: 84 },
       { label: 'What I would take on', anchor: 'work', x: 77, y: 15 },
       { label: 'How we would work together', anchor: 'work', x: 39, y: 37 },
     ],
@@ -33,7 +33,7 @@ const SURFACES: Record<EngagementSlug, { plate: string; name: string; callouts: 
     plate: 'survey',
     name: 'The survey array',
     callouts: [
-      { label: 'When this fits', anchor: 'fits', x: 18, y: 70 },
+      { label: 'When this fits', anchor: 'fits', x: 20.5, y: 70 },
       { label: 'What I would take on', anchor: 'work', x: 50, y: 80.8 },
       { label: 'How we would work together', anchor: 'work', x: 75, y: 51.7 },
     ],
@@ -100,9 +100,24 @@ const base = `/images/orbit/surfaces/${s.plate}`;
 </script>
 
 <style is:global>
-  /* The surface sits over the scene (z 1) and under the dock (z 4), covering the stage box. */
-  .wwm-surface { position: absolute; inset: 0; z-index: 2; overflow: hidden; background: var(--ground); visibility: hidden; opacity: 0; transition: opacity 0.6s ease, visibility 0s linear 0.6s; }
+  /* The surface sits over the scene (z 1) and under the dock (z 4), covering the stage box.
+     Its edges fade out (the Home closeup's mask idiom) and the orbit scene fades away
+     beneath, so the plate melts into the stage's ground instead of reading as a pasted box. */
+  .wwm-surface {
+    position: absolute; inset: 0; z-index: 2; overflow: hidden; visibility: hidden; opacity: 0;
+    transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 100px, #000 calc(100% - 110px), transparent 100%), linear-gradient(180deg, transparent 0, #000 100px, #000 calc(100% - 100px), transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent 0, #000 100px, #000 calc(100% - 110px), transparent 100%), linear-gradient(180deg, transparent 0, #000 100px, #000 calc(100% - 100px), transparent 100%);
+    mask-composite: intersect;
+  }
   .wwm-surface[data-on] { visibility: visible; opacity: 1; transition: opacity 0.9s ease 0.3s, visibility 0s; }
+  /* Ground-toned vignette over the plates (under the callouts) finishes the blend. */
+  .wwm-surface::after { content: ''; position: absolute; inset: -2px; z-index: 1; pointer-events: none; box-shadow: inset 0 0 150px 48px var(--ground); }
+  .surface-callouts { z-index: 2; }
+  /* While landed, the orbit scene under the plate steps aside. */
+  .map-stage[data-landed] .scene-host, .map-stage[data-landed] .stage-poster img { opacity: 0; transition: opacity 0.7s ease 0.15s; }
+  .map-stage .scene-host { transition: opacity 0.5s ease; }
   /* Cover box: keeps the plate's aspect so the callout percentages always align with the art. */
   .surface-box { position: absolute; left: 50%; top: 50%; translate: -50% -50%; aspect-ratio: 1920 / 1290; min-width: 101%; min-height: 101%; }
   .wwm-surface .pl { position: absolute; inset: 0; width: 100%; height: 100%; will-change: transform; transition: transform 1.2s cubic-bezier(0.22, 0.8, 0.3, 1); }
