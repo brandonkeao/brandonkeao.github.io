@@ -1493,6 +1493,7 @@ export function createMap(
       bloom.dispose();
       composer.dispose();
       renderer.dispose();
+      try { renderer.forceContextLoss(); } catch { /* already lost */ }
       host.replaceChildren();
     },
   };

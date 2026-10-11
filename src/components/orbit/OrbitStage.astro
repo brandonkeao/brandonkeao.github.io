@@ -223,7 +223,9 @@ const poster = closeup
     async function load() {
       if (disposed) return;
       const probe = document.createElement('canvas');
-      if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) { fail(); return; }
+      const probeGl = probe.getContext('webgl2') || probe.getContext('webgl');
+      probeGl?.getExtension('WEBGL_lose_context')?.loseContext();
+      if (!probeGl) { fail(); return; }
       try {
         const { createMap } = await import('../../lib/orbit/map-scene');
         // Home close-up ("Quiet orbit", Brandon 2026-10-06): zoom in and shift the planet right.

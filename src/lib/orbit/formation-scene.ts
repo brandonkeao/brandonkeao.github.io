@@ -755,6 +755,13 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
   io.observe(container);
   const onVisibility = () => setRunning();
   document.addEventListener('visibilitychange', onVisibility);
+  // A lost context cannot be rendered into: stop for good (the host swaps to its poster).
+  const onContextLost = (e: Event) => {
+    e.preventDefault();
+    disposed = true;
+    setRunning();
+  };
+  renderer.domElement.addEventListener('webglcontextlost', onContextLost);
 
   function resize() {
     const w = container.clientWidth,
@@ -784,6 +791,7 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
       io.disconnect();
       ro.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
+      renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
       scene.traverse((n) => {
         const o = n as THREE.Mesh;
         if (o.geometry) o.geometry.dispose();
@@ -799,6 +807,9 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
       pmrem.dispose();
       composer.dispose();
       renderer.dispose();
+      // Release the GPU context now rather than when the GC finds it: a services visit can
+      // otherwise hold four live contexts and evict the oldest page's (#13 review).
+      try { renderer.forceContextLoss(); } catch { /* already lost */ }
       renderer.domElement.remove();
     },
   };
