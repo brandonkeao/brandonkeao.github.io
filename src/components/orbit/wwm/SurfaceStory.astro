@@ -1,16 +1,15 @@
 ---
-// Scrolly story for one engagement model (ticket #10, Brandon's Oct 9 direction): no buttons
-// that jump — the scroll tells the story. The surface plate rides sticky beside the steps,
-// focusing on the feature each step talks about; image and text swap sides as topics change;
-// a red thread draws with the scroll. Copy is verbatim from ./content.ts (honesty rules);
-// without JavaScript (or with reduced motion) everything reads as a plain stacked document.
+// Scrolly story for one engagement model (ticket #10, Brandon's Oct 9 direction; imagery
+// reset ticket #13): no buttons that jump — the scroll tells the story. The media panel
+// rides sticky beside the steps and plays the live Formation scene (lib/orbit/formation-
+// scene.ts): the team as chevron craft over the hero planet, scrubbed by reading progress;
+// image and text swap sides as topics change; a red thread draws with the scroll. Copy is
+// verbatim from ./content.ts (honesty rules); without JavaScript, WebGL or with reduced
+// motion everything reads as a plain stacked document over a static poster.
 import type { Engagement } from './content';
-import { SURFACES, plateBase } from './surfaces';
 
 interface Props { e: Engagement }
 const { e } = Astro.props;
-const s = SURFACES[e.slug];
-const base = plateBase(s);
 const id = `wwm-${e.slug}`;
 
 const steps = [
@@ -23,11 +22,8 @@ const steps = [
 <section class="wwm-story" data-story={e.slug} data-active="overview">
   <figure class="story-media" aria-hidden="true">
     <div class="story-viewport">
-      <div class="story-plates" data-story-plates>
-        <img class="spl" data-depth="0" src={`${base}-terrain.webp`} alt="" width="1920" height="1290" loading="lazy" decoding="async" />
-        <img class="spl" data-depth="1" src={`${base}-structures.webp`} alt="" width="1920" height="1290" loading="lazy" decoding="async" />
-        <img class="spl" data-depth="2" src={`${base}-traces.webp`} alt="" width="1920" height="1290" loading="lazy" decoding="async" />
-      </div>
+      <img class="story-poster" src={`/images/orbit/formation/${e.slug}.webp`} alt="" width="1152" height="1224" loading="lazy" decoding="async" />
+      <div class="story-scene" data-story-scene></div>
     </div>
   </figure>
   <div class="story-steps">
@@ -51,27 +47,25 @@ const steps = [
 </section>
 
 <script>
-  import { SURFACES, type FocusKey } from './surfaces';
+  import type { FormationHandle } from '../../../lib/orbit/formation-scene';
   import type { EngagementSlug } from '../../../lib/orbit/orbit-data';
 
   // One controller drives every story on the page (only the selected detail is visible, but
   // observers on hidden ones simply never fire). Reduced motion: never enhanced — the static
-  // stacked document stands.
+  // stacked document stands on its poster. The scene module loads lazily the first time a
+  // story's media is actually on screen, so the overview pays nothing for it.
   let ctl: AbortController | undefined;
   let observers: IntersectionObserver[] = [];
+  const scenes = new Map<HTMLElement, FormationHandle>();
 
-  function focusPlates(story: HTMLElement, slug: EngagementSlug, key: FocusKey) {
-    const f = SURFACES[slug].focus[key];
-    const plates = story.querySelector<HTMLElement>('[data-story-plates]');
-    const viewport = story.querySelector<HTMLElement>('.story-viewport');
-    if (!plates || !viewport) return;
-    // Centre the target, clamped so plate edges never enter the viewport at this zoom.
-    // The visible window is the viewport's share of the (cover-fit) plate, per axis.
-    const hx = Math.min(50, (50 * viewport.clientWidth) / Math.max(plates.offsetWidth, 1)) / f.zoom;
-    const hy = Math.min(50, (50 * viewport.clientHeight) / Math.max(plates.offsetHeight, 1)) / f.zoom;
-    const cx = Math.min(Math.max(f.x, hx), 100 - hx);
-    const cy = Math.min(Math.max(f.y, hy), 100 - hy);
-    plates.style.transform = `scale(${f.zoom}) translate(${(50 - cx).toFixed(2)}%, ${(50 - cy).toFixed(2)}%)`;
+  /** Reading progress 0..1 through a story: the 60%-line across the three copy beats
+      (the lab's definition, so the site scrubs exactly what the study scored). */
+  function progressOf(story: HTMLElement): number {
+    const steps = story.querySelectorAll<HTMLElement>('[data-story-step]');
+    if (steps.length < 3) return 0;
+    const a = steps[0].getBoundingClientRect(), b = steps[2].getBoundingClientRect();
+    const line = innerHeight * 0.6, top = a.top, bottom = b.bottom - (b.height - b.height * 0.55);
+    return Math.min(Math.max((line - top) / (bottom - top), 0), 1);
   }
 
   function init() {
@@ -85,10 +79,13 @@ const steps = [
     ctl = new AbortController();
     const { signal } = ctl;
 
+    // WebGL probe (the stage's idiom): without it the poster stands; steps still enhance.
+    const probe = document.createElement('canvas');
+    const webgl = !!(probe.getContext('webgl2') || probe.getContext('webgl'));
+
     for (const story of stories) {
       story.classList.add('is-enhanced');
       const slug = story.dataset.story as EngagementSlug;
-      focusPlates(story, slug, 'overview');
       const steps = [...story.querySelectorAll<HTMLElement>('[data-story-step]')];
 
       const io = new IntersectionObserver((entries) => {
@@ -99,10 +96,9 @@ const steps = [
           // destination column, sliding the image over text mid-read.
           const el = (en.target as HTMLElement).closest<HTMLElement>('[data-story-step]');
           if (!el) continue;
-          const key = (el.dataset.storyStep ?? 'overview') as FocusKey;
+          const key = el.dataset.storyStep ?? 'overview';
           story.dataset.active = key;
           story.dataset.side = el.classList.contains('is-alt') ? 'right' : 'left';
-          focusPlates(story, slug, key);
           steps.forEach((st) => {
             st.classList.toggle('is-current', st === el);
             if (st === el) st.classList.add('is-in');
@@ -116,33 +112,63 @@ const steps = [
         io.observe(copy ?? st);
       });
       observers.push(io);
+
+      // The scene: created the first time this story's media is on screen; it pauses
+      // itself offscreen (detail hidden, scrolled away, background tab) and is kept
+      // across model switches so a return does not recompile shaders.
+      const host = story.querySelector<HTMLElement>('[data-story-scene]');
+      if (webgl && host) {
+        const lazy = new IntersectionObserver((entries) => {
+          if (!entries.some((en) => en.isIntersecting) || scenes.has(host)) return;
+          lazy.disconnect();
+          import('../../../lib/orbit/formation-scene').then(({ createFormation }) => {
+            if (!ctl || ctl.signal.aborted || scenes.has(host)) return;
+            const scene = createFormation(host, slug);
+            scenes.set(host, scene);
+            scene.setProgress(progressOf(story));
+            story.classList.add('is-live');
+          });
+        });
+        lazy.observe(host);
+        observers.push(lazy);
+      }
     }
 
-    // The red thread draws with scroll progress through the active story.
+    // Scroll work in one rAF: the red thread draws with progress, and the live scenes
+    // are scrubbed by the same measure.
     let raf = 0;
-    const drawThreads = () => {
+    const onScroll = () => {
       raf = 0;
       for (const story of stories) {
         if (story.offsetParent === null) continue; // hidden detail
+        const p = progressOf(story);
         const thread = story.querySelector<HTMLElement>('[data-story-thread]');
-        if (!thread) continue;
-        const r = story.getBoundingClientRect();
-        const total = r.height - innerHeight * 0.5;
-        const done = Math.min(Math.max((innerHeight * 0.55 - r.top) / Math.max(total, 1), 0), 1);
-        thread.style.transform = `scaleY(${done.toFixed(3)})`;
+        if (thread) {
+          const r = story.getBoundingClientRect();
+          const total = r.height - innerHeight * 0.5;
+          const done = Math.min(Math.max((innerHeight * 0.55 - r.top) / Math.max(total, 1), 0), 1);
+          thread.style.transform = `scaleY(${done.toFixed(3)})`;
+        }
+        const host = story.querySelector<HTMLElement>('[data-story-scene]');
+        const scene = host && scenes.get(host);
+        if (scene) scene.setProgress(p);
       }
     };
-    addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(drawThreads); }, { signal, passive: true });
-    drawThreads();
+    addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(onScroll); }, { signal, passive: true });
+    onScroll();
   }
 
-  document.addEventListener('astro:page-load', init);
-  document.addEventListener('astro:before-swap', () => {
+  function teardown() {
     ctl?.abort();
     ctl = undefined;
     observers.forEach((o) => o.disconnect());
     observers = [];
-  });
+    scenes.forEach((s) => s.dispose());
+    scenes.clear();
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', teardown);
 </script>
 
 <style is:global>
@@ -155,14 +181,11 @@ const steps = [
     mask-composite: intersect;
   }
   .story-viewport::after { content: ''; position: absolute; inset: -2px; pointer-events: none; box-shadow: inset 0 0 90px 24px var(--ground); }
-  .story-plates { position: absolute; left: 50%; top: 50%; translate: -50% -50%; aspect-ratio: 1920 / 1290; min-width: 101%; min-height: 101%; transition: transform 1.1s cubic-bezier(0.22, 0.8, 0.3, 1); will-change: transform; }
-  .story-plates .spl { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity 0.8s ease, transform 1.1s cubic-bezier(0.22, 0.8, 0.3, 1); }
-  .story-plates .spl[data-depth='1'] { transform: scale(1.025); }
-  .story-plates .spl[data-depth='2'] { transform: scale(1.05); }
-  /* Layer emphasis per beat: structures carry "the work"; the red traces carry "together". */
-  .wwm-story[data-active='work'] .spl[data-depth='2'] { opacity: 0.35; }
-  .wwm-story[data-active='together'] .spl[data-depth='2'] { opacity: 1; filter: brightness(1.25); }
-  .wwm-story[data-active='together'] .spl[data-depth='1'] { opacity: 0.8; }
+  /* The poster holds the frame; the live scene fades in over it once it exists. */
+  .story-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .story-scene { position: absolute; inset: 0; opacity: 0; transition: opacity 0.7s ease; }
+  .wwm-story.is-live .story-scene { opacity: 1; }
+  .story-scene canvas { display: block; width: 100%; height: 100%; }
   /* The media slides to the right column when an alt step is active — text and image swap. */
   .story-media { transition: transform 0.85s cubic-bezier(0.3, 0, 0.2, 1); }
   .wwm-story.is-enhanced[data-side='right'] .story-media { transform: translateX(calc(100% + 32px)); }
@@ -185,7 +208,7 @@ const steps = [
   .wwm-story.is-enhanced .story-thread { opacity: 0.5; }
 
   @media (prefers-reduced-motion: reduce) {
-    .story-media, .story-plates, .story-plates .spl { transition: none; }
+    .story-media, .story-scene { transition: none; }
     .story-thread { display: none; }
   }
   @media (max-width: 1100px) {
