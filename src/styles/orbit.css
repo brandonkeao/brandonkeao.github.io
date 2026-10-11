@@ -37,6 +37,9 @@
   --space-band-sm: 56px;
   --space-sheet-band: 96px;
   --space-sheet-band-sm: 48px;
+  /* content sheets (inner pages, collection lists): the sheet's own top and bottom */
+  --space-sheet: 72px;
+  --space-sheet-sm: 40px;
 
   --font: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: dark;
@@ -103,14 +106,16 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ---- surfaces and layout -------------------------------------------------- */
 .ground-pad { padding-left: var(--gutter); padding-right: var(--gutter); }
 .page-header { padding: 40px var(--gutter) 64px; }
-.section-ground { padding: 136px var(--gutter); }
+.section-ground { padding: var(--space-band) var(--gutter); }
 .sheet {
   background: var(--sheet);
   color: var(--on-sheet);
   margin: 0 var(--inset) var(--inset);
   border-radius: var(--r-sheet);
-  padding: 56px calc(var(--gutter) - var(--inset));
+  padding: var(--space-sheet) calc(var(--gutter) - var(--inset));
 }
+/* Stacked sheets (Projects) get a ground seam instead of touching at the inset. */
+.sheet + .sheet { margin-top: var(--space-band-sm); }
 .row { display: flex; gap: 56px; }
 .col { flex: 1; min-width: 0; }
 .stack { display: flex; flex-direction: column; }
@@ -122,9 +127,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 @media (max-width: 860px) {
   .page-header { padding: 16px var(--gutter) 28px; }
-  .section-ground { padding: 72px var(--gutter); }
+  .section-ground { padding: var(--space-band-sm) var(--gutter); }
   /* Sheet content sits on the ground's left edge (Home v2 review DS-1, AD-13). */
-  .sheet { padding: 28px calc(var(--gutter) - var(--inset)); }
+  .sheet { padding: var(--space-sheet-sm) calc(var(--gutter) - var(--inset)); }
   .row { flex-direction: column; gap: 24px; }
   .grid-4 { grid-template-columns: 1fr; gap: 24px; }
 }

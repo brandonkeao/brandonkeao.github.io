@@ -22,7 +22,7 @@
 .cl-planet-3 { background: var(--moon-3); width: 8px; height: 8px; }
 
 /* ---- the collection sheet ----------------------------------------------------------------- */
-.sheet.cl-sheet { padding-top: 72px; padding-bottom: 64px; }
+.sheet.cl-sheet { padding-top: var(--space-sheet); padding-bottom: 64px; }
 .cl-section-title { max-width: 720px; }
 .cl-rows { list-style: none; margin: 32px 0 0; padding: 0; }
 
@@ -138,7 +138,7 @@
 @media (max-width: 860px) {
   .cl-hero { padding: 16px var(--gutter) 32px; }
   .cl-trace { height: 72px; margin-top: 32px; }
-  .sheet.cl-sheet { padding-top: 40px; padding-bottom: 40px; }
+  .sheet.cl-sheet { padding-top: var(--space-sheet-sm); padding-bottom: var(--space-sheet-sm); }
   .cl-rows { margin-top: 24px; }
   .cl-row { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 24px 0; }
   .cl-row-num { padding-top: 0; }

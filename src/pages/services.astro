@@ -132,6 +132,9 @@ const lead = 'Bring me into your team full time, work with me on a product outco
 
   /* ---- overview rows: full width, each one link ----------------------------------------- */
   .wwm-select { padding-bottom: var(--space-band); }
+  /* Overview with JS (no detail showing): the rows' bottom step is the seam, so the shared
+     band adds none (was 112 + 112). Without JS the stacked details sit between and keep it. */
+  .wwm:not(:has(.wwm-detail:not([hidden]))) .wwm-shared { padding-top: 0; }
   .wwm-rows { list-style: none; margin: 0; padding: 0; }
   .wwm-rows li { border-top: 1px solid var(--line-on-ground); }
   .wwm-rows li:last-child { border-bottom: 1px solid var(--line-on-ground); }
@@ -161,12 +164,11 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm-fits { list-style: none; margin: 0; padding: 0; }
   .wwm-fits li { padding: 16px 0; border-top: 1px solid var(--line-on-ground); color: var(--on-ground-muted); }
   .wwm-fits li:last-child { border-bottom: 1px solid var(--line-on-ground); }
-  .sheet.wwm-sheet { margin-top: var(--space-band-sm); padding-top: var(--space-sheet-band-sm); padding-bottom: var(--space-sheet-band-sm); }
   .wwm-work .t-item + p { margin-top: 12px; }
 
   .wwm-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
   .wwm-group-label { font-weight: 500; color: var(--on-ground-muted); margin-bottom: 12px; }
-  .wwm-ev-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .wwm-ev-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
   .wwm-ev { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px; border: 1px solid var(--line-on-ground); border-radius: var(--r-sheet); background: var(--ground-raised); transition: border-color 0.15s; }
   a.wwm-ev:hover { border-color: var(--control-line-on-ground); }
   .wwm-ev-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; }
@@ -175,10 +177,10 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm-group-link { margin-top: 4px; }
 
   /* ---- closing sheets: one brand-red button per field ----------------------------------- */
-  .sheet.wwm-close { margin-top: var(--space-band-sm); padding-top: var(--space-sheet-band); padding-bottom: var(--space-sheet-band); }
+  .sheet.wwm-close { margin-top: var(--space-band-sm); padding-top: var(--space-sheet-band); padding-bottom: 104px; }
   .wwm-close-eyebrow { font-weight: 500; color: var(--on-sheet-muted); margin-bottom: 16px; }
   .wwm-close-title { color: var(--on-sheet); max-width: 24em; text-wrap: balance; }
-  .wwm-close-btn { margin-top: 40px; }
+  .wwm-close-btn { margin-top: 40px; font-size: 18px; padding: 18px 32px; min-height: 60px; }
 
   /* ---- shared body ---------------------------------------------------------------------- */
   .wwm-links { display: flex; flex-wrap: wrap; gap: 16px 32px; margin-top: 28px; }
@@ -189,6 +191,10 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     @keyframes wwm-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   }
 
+  /* Leaving the story: one and a half band steps, so the next band arrives as the media lets go
+     rather than while it still fills the column (the lab ends the story on a 40svh tail). */
+  @media (min-width: 861px) { .wwm-evidence { padding-top: calc(var(--space-band) * 1.5); } }
+
   @media (max-width: 1100px) {
     .wwm-head { grid-column: 1 / span 5; }
     .wwm-body { grid-column: 7 / -1; }
@@ -197,7 +203,7 @@ const lead = 'Bring me into your team full time, work with me on a product outco
 
   /* Phones: one column, full-width choices and inline detail; the switcher's tabs scroll sideways. */
   @media (max-width: 860px) {
-    .wwm-band { grid-template-columns: minmax(0, 1fr); row-gap: 20px; padding-top: var(--space-band-sm); padding-bottom: 0; }
+    .wwm-band { grid-template-columns: minmax(0, 1fr); row-gap: 24px; padding-top: var(--space-band-sm); padding-bottom: 0; }
     .wwm-head, .wwm-body { grid-column: 1 / -1; }
     .wwm-select { padding-bottom: var(--space-band-sm); }
     .wwm-row { padding: 18px 0; }
@@ -209,7 +215,7 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     .wwm-tabs::-webkit-scrollbar { display: none; }
     .wwm-tab { scroll-snap-align: start; font-size: 14px; padding: 8px 14px; }
     .wwm-restore { align-self: flex-start; font-size: 14px; }
-    .sheet.wwm-close { padding-top: 56px; padding-bottom: 64px; }
+    .sheet.wwm-close { padding-top: 64px; padding-bottom: 72px; }
     .wwm-close-btn { margin-top: 28px; display: flex; width: 100%; }
   }
 </style>
