@@ -18,7 +18,8 @@ export type Engagement = {
   together: string;
   evidenceLead: string;
   portfolio: Evidence[];
-  // A reserved slot renders as a dashed placeholder (Advisory's second example).
+  // A reserved slot (Advisory's second example) is recorded here for the copy pack but is
+  // not rendered until a real case fills it — no visitor-facing placeholders (#13 review).
   reserved?: { title: string; note: string };
   playbooks: Evidence[];
   // Advisory links to the Playbooks page instead of forcing method symmetry.

@@ -183,6 +183,16 @@ export function initWorkWithMe(): (() => void) | undefined {
     if (st && typeof st.scrollY === 'number') scrollTo(st.scrollX ?? 0, st.scrollY);
   }, { signal: ctl.signal, capture: true });
 
+  /* ---- layout coupling ------------------------------------------------------------------ */
+  // The story's sticky media stacks under the sticky switcher on phones; publish the
+  // switcher's real height (it wraps to several rows at narrow widths) as a CSS variable
+  // so the media and hash-jump offsets track it instead of guessing.
+  const switcherSize = new ResizeObserver(() => {
+    const h = switcher.offsetHeight;
+    if (h) root.style.setProperty('--wwm-switcher-h', `${h}px`);
+  });
+  switcherSize.observe(switcher);
+
   /* ---- first paint ---------------------------------------------------------------------- */
   const initial = parse(new URLSearchParams(location.search).get('engagement'));
   apply(initial, 'init');
@@ -195,5 +205,6 @@ export function initWorkWithMe(): (() => void) | undefined {
   return () => {
     ctl.abort();
     watch.disconnect();
+    switcherSize.disconnect();
   };
 }

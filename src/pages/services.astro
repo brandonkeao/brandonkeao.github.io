@@ -150,6 +150,12 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm-tab[aria-pressed='true'] { color: var(--on-ground); border-color: var(--accent-on-ground); }
   .wwm-restore { white-space: nowrap; }
 
+  /* While a model is selected, the stage's step chips and step count stay hidden: the
+     scroll story below is the one narrative path (Brandon, Oct 9: no buttons that jump).
+     Back remains, and the chips return with the overview. */
+  .wwm[data-state='selected'] .orbit-hero [data-steps] { display: none; }
+  .wwm[data-state='selected'] .orbit-hero [data-context] span { display: none; }
+
   /* ---- a selected model's detail -------------------------------------------------------- */
   .wwm-detail-intro { padding-top: var(--space-band-sm); }
   .wwm-fits { list-style: none; margin: 0; padding: 0; }
@@ -166,9 +172,6 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm-ev-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; }
   .wwm-ev .wwm-ev-name { font-size: 19px; }
   .wwm-origin { margin: 0; font-size: 13px; padding: 4px 10px; }
-  /* Advisory's reserved slot: a dashed outline, nothing to click. */
-  .wwm-reserved { background: none; border: 1.5px dashed var(--control-line-on-ground); }
-  .wwm-reserved .wwm-ev-name { color: var(--on-ground-muted); }
   .wwm-group-link { margin-top: 4px; }
 
   /* ---- closing sheets: one brand-red button per field ----------------------------------- */

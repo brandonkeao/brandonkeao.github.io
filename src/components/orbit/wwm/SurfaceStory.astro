@@ -50,22 +50,55 @@ const steps = [
   import type { FormationHandle } from '../../../lib/orbit/formation-scene';
   import type { EngagementSlug } from '../../../lib/orbit/orbit-data';
 
-  // One controller drives every story on the page (only the selected detail is visible, but
-  // observers on hidden ones simply never fire). Reduced motion: never enhanced — the static
-  // stacked document stands on its poster. The scene module loads lazily the first time a
-  // story's media is actually on screen, so the overview pays nothing for it.
+  // One controller drives every story on the page (only the selected detail is visible, and
+  // hidden ones are skipped). Reduced motion: never enhanced — the static stacked document
+  // stands on its poster. The scene module loads lazily the first time a story's media is
+  // actually on screen, so the overview pays nothing for it.
   let ctl: AbortController | undefined;
   let observers: IntersectionObserver[] = [];
   const scenes = new Map<HTMLElement, FormationHandle>();
 
-  /** Reading progress 0..1 through a story: the 60%-line across the three copy beats
-      (the lab's definition, so the site scrubs exactly what the study scored). */
+  const clamp01 = (x: number) => Math.min(Math.max(x, 0), 1);
+
+  /** Reading progress 0..1 through a story, piecewise per beat: the 60% reading line maps
+      copy block i onto [i/3, (i+1)/3], so each block's centre lands exactly on the
+      choreography's beat centres (the lab tuned them at ~0.17 / 0.5 / 0.83) and holds at
+      the boundary while the line crosses the gap between blocks. */
   function progressOf(story: HTMLElement): number {
-    const steps = story.querySelectorAll<HTMLElement>('[data-story-step]');
-    if (steps.length < 3) return 0;
-    const a = steps[0].getBoundingClientRect(), b = steps[2].getBoundingClientRect();
-    const line = innerHeight * 0.6, top = a.top, bottom = b.bottom - (b.height - b.height * 0.55);
-    return Math.min(Math.max((line - top) / (bottom - top), 0), 1);
+    const copies = story.querySelectorAll<HTMLElement>('[data-story-step] .step-copy');
+    if (copies.length < 3) return 0;
+    const line = innerHeight * 0.6;
+    let p = 0;
+    copies.forEach((c, i) => {
+      const r = c.getBoundingClientRect();
+      if (line < r.top) return;
+      p = (i + Math.min((line - r.top) / Math.max(r.height, 1), 1)) / copies.length;
+    });
+    return clamp01(p);
+  }
+
+  /** The active beat, from geometry on every frame (never from stale observer events, so a
+      mid-story model switch can't leave the new story on the old beat): the last copy block
+      whose top sits above the 58% line; none means overview. */
+  function beatPass(story: HTMLElement, steps: HTMLElement[]) {
+    const line = innerHeight * 0.58;
+    let active: HTMLElement | null = null;
+    for (const st of steps) {
+      const copy = st.querySelector<HTMLElement>('.step-copy') ?? st;
+      if (copy.getBoundingClientRect().top <= line) active = st;
+    }
+    const key = active?.dataset.storyStep ?? 'overview';
+    if (story.dataset.active !== key) story.dataset.active = key;
+    if (active) story.dataset.side = active.classList.contains('is-alt') ? 'right' : 'left';
+    else delete story.dataset.side;
+    for (const st of steps) {
+      const cur = st === active;
+      st.classList.toggle('is-current', cur);
+      if (cur) {
+        st.classList.add('is-in');
+        st.setAttribute('aria-current', 'step');
+      } else st.removeAttribute('aria-current');
+    }
   }
 
   function init() {
@@ -83,79 +116,66 @@ const steps = [
     const probe = document.createElement('canvas');
     const webgl = !!(probe.getContext('webgl2') || probe.getContext('webgl'));
 
+    interface Wired {
+      story: HTMLElement;
+      steps: HTMLElement[];
+      thread: HTMLElement | null;
+      host: HTMLElement | null;
+    }
+    const wired: Wired[] = [];
     for (const story of stories) {
       story.classList.add('is-enhanced');
       const slug = story.dataset.story as EngagementSlug;
       const steps = [...story.querySelectorAll<HTMLElement>('[data-story-step]')];
-
-      const io = new IntersectionObserver((entries) => {
-        for (const en of entries) {
-          if (!en.isIntersecting) continue;
-          // The copy block is the reading region. Observing the tall step section instead
-          // would swap the media's side while the previous copy is still onscreen in the
-          // destination column, sliding the image over text mid-read.
-          const el = (en.target as HTMLElement).closest<HTMLElement>('[data-story-step]');
-          if (!el) continue;
-          const key = el.dataset.storyStep ?? 'overview';
-          story.dataset.active = key;
-          story.dataset.side = el.classList.contains('is-alt') ? 'right' : 'left';
-          steps.forEach((st) => {
-            st.classList.toggle('is-current', st === el);
-            if (st === el) st.classList.add('is-in');
-            if (st === el) st.setAttribute('aria-current', 'true');
-            else st.removeAttribute('aria-current');
-          });
-        }
-      }, { rootMargin: '-42% 0px -42% 0px', threshold: 0 });
-      steps.forEach((st) => {
-        const copy = st.querySelector<HTMLElement>('.step-copy');
-        io.observe(copy ?? st);
-      });
-      observers.push(io);
+      const host = story.querySelector<HTMLElement>('[data-story-scene]');
+      wired.push({ story, steps, thread: story.querySelector<HTMLElement>('[data-story-thread]'), host });
 
       // The scene: created the first time this story's media is on screen; it pauses
       // itself offscreen (detail hidden, scrolled away, background tab) and is kept
       // across model switches so a return does not recompile shaders.
-      const host = story.querySelector<HTMLElement>('[data-story-scene]');
       if (webgl && host) {
         const lazy = new IntersectionObserver((entries) => {
           if (!entries.some((en) => en.isIntersecting) || scenes.has(host)) return;
           lazy.disconnect();
-          import('../../../lib/orbit/formation-scene').then(({ createFormation }) => {
-            if (!ctl || ctl.signal.aborted || scenes.has(host)) return;
-            const scene = createFormation(host, slug);
-            scenes.set(host, scene);
-            scene.setProgress(progressOf(story));
-            story.classList.add('is-live');
-          });
+          import('../../../lib/orbit/formation-scene')
+            .then(({ createFormation }) => {
+              if (!ctl || ctl.signal.aborted || scenes.has(host)) return;
+              const scene = createFormation(host, slug);
+              scenes.set(host, scene);
+              scene.setProgress(progressOf(story));
+              story.classList.add('is-live');
+              // A lost context means the canvas is dead: back to the poster, for good.
+              host.querySelector('canvas')?.addEventListener('webglcontextlost', () => {
+                story.classList.remove('is-live');
+                scenes.get(host)?.dispose();
+                scenes.delete(host);
+              }, { once: true });
+            })
+            .catch(() => { /* the poster stands */ });
         });
         lazy.observe(host);
         observers.push(lazy);
       }
     }
 
-    // Scroll work in one rAF: the red thread draws with progress, and the live scenes
-    // are scrubbed by the same measure.
+    // One rAF loop does all the scroll-coupled work from geometry — the active beat, the
+    // red thread and the scene scrub share one progress measure, and a model switch is
+    // corrected on the next frame rather than waiting for a scroll event.
     let raf = 0;
-    const onScroll = () => {
-      raf = 0;
-      for (const story of stories) {
-        if (story.offsetParent === null) continue; // hidden detail
-        const p = progressOf(story);
-        const thread = story.querySelector<HTMLElement>('[data-story-thread]');
-        if (thread) {
-          const r = story.getBoundingClientRect();
-          const total = r.height - innerHeight * 0.5;
-          const done = Math.min(Math.max((innerHeight * 0.55 - r.top) / Math.max(total, 1), 0), 1);
-          thread.style.transform = `scaleY(${done.toFixed(3)})`;
-        }
-        const host = story.querySelector<HTMLElement>('[data-story-scene]');
-        const scene = host && scenes.get(host);
+    const loop = () => {
+      raf = requestAnimationFrame(loop);
+      if (document.hidden) return;
+      for (const w of wired) {
+        if (w.story.offsetParent === null) continue; // hidden detail
+        beatPass(w.story, w.steps);
+        const p = progressOf(w.story);
+        if (w.thread) w.thread.style.transform = `scaleY(${p.toFixed(3)})`;
+        const scene = w.host && scenes.get(w.host);
         if (scene) scene.setProgress(p);
       }
     };
-    addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(onScroll); }, { signal, passive: true });
-    onScroll();
+    raf = requestAnimationFrame(loop);
+    signal.addEventListener('abort', () => cancelAnimationFrame(raf));
   }
 
   function teardown() {
@@ -173,7 +193,10 @@ const steps = [
 
 <style is:global>
   .wwm-story { position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; padding-top: var(--space-band-sm); }
-  .story-media { grid-column: 1 / span 6; grid-row: 1; margin: 0; position: sticky; top: 86px; height: min(68svh, 620px); align-self: start; z-index: 1; }
+  /* The media box itself is opaque ground: the viewport's soft masks fade into it, never
+     into the copy scrolling beneath (the page ground is the same colour, so the box edge
+     is invisible). */
+  .story-media { grid-column: 1 / span 6; grid-row: 1; margin: 0; position: sticky; top: 86px; height: min(68svh, 620px); align-self: start; z-index: 1; background: var(--ground); }
   .story-viewport { position: absolute; inset: 0; overflow: hidden; border-radius: 10px; background: var(--ground);
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%), linear-gradient(180deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
     -webkit-mask-composite: source-in;
@@ -204,8 +227,10 @@ const steps = [
   .wwm-story.is-enhanced .story-step.is-current .step-copy { opacity: 1; }
 
   /* The scroll thread: motion-line language, drawn by progress. */
-  .story-thread { position: absolute; top: 4svh; bottom: 4svh; left: calc(50% + 16px); width: 2px; border-radius: 1px; background: var(--accent-on-ground); opacity: 0; transform: scaleY(0); transform-origin: 50% 0; z-index: 2; }
+  .story-thread { position: absolute; top: 4svh; bottom: 4svh; left: calc(50% + 16px); width: 2px; border-radius: 1px; background: var(--accent-on-ground); opacity: 0; transform: scaleY(0); transform-origin: 50% 0; z-index: 2; transition: opacity 0.3s ease; }
   .wwm-story.is-enhanced .story-thread { opacity: 0.5; }
+  /* Before the first beat there is no story progress — no stub beside empty ground. */
+  .wwm-story.is-enhanced[data-active='overview'] .story-thread { opacity: 0; }
 
   @media (prefers-reduced-motion: reduce) {
     .story-media, .story-scene { transition: none; }
@@ -217,11 +242,16 @@ const steps = [
   }
   @media (max-width: 860px) {
     .wwm-story { display: block; padding-top: 24px; }
-    .story-media { position: sticky; top: 54px; height: 38svh; z-index: 5; }
+    /* The sticky media sits below the sticky switcher's measured height (state.ts sets
+       --wwm-switcher-h; the 46px fallback matches the unenhanced page, where the switcher
+       is hidden), trimmed to 32svh so a beat's copy keeps the reading majority. */
+    .story-media { position: sticky; top: calc(var(--wwm-switcher-h, 46px) + 8px); height: 32svh; z-index: 5; }
+    /* Soften the hard line where copy slides under the opaque media box. */
+    .story-media::after { content: ''; position: absolute; top: 100%; left: 0; right: 0; height: 24px; background: linear-gradient(180deg, var(--ground), transparent); pointer-events: none; }
     .story-viewport { border-radius: 8px; }
     .story-steps { display: block; }
     /* Hash jumps must land headings below the sticky media. */
-    .story-step { display: block; min-height: 0; padding: 40px 0 8px; scroll-margin-top: calc(54px + 38svh + 16px); }
+    .story-step { display: block; min-height: 0; padding: 40px 0 8px; scroll-margin-top: calc(var(--wwm-switcher-h, 46px) + 8px + 32svh + 16px); }
     .wwm-story.is-enhanced[data-side='right'] .story-media { transform: none; }
     .story-thread { display: none; }
   }
