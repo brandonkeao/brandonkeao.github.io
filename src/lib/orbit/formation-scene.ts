@@ -42,6 +42,9 @@ const GROUND = 0x0a0b0a;
 const RED = new THREE.Color(0xf16b65);
 const IVORY = new THREE.Color(0xefe6d2);
 const COPPER = new THREE.Color(0xf0a468);
+// Brandon's craft wears a deeper copper: at bloom gain the plain copper whites out and he
+// vanishes into the team (review round 1, art director / PM).
+const COPPER_DEEP = new THREE.Color(0xf29a56);
 const PLANET_R = 3.4;
 
 /* ---- maths ---- */
@@ -369,7 +372,7 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
       sh: sheath(),
       ph: PH[i],
     }));
-    const me = { slot: ROW[2], light: craft(COPPER, 0.24, 2.6, true), tr: trail(2), sh: sheath() };
+    const me = { slot: ROW[2], light: craft(COPPER_DEEP, 0.26, 2.9, true), tr: trail(2), sh: sheath() };
     const heading = trail(3.2);
     const offset = (k: (typeof team)[0], s: number, wob: number): [number, number, number] => [
       k.slot[0] + wob * 0.12 * Math.sin(s * 1.1 + k.ph * 2.1),
@@ -378,8 +381,8 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
     ];
     const meOffset = (j: number): [number, number, number] => {
       // quadratic approach from ahead-outward-wide into the empty slot
-      const A = [1.6, 1.5, 2.6],
-        C = [0.2, 1.1, 1.2],
+      const A = [1.25, 1.05, 1.95],
+        C = [0.2, 0.85, 1.05],
         S = me.slot,
         e = ss(0, 1, j),
         u = 1 - e;
@@ -394,8 +397,10 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
     };
     return {
       update(p, t) {
-        const join = ss(0.2, 0.56, p),
-          align = ss(0.42, 0.66, p),
+        // The join lives inside beat 1 (When this fits: the owner arrives), the alignment
+        // settles through beat 2, the swoop stays beat 3 (review round 1).
+        const join = ss(0.08, 0.34, p),
+          align = ss(0.3, 0.5, p),
           turn = ss(0.68, 0.94, p);
         const wob = 1 - align,
           th = W * t;
@@ -411,6 +416,10 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
           }
           place(k.light, pts);
           const h = setSheath(k.sh, pts);
+          // First beat: the team runs dimmer so the copper arrival is the thing you find;
+          // at full heat each craft tightens so five lights stay five (review round 1).
+          k.light.setOpacity(0.7 + 0.3 * ss(0.22, 0.42, p));
+          k.light.group.scale.setScalar(1 - 0.35 * h);
           setTrail(k.tr, pts, RED, (0.75 * (1 - 0.45 * align) + 0.35 * turn) * (1 + 1.4 * h));
         }
         {
@@ -423,9 +432,11 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
             pts.push(at(pose(s, trh(i)), ...meOffset(jj)));
           }
           place(me.light, pts);
-          me.light.setOpacity(ss(0.04, 0.2, p));
+          // In frame and findable from the first frame (the beat is about the arriving owner).
+          me.light.setOpacity(0.55 + 0.45 * ss(0, 0.1, p));
           const h = setSheath(me.sh, pts);
-          setTrail(me.tr, pts, RED, ss(0.04, 0.2, p) * (0.8 * (1 - 0.45 * align) + 0.35 * turn) * (1 + 1.4 * h));
+          me.light.group.scale.setScalar(1 - 0.35 * h);
+          setTrail(me.tr, pts, RED, ss(0, 0.08, p) * (0.8 * (1 - 0.45 * align) + 0.35 * turn) * (1 + 1.4 * h));
         }
         {
           // one shared heading behind the formation's centre once aligned
@@ -442,8 +453,9 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
           F = fd.P,
           F0 = f.P;
         const K = [
-          { pos: rig(f, F0, -3.6, 2.1, 2.3), look: rig(f, F0, 0.2, -0.3, 0.3), fov: 35 },
-          { pos: rig(f, F0, -2.5, 1.3, 0.9), look: rig(f, F0, 0.3, -0.1, 0), fov: 33 },
+          // K0 opens on the approach: the copper craft is inside the frame from p = 0.
+          { pos: rig(f, F0, -3.6, 2.1, 3.1), look: rig(f, F0, 0.55, 0.12, 0.95), fov: 38 },
+          { pos: rig(f, F0, -2.6, 1.3, 1.1), look: rig(f, F0, 0.4, -0.1, 0.1), fov: 33 },
           { pos: rig(fd, F, -3.0, 1.5, 2.4), look: rig(fd, F, 1.4, -0.7, 0.2), fov: 38 },
         ];
         return { K, up: fd.N };
@@ -485,7 +497,7 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
       rocket.add(body, nose);
       scene.add(rocket);
     }
-    const rocketGlow = craft(COPPER, 0.22, 2.4);
+    const rocketGlow = craft(COPPER_DEEP, 0.26, 2.8);
     const rocketTr = trail(2.2);
     staticLine(
       Array.from({ length: 181 }, (_, i) => frame((i / 180) * TAU, R2).P),
@@ -498,8 +510,10 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
     const RE = 3.72;
     const rocketOff = (arrive: number, peel: number): [number, number, number] => {
       const a = ss(0, 1, arrive),
-        q = peel * peel;
-      return [mix(-3.2, -0.15, a) + 3.4 * q, mix(0.9, 0.12, a) + 2.4 * q, mix(-1.6, -0.82, a) - 1.2 * q];
+        q = ss(0, 1, peel);
+      // The peel is a handover, not an exit: he banks up and aside to hold station near the
+      // target orbit, still in frame while the team goes on without him (review round 1).
+      return [mix(-3.2, -0.15, a) + 1.7 * q, mix(0.9, 0.12, a) + 0.6 * q, mix(-1.6, -0.82, a) - 0.55 * q];
     };
     return {
       update(p, t) {
@@ -526,19 +540,24 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
           }
           place(k.light, pts);
           const h = setSheath(k.sh, pts);
+          k.light.setOpacity(0.72 + 0.28 * ss(0.2, 0.4, p));
+          k.light.group.scale.setScalar(1 - 0.35 * h);
           setTrail(k.tr, pts, RED, (0.7 + 1.1 * b) * (1 + 1.4 * h));
         }
         {
           // rocket: arrives on the wing, climbs with them, peels away before the entry
           const pts = [];
+          // He keeps pace with the team's heading through their entry (the +0.45 angular
+          // shift), holding his altitude: above and present while they go in, not gone.
           for (let i = 0; i < N; i++) {
             const s = t - i * ds,
-              c = clamp(climb - i * dc * ss(0.001, 0.02, climb));
+              c = clamp(climb - i * dc * ss(0.001, 0.02, climb)),
+              e = clamp(entry - i * de);
             const ar = clamp(arrive - i * 0.03 * (1 - ss(0.9, 1, arrive))),
               pe = clamp(peel - i * 0.03);
-            pts.push(at(frame(W * s, rAt(c)), ...rocketOff(ar, pe)));
+            pts.push(at(frame(W * s + 0.45 * ss(0, 1, e), rAt(c)), ...rocketOff(ar, pe)));
           }
-          const next = at(frame(W * (t + 0.05), rAt(climb)), ...rocketOff(arrive, clamp(peel + 0.01)));
+          const next = at(frame(W * (t + 0.05) + 0.45 * ss(0, 1, entry), rAt(climb)), ...rocketOff(arrive, clamp(peel + 0.01)));
           rocket.position.copy(pts[0]);
           rocket.quaternion.setFromUnitVectors(V(0, 1, 0), next.clone().sub(pts[0]).normalize());
           rocketGlow.group.position.copy(pts[0]).addScaledVector(next.clone().sub(pts[0]).normalize(), -0.1);
@@ -549,7 +568,8 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
         }
         for (const m of lineMats)
           if (m.dashed) {
-            m.opacity = 0.2 * (1 - 0.5 * peel);
+            // The target orbit is beat 2's change: it appears as the climb starts, never before.
+            m.opacity = 0.22 * ss(0.03, 0.3, climb) * (1 - 0.45 * peel);
             m.dashOffset = -t * 0.05;
           }
         const r = rTeam(climb, entry),
@@ -560,7 +580,7 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
         const K = [
           { pos: rig(f, Fm, -2.2, 1.0, 6.8), look: rig(f, Fm, 0.2, -0.2, 0), fov: 35 },
           { pos: rig(f, Fm, -1.6, 0.6, 7.2), look: rig(f, F, 0.2, 0.4 * (R2 - r), 0.0), fov: 35 },
-          { pos: rig(f, F, -4.0, 2.6, 8.2), look: rig(f, F, 2.0, -1.0, 0), fov: 35 },
+          { pos: rig(f, F, -4.2, 2.6, 8.2), look: rig(f, F, 1.2, 0.5, 0), fov: 36 },
         ];
         return { K, up: f.N };
       },
@@ -572,7 +592,9 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
     const RA = 3.95,
       RE = 3.64,
       W = TAU / 60,
-      RHO = 0.3,
+      // Softer loops: busy, not farcical — the friction is the process's, not the team's
+      // (review round 1, PM).
+      RHO = 0.24,
       OMEGA = 2.4;
     const SL = [
       [0, 0, 0],
@@ -586,7 +608,7 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
       tr: trail(1.8),
       sh: sheath(0.17),
     }));
-    const obs = { light: craft(COPPER, 0.24, 2.6, true), tr: trail(1.6) };
+    const obs = { light: craft(COPPER_DEEP, 0.21, 2.9, true), tr: trail(1.6) };
     const OBS_OFF: [number, number, number] = [0.35, 1.25, 0]; // Brandon: a higher orbit, just ahead, in the same plane
     const sight = trail(1.1),
       plan = trail(1.3);
@@ -625,6 +647,8 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
           }
           place(k.light, pts);
           const h = setSheath(k.sh, pts);
+          k.light.setOpacity(0.72 + 0.28 * ss(0.2, 0.4, p));
+          k.light.group.scale.setScalar(1 - 0.35 * h);
           setTrail(k.tr, pts, RED, 0.85 * (1 + 1.4 * h));
         }
         // Brandon stays in high orbit throughout, on his own steady trail
@@ -639,7 +663,9 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
         // the perspective: a sight line down to the team, then a clean line ahead of them, drawn on
         const head = centre(t, go, dive),
           mid = head.P;
-        const look = scan * (1 - ss(0.66, 0.8, p));
+        // The sight line thins but never leaves: through the final hold it still points at
+        // the team it is checking on (review round 1 — "whether the work helped").
+        const look = scan * (1 - 0.72 * ss(0.66, 0.8, p));
         {
           const pts = [];
           for (let i = 0; i <= 24; i++) pts.push(O.clone().lerp(mid, i / 24));
@@ -662,7 +688,7 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
           { pos: rig(f, C, -0.7, 0.9, 4.6), look: rig(f, C, -0.5, 0.75, 0), fov: 36 },
           { pos: rig(f, C, -0.3, 0.8, 3.6), look: rig(f, C, -0.2, 0.62, 0), fov: 34 },
           // held still: the team visibly drops into the glow
-          { pos: rig(f3, f3.P, -0.2, 0.75, 4.6), look: rig(f3, f3.P, 0.1, 0.25, 0), fov: 38 },
+          { pos: rig(f3, f3.P, -0.2, 0.8, 4.6), look: rig(f3, f3.P, 0.05, 0.4, 0), fov: 38 },
         ];
         return { K, up: head.f.N };
       },

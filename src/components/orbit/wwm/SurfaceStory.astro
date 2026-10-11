@@ -227,7 +227,7 @@ const steps = [
   .wwm-story.is-enhanced .story-step.is-current .step-copy { opacity: 1; }
 
   /* The scroll thread: motion-line language, drawn by progress. */
-  .story-thread { position: absolute; top: 4svh; bottom: 4svh; left: calc(50% + 16px); width: 2px; border-radius: 1px; background: var(--accent-on-ground); opacity: 0; transform: scaleY(0); transform-origin: 50% 0; z-index: 2; transition: opacity 0.3s ease; }
+  .story-thread { position: absolute; top: 4svh; bottom: 4svh; left: calc(50% + 16px); width: 2px; border-radius: 1px; background: var(--accent-on-ground); opacity: 0; transform: scaleY(0); transform-origin: 50% 0; z-index: 0; transition: opacity 0.3s ease; }
   .wwm-story.is-enhanced .story-thread { opacity: 0.5; }
   /* Before the first beat there is no story progress — no stub beside empty ground. */
   .wwm-story.is-enhanced[data-active='overview'] .story-thread { opacity: 0; }
