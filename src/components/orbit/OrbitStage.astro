@@ -7,6 +7,9 @@
 // Slots: `headline` (the h1) and the default slot (lead, actions, proof line).
 // On narrow screens the order becomes headline, orbit, then the rest.
 // `still`: the stage starts paused with no Pause control; choosing a way in still flies.
+// Pause (Brandon, 2026-10-12 D3): every live stage carries one quiet pause chip, owned here.
+// "copy" puts it in the copy-column dock; "none" puts it at the stage's bottom-left corner.
+// It shows once the renderer is ready and never under reduced motion (the stage is static).
 // `controls`: "none" makes the orbit decorative (no chips, no Pause, moons not clickable:
 // Home and Consulting, Brandon 2026-10-06); "stage" overlays the chip row on the orbit; "copy" puts it in the left
 // column under the text, where it still drives the orbit (Work with me).
@@ -32,9 +35,9 @@ const poster = closeup
       <slot />
       <!-- Copy-column controls (Brandon, 2026-10-12 round 6): the three ways stay up as the
            one persistent switcher. No way back to the Overview (Brandon, 2026-10-12 round 14:
-           visitors switch directly; the Overview is the pre-selection state only). No steps,
-           context caption or Pause here; context/steps/pause stay in markup only because the
-           script expects them. -->
+           visitors switch directly; the Overview is the pre-selection state only). The pause
+           chip sits where "↑ Overview" was (D3). No steps or context caption here; they stay
+           in markup only because the script expects them. -->
       {controls === 'copy' && (
         <div class="engagement-dock engagement-dock--copy" role="group" aria-label="Ways to work together" data-dock>
           <p class="dock-context" data-context hidden></p>
@@ -44,7 +47,7 @@ const poster = closeup
             </button>
           ))}
           <span class="dock-steps" data-steps hidden></span>
-          <button class="engagement-chip dock-pause" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
+          <button class="engagement-chip stage-pause" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
         </div>
       )}
     </div>
@@ -61,6 +64,10 @@ const poster = closeup
     <div class="sr-only" aria-live="polite">
       <h2 id="map-current-title" tabindex="-1" data-title>Your outcome</h2>
     </div>
+    <!-- Decorative stages (Home, Portfolio, Playbooks): the pause chip alone, bottom-left over the ground (D3). -->
+    {controls === 'none' && (
+      <button class="engagement-chip stage-pause stage-pause--corner" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
+    )}
     <!-- The one control row (Brandon, 2026-10-06): ways in, or Back and the chosen way's steps; Pause sits here too.
          No page passes controls="stage" since round 6 (2026-10-12); kept, not deleted. -->
     {(controls === 'stage' || controls === 'none') && (
@@ -73,7 +80,7 @@ const poster = closeup
         </button>
       ))}
       <span class="dock-steps" data-steps hidden></span>
-      <button class="engagement-chip dock-pause" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
+      {controls === 'stage' && <button class="engagement-chip stage-pause" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>}
     </div>
     )}
   </div>
@@ -190,9 +197,10 @@ const poster = closeup
         context.replaceChildren(dot, name, count);
       }
       dock.setAttribute('aria-label', inWay && w ? `${w.name}: steps` : 'Ways to work together');
-      pauseBtn.hidden = copyDock || !map || still || !stage.classList.contains('is-ready');
+      // The pause chip (D3): only once the live scene is up, never on a still or reduced-motion stage.
+      pauseBtn.hidden = !map || still || reduced || !stage.classList.contains('is-ready');
       pauseBtn.setAttribute('aria-pressed', String(paused));
-      pauseBtn.querySelector('span')!.textContent = paused ? 'Resume motion' : 'Pause motion';
+      pauseBtn.querySelector('span')!.textContent = paused ? 'Play motion' : 'Pause motion';
       if (current) renderSheet(current);
       // Keep keyboard focus in the row when the chip that had it is swapped out: Back in the
       // stage dock, otherwise the pressed chip (round 14), else the first.
@@ -232,7 +240,15 @@ const poster = closeup
     // A host page's reset (Work with me's browser Back to the bare URL, D1): an instant cut to
     // the Overview, never the leave flight. Escape no longer leaves a model (round 14).
     stage.addEventListener('orbit:reset', () => { pending = null; goBack(true); }, opts);
-    pauseBtn.addEventListener('click', () => { paused = !paused; map?.pause(paused); render(); }, opts);
+    // Pause (D3): the stage's own clock, and any formation story scenes on the page listen
+    // for the same signal. Per page load; nothing is remembered.
+    pauseBtn.addEventListener('click', () => {
+      paused = !paused;
+      map?.pause(paused);
+      stage.toggleAttribute('data-paused', paused);
+      document.dispatchEvent(new CustomEvent('orbit:pause', { detail: { paused } }));
+      render();
+    }, opts);
     chips.forEach((b) => b.addEventListener('click', () => select(b.dataset.id as CategoryId), opts));
     render();
 
@@ -395,7 +411,12 @@ const poster = closeup
   .dock-steps { display: contents; }
   .dock-context { flex-basis: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 4px; font-size: 15px; color: var(--on-ground-faint); }
   .dock-context strong { color: var(--on-ground); font-weight: 600; }
-  .dock-pause { gap: 8px; }
+  /* The pause chip (D3): the engagement chip at its quietest — ghost border, muted text, 13px,
+     a 44px hit target. */
+  .stage-pause { gap: 8px; min-height: 44px; font-size: 13px; background: transparent; }
+  .stage-pause--corner { position: absolute; z-index: 4; left: 16px; bottom: 16px; }
+  /* Home's full-bleed stage: the corner chip lines up with the copy column's left edge. */
+  .orbit-hero--closeup .stage-pause--corner { left: calc(max(0px, (100vw - var(--content-max)) / 2) + var(--gutter)); }
   /* Controls in the copy column: a left-aligned row under the text, not over the orbit. */
   .engagement-dock--copy { position: static; justify-content: flex-start; margin-top: 32px; padding: 0; }
   .engagement-dock--copy .dock-context { justify-content: flex-start; }
@@ -415,6 +436,7 @@ const poster = closeup
     .scene-labels, .label-leaders { display: none; }
     .engagement-chip { font-size: 13px; padding: 8px 12px; }
     .hero-proof { display: none; }
+    .stage-pause--corner { left: var(--gutter); }
   }
   @media (max-width: 860px) {
     /* Phones: the big planet bleeds off the right behind the headline; lead and CTAs below on plain ground. */
@@ -428,6 +450,12 @@ const poster = closeup
     .orbit-hero--closeup .map-stage { position: absolute; top: 48px; bottom: auto; height: 400px; margin: 0; }
     .orbit-hero--closeup .scene-host { position: absolute; inset: 0; height: 400px; }
     .orbit-hero--closeup .stage-poster img { height: 400px; }
+    /* The stage runs behind the lead here, so the chip sits in the quiet zone above it. The
+       headline's reserved box lies over that zone; it holds no controls, so let the pointer
+       through to the chip (the lead and actions stay interactive). */
+    .orbit-hero--closeup .stage-pause--corner { left: var(--gutter); bottom: 96px; }
+    .orbit-hero--closeup .hero-copy { pointer-events: none; }
+    .orbit-hero--closeup .hero-rest { pointer-events: auto; }
     .orbit-hero--closeup .scene-host, .orbit-hero--closeup .stage-poster img {
       -webkit-mask-image: radial-gradient(120% 90% at 100% 58%, #000 30%, transparent 70%), linear-gradient(180deg, #000 60%, transparent 80%);
       -webkit-mask-composite: source-in;
@@ -446,6 +474,8 @@ const poster = closeup
     .orbit-hero--closeup .map-stage { position: absolute; top: 0; bottom: auto; left: calc(50% - 50vw); width: 100vw; height: 300px; margin: 0; }
     .orbit-hero--closeup .scene-host { position: absolute; inset: 0; height: 300px; }
     .orbit-hero--closeup .stage-poster img { height: 300px; }
+    /* The copy holds the left here; the chip takes the stage's bottom-right corner instead. */
+    .orbit-hero--closeup .stage-pause--corner { left: auto; right: var(--gutter); bottom: 12px; }
     .orbit-hero--closeup .scene-host, .orbit-hero--closeup .stage-poster img {
       -webkit-mask-image: radial-gradient(70% 120% at 100% 50%, #000 30%, transparent 70%);
       -webkit-mask-composite: source-over;
