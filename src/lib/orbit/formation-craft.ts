@@ -258,3 +258,154 @@ export function makeCraftKit(parent: THREE.Object3D, camera: THREE.Camera): Craf
     },
   };
 }
+
+/* ======================================================================================
+   Micro-formations: the wide stage's three bucket objects as tiny live Formation
+   vignettes (ticket #13, Brandon's Oct 11 direction, extended same day to Home). Each
+   mounts under a bucket's invisible proxy mesh, which orbits with identity rotation;
+   map-scene drives `tick(t, dir)` from its own clock (so Pause and reduced motion freeze
+   them) and passes the orbit's world travel direction, which the choreography uses as
+   its forward axis. Gains sit low — craft ≤1.6, trail colour ≤0.9, under the 0.93 bloom
+   threshold — so tiny lights stay crisp instead of blobbing.
+   ====================================================================================== */
+
+export interface MicroFormation {
+  tick(t: number, dir: THREE.Vector3): void;
+  setResolution(w: number, h: number): void;
+  dispose(): void;
+}
+
+/** index 0 full-time: the line-abreast row, copper in the middle. 1 fractional: a wedge
+ *  on a rising-and-settling climb with the copper guide off its wing. 2 advisory: compact
+ *  loop-the-loops under a copper observer. `radius` is the bucket's bounding radius —
+ *  extents stay ≈ radius so orbits, labels, raycasts and the camera fit hold. */
+export function attachMicroFormation(
+  proxy: THREE.Object3D,
+  camera: THREE.Camera,
+  index: 0 | 1 | 2,
+  radius: number,
+): MicroFormation {
+  const kit = makeCraftKit(proxy, camera);
+  const r = radius;
+  const f = new THREE.Vector3(0, 0, 1), // forward (travel), replaced every tick
+    u = new THREE.Vector3(0, 1, 0), // up, kept roughly world-up and ⊥ f
+    sv = new THREE.Vector3(1, 0, 0); // side = f × u
+  const basis = (dir: THREE.Vector3) => {
+    f.copy(dir).normalize();
+    u.set(0, 1, 0).addScaledVector(f, -f.y).normalize();
+    sv.copy(f).cross(u).normalize();
+  };
+  const P = (a: number, b: number, c: number, out: THREE.Vector3) =>
+    out.set(0, 0, 0).addScaledVector(f, a).addScaledVector(u, b).addScaledVector(sv, c);
+
+  type Flier = { craft: Craft; line: ReturnType<CraftKit['trail']>; pos(s: number, out: THREE.Vector3): void };
+  const fliers: Flier[] = [];
+  const N = 14, // trail points
+    DH = 0.11; // seconds of history per point
+  const _pt = new THREE.Vector3();
+  const tickTrails = (t: number) => {
+    for (const fl of fliers) {
+      const pts: THREE.Vector3[] = [];
+      for (let i = 0; i < N; i++) {
+        fl.pos(t - i * DH, _pt);
+        pts.push(_pt.clone());
+      }
+      kit.place(fl.craft, pts);
+      kit.setTrail(fl.line, pts, RED, fl.craft === copperRef ? 0.9 : 0.75, 1.1);
+    }
+    kit.orientCrafts();
+  };
+  let copperRef: Craft | null = null;
+
+  if (index === 0) {
+    // Full time: five abreast, the middle one copper — the team you join, in one glance.
+    const slots = [-0.62, -0.31, 0, 0.31, 0.62];
+    slots.forEach((x, k) => {
+      const copper = k === 2;
+      const c = kit.craft(copper ? COPPER_DEEP : IVORY, (copper ? 0.42 : 0.27) * r, copper ? 1.9 : 1.35, true);
+      if (copper) copperRef = c;
+      const ph = k * 1.7;
+      fliers.push({
+        craft: c,
+        line: kit.trail(1.3),
+        pos(s, out) {
+          P(0.05 * r * Math.sin(s * 0.9 + ph) - (s - tNow) * SPEED, 0.08 * r * Math.sin(s * 1.1 + ph), x * r, out);
+        },
+      });
+    });
+  } else if (index === 1) {
+    // Fractional: a wedge climbing a long, deliberate rise; the copper guide off its wing.
+    const slots: [number, number, number][] = [
+      [0, 0, 0],
+      [-0.38, -0.08, 0.3],
+      [-0.38, -0.08, -0.3],
+    ];
+    slots.forEach(([a, b, c0], k) => {
+      const c = kit.craft(IVORY, 0.27 * r, 1.35, true);
+      const ph = k * 1.3;
+      fliers.push({
+        craft: c,
+        line: kit.trail(1.3),
+        pos(s, out) {
+          const climb = 0.3 * r * Math.sin(s * 0.55);
+          P(a * r - (s - tNow) * SPEED, b * r + climb + 0.05 * r * Math.sin(s * 1.2 + ph), c0 * r, out);
+        },
+      });
+    });
+    const g = kit.craft(COPPER_DEEP, 0.42 * r, 1.9, true);
+    copperRef = g;
+    fliers.push({
+      craft: g,
+      line: kit.trail(1.4),
+      pos(s, out) {
+        const climb = 0.3 * r * Math.sin(s * 0.55);
+        P(0.22 * r - (s - tNow) * SPEED, 0.3 * r + climb, 0.62 * r, out);
+      },
+    });
+  } else {
+    // Advisory: the team loops in place — busy, going in circles — under the copper
+    // observer riding steady above (the ring hint before it reached 1.55r; 1.15r is safe).
+    const RHO = 0.38 * r,
+      OMEGA = 1.4;
+    [0, 1, 2].forEach((k) => {
+      const c = kit.craft(IVORY, 0.25 * r, 1.35, true);
+      const ph = k * 0.55;
+      fliers.push({
+        craft: c,
+        line: kit.trail(1.1),
+        pos(s, out) {
+          P(RHO * Math.sin(OMEGA * s + ph), RHO * (1 - Math.cos(OMEGA * s + ph)) - 0.35 * r, 0.12 * r * (k - 1), out);
+        },
+      });
+    });
+    const o = kit.craft(COPPER_DEEP, 0.38 * r, 1.9, true);
+    copperRef = o;
+    fliers.push({
+      craft: o,
+      line: kit.trail(1.1),
+      pos(s, out) {
+        P(-(s - tNow) * SPEED * 0.6, 1.15 * r, 0, out);
+      },
+    });
+  }
+
+  // The history parameter: positions are functions of time, and the forward drift term
+  // turns shared motion into a streaming trail. SPEED is local drift per second of stage
+  // time — small, so the tail stays inside the bucket's bounds.
+  const SPEED = 0.55 * r;
+  let tNow = 0;
+
+  return {
+    tick(t, dir) {
+      tNow = t;
+      basis(dir);
+      tickTrails(t);
+    },
+    setResolution(w, h) {
+      kit.setResolution(w, h);
+    },
+    dispose() {
+      kit.dispose();
+    },
+  };
+}

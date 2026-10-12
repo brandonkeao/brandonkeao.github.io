@@ -31,6 +31,7 @@ import { labelBounds, placeLabel, type Rect } from './label-layout';
 import { createPlanet } from './planet';
 import { resolveMoonStyle, SPHERE_RADII, SPHERE_CENTER_RADII } from './moon-style';
 import { surfaceMaterial, type SurfaceUniforms } from './moon-surfaces';
+import { attachMicroFormation, type MicroFormation } from './formation-craft';
 
 /**
  * The renderer no longer decides navigation. The host owns a `lib/map-state`
@@ -407,6 +408,14 @@ export function createMap(
    * the body is the vessel. `?body=moon` restores the moon for comparison.
    */
   const vesselMode = !(typeof location !== 'undefined' && new URLSearchParams(location.search).get('body') === 'moon');
+  /**
+   * The engagement buckets fly as micro-formation vignettes (ticket #13, Brandon's Oct 11
+   * direction; extended to Home the same day): the row with its copper middle, the climbing
+   * wedge with the guide on its wing, the loops under the observer. Each bucket's real body
+   * is an invisible proxy sphere, so raycasts, labels, glow/haze and the camera fit keep
+   * working on a Mesh of the same bounding radius. `?buckets=plain` restores the old bodies.
+   */
+  const microFormations = !(typeof location !== 'undefined' && new URLSearchParams(location.search).get('buckets') === 'plain');
   function vesselBody(): THREE.Mesh {
     const s = MOON_SCALE;
     const hullGeo = new THREE.CapsuleGeometry(0.115 * s, 0.3 * s, 6, 20);
@@ -459,6 +468,15 @@ export function createMap(
     return hull;
   }
   function body(index: number, scale = 1) {
+    if (microFormations && scale === 1) {
+      const proxy = new THREE.Mesh(
+        new THREE.SphereGeometry(RADII[index], 16, 12),
+        new THREE.MeshPhysicalMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false, emissiveIntensity: 0 }),
+      );
+      proxy.userData.vignette = true;
+      proxy.userData.envBase = 0;
+      return proxy;
+    }
     if (index === 1 && scale === 1 && vesselMode) {
       const mesh = vesselBody();
       (mesh.material as THREE.MeshPhysicalMaterial).envMapIntensity = 0.7;
@@ -643,11 +661,25 @@ export function createMap(
     }
   }
 
+  const micros: MicroFormation[] = [];
   const moons = CATEGORIES.map((c, i) => {
     const b = body(i);
     b.userData.category = c.id;
-    // In vessel mode the Fractional body IS the vessel; its descent hint would be redundant.
-    if (!(i === 1 && vesselMode)) attachHints(b, i);
+    if (microFormations) {
+      // The vignette is the bucket's whole treatment; the old hints retire with the bodies.
+      const micro = attachMicroFormation(b, camera, i as 0 | 1 | 2, RADII[i]);
+      micros.push(micro);
+      const dir = new THREE.Vector3(0, 0, 1);
+      const a0 = new THREE.Vector3(),
+        a1 = new THREE.Vector3();
+      hintTickers.push((t) => {
+        a0.set(...orbitPosition(ORBITS[i], t));
+        a1.set(...orbitPosition(ORBITS[i], t + 0.4));
+        a1.sub(a0);
+        if (a1.lengthSq() > 1e-9) dir.copy(a1.normalize());
+        micro.tick(t, dir);
+      });
+    } else if (!(i === 1 && vesselMode)) attachHints(b, i);
     scene.add(b);
     return b;
   });
@@ -927,6 +959,11 @@ export function createMap(
     placeFormerCenter();
     renderer.setSize(r.width, r.height, false);
     composer.setSize(r.width, r.height);
+    {
+      // Line2 trails need the drawing-buffer size or they render at the 1×1 default.
+      const pr = renderer.getPixelRatio();
+      micros.forEach((mf) => mf.setResolution(r.width * pr, r.height * pr));
+    }
     leaderLayer.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
     measureLabels();
     wake();
@@ -1279,7 +1316,7 @@ export function createMap(
           m.lookAt(vesselAhead);
           m.rotateZ(0.35);
         }
-      } else {
+      } else if (!m.userData.vignette) {
         m.rotation.x = 0.3 + simT * 0.045;
         m.rotation.y = 0.5 + simT * 0.1;
       }
@@ -1481,6 +1518,7 @@ export function createMap(
       renderer.domElement.removeEventListener('pointermove', pointerMove);
       renderer.domElement.removeEventListener('click', pointerClick);
       renderer.domElement.removeEventListener('webglcontextlost', contextLost);
+      micros.forEach((mf) => mf.dispose());
       scene.traverse((obj) => {
         const m = obj as THREE.Mesh;
         m.geometry?.dispose();
