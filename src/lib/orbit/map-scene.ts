@@ -351,10 +351,12 @@ export function createMap(
    * Each engagement moon carries its mission as a live micro-formation flying around it
    * (ticket #13, Brandon's Oct 12 direction): the row sweeping its circuit, the wedge
    * climbing its spiral with the guide off its wing, the loops under the high observer.
-   * The moons stay visible — the formations ride identity-rotation anchor groups that
-   * follow each body. `?buckets=plain` restores the plain bodies with their old hints.
+   * The wide planet-and-moons view stays clean — the mission fades into view as the
+   * selection flight focuses its moon (round 5), so a static stage (Home) never builds
+   * one. `?buckets=plain` restores the plain bodies with their old hints.
    */
-  const microFormations = !(typeof location !== 'undefined' && new URLSearchParams(location.search).get('buckets') === 'plain');
+  const plainBuckets = typeof location !== 'undefined' && new URLSearchParams(location.search).get('buckets') === 'plain';
+  const microFormations = !plainBuckets && !host.closest('.map-stage')?.hasAttribute('data-static');
   function vesselBody(): THREE.Mesh {
     const s = MOON_SCALE;
     const hullGeo = new THREE.CapsuleGeometry(0.115 * s, 0.3 * s, 6, 20);
@@ -614,6 +616,11 @@ export function createMap(
       const a0 = new THREE.Vector3(),
         a1 = new THREE.Vector3();
       hintTickers.push((t) => {
+        // The mission belongs to the focused moon: absent in the wide view, fading in
+        // through the back half of the selection flight (Brandon, 2026-10-12 round 5).
+        const focus = i === selectedIndex ? THREE.MathUtils.smoothstep(blend, 0.45, 0.95) : 0;
+        micro.setFade(focus);
+        if (focus <= 0.001) return;
         anchor.position.copy(b.position);
         anchor.scale.setScalar(b.scale.x);
         a0.set(...orbitPosition(ORBITS[i], t));
@@ -622,7 +629,7 @@ export function createMap(
         if (a1.lengthSq() > 1e-9) dir.copy(a1.normalize());
         micro.tick(microT, dir);
       });
-    } else if (!(i === 1 && vesselMode)) attachHints(b, i);
+    } else if (plainBuckets && !(i === 1 && vesselMode)) attachHints(b, i);
     scene.add(b);
     return b;
   });

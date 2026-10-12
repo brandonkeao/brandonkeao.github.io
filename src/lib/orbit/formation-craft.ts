@@ -273,6 +273,9 @@ export function makeCraftKit(parent: THREE.Object3D, camera: THREE.Camera): Craf
 
 export interface MicroFormation {
   tick(t: number, dir: THREE.Vector3): void;
+  /** 0..1 visibility: the mission fades in as the selection flight focuses its moon
+   *  (Brandon, 2026-10-12 round 5) and is absent from the wide planet-and-moons view. */
+  setFade(f: number): void;
   setResolution(w: number, h: number): void;
   dispose(): void;
 }
@@ -307,6 +310,7 @@ export function attachMicroFormation(
   const N = 14, // trail points
     DH = 0.11; // seconds of history per point
   const _pt = new THREE.Vector3();
+  let fade = 1;
   const tickTrails = (t: number) => {
     for (const fl of fliers) {
       const pts: THREE.Vector3[] = [];
@@ -315,9 +319,16 @@ export function attachMicroFormation(
         pts.push(_pt.clone());
       }
       kit.place(fl.craft, pts);
-      kit.setTrail(fl.line, pts, RED, fl.craft === copperRef ? 0.9 : 0.75, 1.1);
+      fl.craft.setOpacity(fade);
+      kit.setTrail(fl.line, pts, RED, (fl.craft === copperRef ? 0.9 : 0.75) * fade, 1.1);
     }
     kit.orientCrafts();
+  };
+  const setVisible = (v: boolean) => {
+    for (const fl of fliers) {
+      fl.craft.group.visible = v;
+      if (!v) fl.line.visible = false; // the next setTrail write re-shows it
+    }
   };
   let copperRef: Craft | null = null;
 
@@ -414,10 +425,22 @@ export function attachMicroFormation(
     });
   }
 
+  // The wide view opens clean: the mission only appears once the selection flight
+  // brings its moon into focus.
+  fade = 0;
+  setVisible(false);
+
   return {
     tick(t, dir) {
+      if (fade <= 0.001) return;
       basis(dir);
       tickTrails(t);
+    },
+    setFade(f) {
+      const was = fade;
+      fade = f;
+      if (f <= 0.001 && was > 0.001) setVisible(false);
+      else if (f > 0.001 && was <= 0.001) setVisible(true);
     },
     setResolution(w, h) {
       kit.setResolution(w, h);
