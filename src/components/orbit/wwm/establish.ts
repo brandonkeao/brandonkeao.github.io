@@ -95,7 +95,13 @@ export function createEstablish(stage: HTMLElement | null): EstablishController 
         live = { slug, scene };
         host!.classList.add('is-live');
         syncPause();
-        host!.querySelector('canvas')?.addEventListener('webglcontextlost', fail, { once: true });
+        // Deliberate disposal force-loses the old context, and that event arrives async —
+        // it must never tear down the replacement. Only a loss on the CURRENT instance fails.
+        host!.querySelector('canvas')?.addEventListener(
+          'webglcontextlost',
+          () => { if (!disposed && token === creating && live?.slug === slug) fail(); },
+          { once: true },
+        );
       })
       .catch(fail);
   };
