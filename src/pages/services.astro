@@ -169,6 +169,16 @@ const lead = 'Bring me into your team full time, work with me on a product outco
      2026-10-12 round 7: "the detailed paragraph go the length of the page, so not under
      the CTA columns … the top section and the user need scroll down to learn more"). */
   .wwm-detail-intro { padding-top: var(--space-band-sm); }
+  /* Selected on desktop: the stage gives up height so that intro — tag, name and summary —
+     shows above the fold beside the moon (Brandon, 2026-10-12 round 10: the details were
+     "Not above the fold"). The renderer re-fits the camera whenever the box resizes, so the
+     reframe rides the selection flight; Overview restores the tall wide view. */
+  @media (min-width: 861px) {
+    .wwm[data-state='selected'] .orbit-hero--large .map-stage { height: clamp(480px, calc(100svh - 320px), 820px); }
+  }
+  @media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
+    .wwm .orbit-hero--large .map-stage { transition: height 0.45s ease; }
+  }
   .wwm-fits { list-style: none; margin: 0; padding: 0; }
   .wwm-fits li { padding: 16px 0; border-top: 1px solid var(--line-on-ground); color: var(--on-ground-muted); }
   .wwm-fits li:last-child { border-bottom: 1px solid var(--line-on-ground); }

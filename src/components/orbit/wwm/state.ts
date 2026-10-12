@@ -200,9 +200,12 @@ export function initWorkWithMe(): (() => void) | undefined {
   const initial = parse(new URLSearchParams(location.search).get('engagement'));
   apply(initial, 'init');
   // A deep link opens on the selected model, unless the router already restored a position.
+  // Desktop's first screen already holds the moon and the model's intro (round 10), so only
+  // phones scroll down to the content; an explicit #hash still wins everywhere.
   if (initial && scrollY === 0) {
-    const target = (location.hash && document.getElementById(location.hash.slice(1))) || flow;
-    target.scrollIntoView({ block: 'start' });
+    const target = location.hash && document.getElementById(location.hash.slice(1));
+    if (target) target.scrollIntoView({ block: 'start' });
+    else if (matchMedia('(max-width: 860px)').matches) flow.scrollIntoView({ block: 'start' });
   }
 
   return () => {
