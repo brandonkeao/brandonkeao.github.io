@@ -198,7 +198,10 @@ const steps = [
   /* The media box itself is opaque ground: the viewport's soft masks fade into it, never
      into the copy scrolling beneath (the page ground is the same colour, so the box edge
      is invisible). */
-  .story-media { grid-column: 1 / span 6; grid-row: 1; margin: 0; position: sticky; top: 86px; height: min(68svh, 620px); align-self: start; z-index: 1; background: var(--ground); }
+  /* Desktop: the media rides below the model's sticky identity band (round 13; state.ts
+     publishes --wwm-intro-h). Without the variable — no JS, or the stacked no-JS page —
+     the 70px fallback restores the old 86px offset. */
+  .story-media { grid-column: 1 / span 6; grid-row: 1; margin: 0; position: sticky; top: calc(var(--wwm-intro-h, 70px) + 16px); height: min(calc(100svh - var(--wwm-intro-h, 70px) - 48px), 620px); align-self: start; z-index: 1; background: var(--ground); }
   .story-viewport { position: absolute; inset: 0; overflow: hidden; border-radius: 10px; background: var(--ground);
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%), linear-gradient(180deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
     -webkit-mask-composite: source-in;

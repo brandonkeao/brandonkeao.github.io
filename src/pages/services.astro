@@ -167,8 +167,27 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   /* ---- a selected model's detail -------------------------------------------------------- */
   /* The chosen model's intro is the page-wide top section under the hero (Brandon,
      2026-10-12 round 7: "the detailed paragraph go the length of the page, so not under
-     the CTA columns … the top section and the user need scroll down to learn more"). */
+     the CTA columns … the top section and the user need scroll down to learn more"). It is
+     the shared SectionHead band (round 13: "a component like the one we use on the home
+     page"), and on desktop it stays stuck to the top of the screen while the story scrolls
+     beneath — "the category (moon) they select is ever present". Scoped to the enhanced
+     selected state, so the no-JS stacked page keeps plain bands. state.ts publishes the
+     band's measured height as --wwm-intro-h for the story's sticky media and hash jumps. */
   .wwm-detail-intro { padding-top: var(--space-band-sm); }
+  .wwm-detail-intro .section-eyebrow { display: flex; align-items: center; gap: 8px; }
+  .wwm-detail-intro .section-head { max-width: none; }
+  @media (min-width: 861px) {
+    .wwm[data-state='selected'] .wwm-detail-intro {
+      position: sticky;
+      top: 0;
+      z-index: 6;
+      background: var(--ground);
+      border-bottom: 1px solid var(--line-on-ground);
+      padding-top: 32px;
+      padding-bottom: 28px;
+    }
+    .wwm-evidence { scroll-margin-top: calc(var(--wwm-intro-h, 0px) + 16px); }
+  }
   /* Selected on desktop: the stage gives up height so that intro — tag, name and summary —
      shows above the fold beside the moon (Brandon, 2026-10-12 round 10: the details were
      "Not above the fold"; round 11: the lower section "a little higher up vertically", so

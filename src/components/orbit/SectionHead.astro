@@ -3,13 +3,15 @@
 // Works on the ground and on a sheet; colours follow the surface. The eyebrow is a caption
 // (13/500, muted) so it reads as a section marker, apart from item meta (13/400, faint).
 // The default slot follows the lead (Home v2 puts the About portrait there).
-interface Props { eyebrow: string; title: string; id?: string; lead?: string }
-const { eyebrow, title, id, lead } = Astro.props;
+// `dot` prefixes the eyebrow with that category dot; `focusable` lets a script move focus to
+// the title (Work with me focuses the chosen model's name, 2026-10-12 round 13).
+interface Props { eyebrow: string; title: string; id?: string; lead?: string; dot?: number; focusable?: boolean }
+const { eyebrow, title, id, lead, dot, focusable = false } = Astro.props;
 ---
 
 <header class="section-head">
-  <p class="t-caption section-eyebrow">{eyebrow}</p>
-  <h2 class="t-section" id={id}>{title}</h2>
+  <p class="t-caption section-eyebrow">{dot && <i class={`dot dot-${dot}`} aria-hidden="true"></i>}{eyebrow}</p>
+  <h2 class="t-section" id={id} tabindex={focusable ? -1 : undefined}>{title}</h2>
   {lead && <p class="t-lead section-lead">{lead}</p>}
   <slot />
 </header>
