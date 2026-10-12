@@ -1,9 +1,9 @@
 ---
-// Collection hero on the system's own stage (Brandon, 2026-10-12 round 8: Portfolio and
-// Playbooks "don't look like part of the rest of the system" — bring in the animation
-// pattern About and Work with me carry). The page title gets the red align line, and the
-// live orbital scene rides beside the copy as a decorative stage: no chips, no selection,
-// and — per round 5 — no formations on a static stage. The old static trace strip retires.
+// Collection hero (Portfolio, Playbooks) on the system's own stage. The copy reads like the
+// other heroes (ticket #16, Brandon 2026-10-12 "looks sloppy"): the title with the red align
+// line, one lead, then the rest of the copy as one muted body paragraph. Copy is verbatim;
+// only the styling and spacing changed. The stage beside it is decorative: no chips, no
+// selection, one quiet pause chip in the copy column.
 import OrbitStage from '../OrbitStage.astro';
 import MotionLine from '../MotionLine.astro';
 import './collection.css';
@@ -17,7 +17,6 @@ const { title, lead, body, note } = Astro.props;
     <h1 id="cl-hero-title" class="t-page-title">{title}</h1>
     <MotionLine kind="align" stretch />
   </div>
-  <p class="t-lead cl-hero-lead">{lead}</p>
-  <p class="t-body muted-g cl-hero-body">{body}</p>
-  <p class="t-small faint-g cl-hero-note">{note}</p>
+  <p class="t-lead muted-g cl-hero-lead">{lead}</p>
+  <p class="t-body muted-g cl-hero-body">{body} {note}</p>
 </OrbitStage>

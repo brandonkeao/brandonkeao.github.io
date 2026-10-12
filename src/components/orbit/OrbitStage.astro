@@ -8,7 +8,9 @@
 // On narrow screens the order becomes headline, orbit, then the rest.
 // `still`: the stage starts paused with no Pause control; choosing a way in still flies.
 // Pause (Brandon, 2026-10-12 D3): every live stage carries one quiet pause chip, owned here.
-// "copy" puts it in the copy-column dock; "none" puts it at the stage's bottom-left corner.
+// "copy" puts it in the copy-column dock; "none" puts it at the stage's bottom-left corner,
+// except on the collection stage (size "small"), where it sits in the copy column at the
+// page gutter like Home's (ticket #16).
 // It shows once the renderer is ready and never under reduced motion (the stage is static).
 // `controls`: "none" makes the orbit decorative (no chips, no Pause, moons not clickable:
 // Home and Consulting, Brandon 2026-10-06); "stage" overlays the chip row on the orbit; "copy" puts it in the left
@@ -21,6 +23,8 @@ interface Props { set?: OrbitSet; size?: 'closeup' | 'xl' | 'large' | 'small'; s
 const { set = 'home', size = 'large', sheet, still = false, controls = 'stage', speed = 1 } = Astro.props;
 const ways = SETS[set];
 const closeup = size === 'closeup';
+// Decorative collection stages carry their pause chip in the copy column, not on the stage.
+const copyPause = controls === 'none' && size === 'small';
 const poster = closeup
   ? { desktop: '/images/orbit/home-closeup-desktop.jpg', mobile: '/images/orbit/home-closeup-mobile.jpg' }
   : set === 'home'
@@ -50,6 +54,9 @@ const poster = closeup
           <button class="engagement-chip stage-pause" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
         </div>
       )}
+      {copyPause && (
+        <button class="engagement-chip stage-pause stage-pause--copy" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
+      )}
     </div>
   </div>
   <div class="map-stage" data-orbit={set} data-sheet={sheet} data-still={still ? '' : undefined} data-static={controls === 'none' ? '' : undefined} data-speed={speed} data-closeup={closeup ? '' : undefined} data-mode="overview">
@@ -65,7 +72,7 @@ const poster = closeup
       <h2 id="map-current-title" tabindex="-1" data-title>Your outcome</h2>
     </div>
     <!-- Decorative stages (Home, Portfolio, Playbooks): the pause chip alone, bottom-left over the ground (D3). -->
-    {controls === 'none' && (
+    {controls === 'none' && !copyPause && (
       <button class="engagement-chip stage-pause stage-pause--corner" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
     )}
     <!-- The one control row (Brandon, 2026-10-06): ways in, or Back and the chosen way's steps; Pause sits here too.
@@ -356,7 +363,9 @@ const poster = closeup
      Desktop only: the phone block's plain .map-stage rule must keep winning there. */
   @media (min-width: 861px) {
     .orbit-hero--large { grid-template-columns: minmax(340px, 430px) minmax(0, 1fr); gap: 32px; }
-    .orbit-hero--large .map-stage { height: clamp(540px, calc(100svh - 270px), 740px); }
+    /* Portfolio and Playbooks (size "small") share the rule, so the three stage pages size
+       their stage one way (ticket #16); Home's close-up keeps its own clamp. */
+    .orbit-hero--large .map-stage, .orbit-hero--small .map-stage { height: clamp(540px, calc(100svh - 270px), 740px); }
   }
   /* Home close-up: the scene is full-bleed behind the copy; the planet sits right, cropped by the
      edge, and the canvas fades out before the copy column (like the Quiet orbit banner). */
@@ -377,7 +386,6 @@ const poster = closeup
   .hero-rest > :first-child { margin-top: 26px; }
 
   .map-stage { position: relative; height: 700px; isolation: isolate; overflow: hidden; background: var(--ground); }
-  .orbit-hero--small .map-stage { height: 520px; }
   .stage-poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transition: opacity 0.4s; }
   .map-stage.is-ready .stage-poster img { opacity: 0; }
   .scene-host { position: absolute; inset: 0; z-index: 1; }
@@ -415,6 +423,8 @@ const poster = closeup
      a 44px hit target. */
   .stage-pause { gap: 8px; min-height: 44px; font-size: 13px; background: transparent; }
   .stage-pause--corner { position: absolute; z-index: 4; left: 16px; bottom: 16px; }
+  /* Collection stages: the chip under the copy, at the page gutter (ticket #16). */
+  .stage-pause--copy { margin-top: 32px; }
   /* Home's full-bleed stage: the corner chip lines up with the copy column's left edge. */
   .orbit-hero--closeup .stage-pause--corner { left: calc(max(0px, (100vw - var(--content-max)) / 2) + var(--gutter)); }
   /* Controls in the copy column: a left-aligned row under the text, not over the orbit. */
