@@ -30,16 +30,19 @@ const poster = closeup
     <div class="hero-headline"><slot name="headline" /></div>
     <div class="hero-rest">
       <slot />
-      <!-- The one control row (Brandon, 2026-10-06): ways in, or Back and the chosen way's steps; Pause sits here too. -->
+      <!-- Copy-column controls (Brandon, 2026-10-12 round 6): the three ways stay up as the
+           one persistent switcher, plus Overview when a way is chosen. No steps, context
+           caption or Pause here; context/steps/pause stay in markup only because the script
+           expects them. -->
       {controls === 'copy' && (
         <div class="engagement-dock engagement-dock--copy" role="group" aria-label="Ways to work together" data-dock>
           <p class="dock-context" data-context hidden></p>
-          <button class="engagement-chip" type="button" data-back hidden>← Back</button>
           {ways.map((w, i) => (
             <button class="engagement-chip" type="button" data-id={w.id} aria-pressed="false">
               <i class={`dot dot-${i + 1}`} aria-hidden="true"></i>{w.name}
             </button>
           ))}
+          <button class="engagement-chip" type="button" data-back hidden>↑ Overview</button>
           <span class="dock-steps" data-steps hidden></span>
           <button class="engagement-chip dock-pause" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
         </div>
@@ -163,14 +166,17 @@ const poster = closeup
       const inWay = !!(w && map && (mode === 'collection' || mode === 'entering'));
       const focused = document.activeElement as HTMLElement | null;
       const hadFocus = !!focused && dock.contains(focused);
+      // Copy-column dock (round 6): the three ways stay visible as the switcher, Overview
+      // replaces Back, and steps/context/Pause never show.
+      const copyDock = dock.classList.contains('engagement-dock--copy');
       stage.dataset.mode = mode;
       title.textContent = w && mode === 'collection' ? w.name : 'Your outcome';
-      chips.forEach((b) => { b.hidden = inWay; b.setAttribute('aria-pressed', String(b.dataset.id === current)); });
+      chips.forEach((b) => { b.hidden = copyDock ? false : inWay; b.setAttribute('aria-pressed', String(b.dataset.id === current)); });
       back.hidden = !inWay;
-      stepsEl.hidden = !inWay;
-      if (inWay && w) renderSteps(w.id);
+      stepsEl.hidden = copyDock || !inWay;
+      if (!copyDock && inWay && w) renderSteps(w.id);
       // Where the visitor is, once a moon is chosen (no text sits on the planet).
-      context.hidden = !inWay;
+      context.hidden = copyDock || !inWay;
       if (inWay && w) {
         const dot = document.createElement('i');
         dot.className = `dot dot-${ways.indexOf(w) + 1}`;
@@ -182,7 +188,7 @@ const poster = closeup
         context.replaceChildren(dot, name, count);
       }
       dock.setAttribute('aria-label', inWay && w ? `${w.name}: steps` : 'Ways to work together');
-      pauseBtn.hidden = !map || still || !stage.classList.contains('is-ready');
+      pauseBtn.hidden = copyDock || !map || still || !stage.classList.contains('is-ready');
       pauseBtn.setAttribute('aria-pressed', String(paused));
       pauseBtn.querySelector('span')!.textContent = paused ? 'Resume motion' : 'Pause motion';
       if (current) renderSheet(current);

@@ -21,16 +21,24 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     {/* speed matches the Home hero so a moon moves at the same rate on both pages
         (Brandon, 2026-10-09); per-moon variety comes from Kepler periods in orbits.ts. */}
     {/* Selecting a model flies the stage to that moon (Brandon, 2026-10-12): it centres and
-        grows with its mission formation around it, on desktop and phones alike. The round-3
-        establish overlay is retired; the story below carries the concept from there. The
-        rows stay the canonical path. */}
-    <OrbitStage set="work" size="large" controls="stage" speed={2}>
+        grows with its mission formation around it, on desktop and phones alike; the overview
+        system recedes away. Controls live in the copy column (round 6): the three ways plus
+        Overview — no caption, no stage dock — and the chosen model's intro shows beside the
+        moon so desktop reads it without scrolling (phones scroll to the detail as before).
+        The rows stay the canonical path. */}
+    <OrbitStage set="work" size="large" controls="copy" speed={2}>
       <div slot="headline" style="width:fit-content;max-width:100%">
         <h1 class="t-page-title">Work with me</h1>
         <MotionLine kind="align" stretch />
       </div>
       <p class="t-lead muted-g wwm-hero-lead">{lead}</p>
-      <p class="t-caption faint-g wwm-hero-caption">Choose a way of working — or use the list below.</p>
+      {ENGAGEMENTS.map((e) => (
+        <div class="wwm-hero-intro" data-wwm-intro={e.slug} hidden>
+          <p class="t-caption wwm-eyebrow"><i class={`dot dot-${e.dot}`} aria-hidden="true"></i>{e.tag}</p>
+          <p class="t-item wwm-hero-intro-name">{e.name}</p>
+          <p class="t-body muted-g wwm-measure">{e.intro}</p>
+        </div>
+      ))}
     </OrbitStage>
 
     <div class="wwm-flow" data-wwm-flow>
@@ -104,6 +112,7 @@ const lead = 'Bring me into your team full time, work with me on a product outco
       r.querySelector('[data-wwm-select]').hidden = true;
       r.querySelector('[data-wwm-switcher]').hidden = false;
       ds.forEach(function (d) { d.hidden = d.getAttribute('data-wwm-detail') !== v; });
+      r.querySelectorAll('[data-wwm-intro]').forEach(function (el) { el.hidden = el.getAttribute('data-wwm-intro') !== v; });
       r.querySelectorAll('[data-wwm-overview]').forEach(function (el) { el.hidden = true; });
       r.querySelectorAll('[data-wwm-tab]').forEach(function (t) { t.setAttribute('aria-pressed', String(t.getAttribute('data-wwm-tab') === v)); });
     })();
@@ -126,7 +135,15 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm-measure { max-width: 60ch; }
   .wwm-follow { margin-top: 16px; }
   .wwm-hero-lead { max-width: 560px; }
-  .wwm-hero-caption { margin-top: 20px; }
+  /* Copy-column controls + the chosen model's intro beside the moon (round 6): the dock
+     slots between the lead and the intro by flex order, and on desktop the intro keeps the
+     selected model readable without scrolling. Phones scroll to the detail as before. */
+  .wwm .orbit-hero .hero-rest { display: flex; flex-direction: column; align-items: flex-start; }
+  .wwm .orbit-hero .engagement-dock--copy { order: 1; }
+  .wwm-hero-intro { order: 2; margin-top: 28px; max-width: 560px; }
+  .wwm-hero-intro .wwm-eyebrow { margin-bottom: 8px; }
+  .wwm-hero-intro-name { display: block; margin-bottom: 10px; }
+  @media (max-width: 860px) { .wwm-hero-intro { display: none; } }
   .wwm-arrow { font-size: 20px; line-height: 1; color: var(--on-ground-faint); transition: color 0.15s; }
   .wwm-eyebrow, .wwm-row-tag { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.4; font-weight: 500; color: var(--on-ground-muted); margin-bottom: 12px; }
   .wwm h2[tabindex='-1']:focus { outline: none; }
@@ -149,20 +166,22 @@ const lead = 'Bring me into your team full time, work with me on a product outco
 
   /* ---- sticky switcher ------------------------------------------------------------------ */
   .wwm-switcher { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; padding-top: 14px; padding-bottom: 14px; background: var(--ground); border-bottom: 1px solid var(--line-on-ground); }
+  /* Desktop's switcher is the hero's chip row + Overview (round 6); the sticky tabs stay
+     a phone affordance. Unmeasured, --wwm-switcher-h falls back to 46px in the story CSS. */
+  @media (min-width: 861px) { .wwm-switcher { display: none; } }
   .wwm-tabs { display: flex; gap: 8px; min-width: 0; }
   .wwm-tab { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 10px 16px; border-radius: var(--r-pill); border: 1px solid var(--control-line-on-ground); font-size: 15px; color: var(--on-ground-muted); white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
   .wwm-tab:hover { color: var(--on-ground); }
   .wwm-tab[aria-pressed='true'] { color: var(--on-ground); border-color: var(--accent-on-ground); }
   .wwm-restore { white-space: nowrap; }
 
-  /* While a model is selected, the stage's step chips and step count stay hidden: the
-     scroll story below is the one narrative path (Brandon, Oct 9: no buttons that jump).
-     Back remains, and the chips return with the overview. */
-  .wwm[data-state='selected'] .orbit-hero [data-steps] { display: none; }
-  .wwm[data-state='selected'] .orbit-hero [data-context] span { display: none; }
-
   /* ---- a selected model's detail -------------------------------------------------------- */
   .wwm-detail-intro { padding-top: var(--space-band-sm); }
+  /* Desktop reads the intro in the hero (round 6); the in-flow copy stays for phones,
+     no-JS reading and the focus/heading targets, but leaves the visual flow. */
+  @media (min-width: 861px) {
+    .wwm-detail-intro { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; padding: 0; }
+  }
   .wwm-fits { list-style: none; margin: 0; padding: 0; }
   .wwm-fits li { padding: 16px 0; border-top: 1px solid var(--line-on-ground); color: var(--on-ground-muted); }
   .wwm-fits li:last-child { border-bottom: 1px solid var(--line-on-ground); }

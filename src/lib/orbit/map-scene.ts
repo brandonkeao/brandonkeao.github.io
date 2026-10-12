@@ -9,7 +9,6 @@ import { CATEGORIES, type CategoryId, type ContentItem } from './orbit-data';
 import {
   overviewOrbits,
   layoutFor,
-  cornerScale,
   CHILD_ORBITS,
   CENTER_SCALES,
   BODY_RADII,
@@ -252,7 +251,6 @@ export function createMap(
   // (lib/orbits.ts layouts); the camera fit follows the same layout.
   const layout = layoutFor(moonStyle);
   const ORBITS = overviewOrbits(layout);
-  const CORNER = cornerScale(layout);
   const RADII =
     moonStyle === 'spheres'
       ? BODY_RADII.map((r, i) => (i === 1 ? r : SPHERE_RADII[i] * MOON_SCALE))
@@ -1231,8 +1229,13 @@ export function createMap(
     pose.shift = THREE.MathUtils.lerp(poses.overview.shift, poses.collection.shift, blend);
     applyPose(pose);
 
-    // The whole overview system shrinks into the former-centre position together.
-    const systemScale = 1 - blend * (1 - CORNER);
+    // The overview system recedes and vanishes with the selection flight: the zoomed view
+    // keeps only the chosen moon and its mission (Brandon, 2026-10-12 round 6 — the corner
+    // cluster is gone).
+    const systemScale = 1 - blend;
+    const systemShown = systemScale > 0.02;
+    planet.visible = systemShown;
+    atmosphere.visible = systemShown;
     planet.position.lerpVectors(origin, formerCenter, blend);
     // The planet swells with speech inside planetBody.update; scale here is layout only.
     planet.scale.setScalar(systemScale);
@@ -1254,7 +1257,7 @@ export function createMap(
         if (i === selectedIndex) m.position.lerp(origin, blend);
         else m.position.multiplyScalar(systemScale).add(planet.position);
       }
-      m.visible = true;
+      m.visible = i === selectedIndex || systemShown;
       const cue = depthCue(m.position, ORBITS[i].a * 1.05);
       const cueScale = THREE.MathUtils.lerp(cue.scale, 1, blend);
       m.scale.setScalar(
@@ -1290,7 +1293,7 @@ export function createMap(
       ring.scale.setScalar(systemScale);
       const ringOpacity =
         traceOpacity[i] * (i === selectedIndex ? 1 - blend : 1 - blend * 0.55);
-      ring.visible = ringOpacity > 0.01;
+      ring.visible = ringOpacity > 0.01 && systemShown;
       setTrace(ring, ORBITS[i].a, ringOpacity, lit ? 1.1 : 0);
     });
     // Hint motion runs on the sim clock, so Pause and reduced motion freeze it with the orbits.
