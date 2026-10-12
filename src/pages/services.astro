@@ -22,10 +22,11 @@ const lead = 'Bring me into your team full time, work with me on a product outco
         (Brandon, 2026-10-09); per-moon variety comes from Kepler periods in orbits.ts. */}
     {/* Selecting a model flies the stage to that moon (Brandon, 2026-10-12): it centres and
         grows with its mission formation around it, on desktop and phones alike; the overview
-        system recedes away. Controls live in the copy column (round 6): the three ways plus
-        Overview — no caption, no stage dock — and the chosen model's intro shows beside the
-        moon so desktop reads it without scrolling (phones scroll to the detail as before).
-        The rows stay the canonical path. */}
+        system recedes away. Controls live in the copy column (round 6): the three ways and
+        the pause chip — no caption, no stage dock, and no way back to the Overview (round 14:
+        visitors switch directly; browser Back still cuts to it). The chosen model's intro
+        shows beside the moon so desktop reads it without scrolling (phones scroll to the
+        detail as before). The rows stay the canonical path. */}
     <OrbitStage set="work" size="large" controls="copy" speed={2}>
       <div slot="headline" style="width:fit-content;max-width:100%">
         <h1 class="t-page-title">Work with me</h1>
@@ -63,7 +64,6 @@ const lead = 'Bring me into your team full time, work with me on a product outco
             </button>
           ))}
         </div>
-        <a class="link-ground wwm-restore" href="/services/" data-wwm-restore>↑ All ways to work together</a>
       </nav>
 
       {ENGAGEMENTS.map((e) => <EngagementDetail e={e} />)}
@@ -149,14 +149,13 @@ const lead = 'Bring me into your team full time, work with me on a product outco
 
   /* ---- sticky switcher ------------------------------------------------------------------ */
   .wwm-switcher { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; padding-top: 14px; padding-bottom: 14px; background: var(--ground); border-bottom: 1px solid var(--line-on-ground); }
-  /* Desktop's switcher is the hero's chip row + Overview (round 6); the sticky tabs stay
-     a phone affordance. Unmeasured, --wwm-switcher-h falls back to 46px in the story CSS. */
+  /* Desktop's switcher is the hero's chip row (round 6); the sticky tabs stay a phone
+     affordance, three tabs only (round 14: no way back to the Overview). Unmeasured, --wwm-switcher-h falls back to 46px in the story CSS. */
   @media (min-width: 861px) { .wwm-switcher { display: none; } }
   .wwm-tabs { display: flex; gap: 8px; min-width: 0; }
   .wwm-tab { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 10px 16px; border-radius: var(--r-pill); border: 1px solid var(--control-line-on-ground); font-size: 15px; color: var(--on-ground-muted); white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
   .wwm-tab:hover { color: var(--on-ground); }
   .wwm-tab[aria-pressed='true'] { color: var(--on-ground); border-color: var(--accent-on-ground); }
-  .wwm-restore { white-space: nowrap; }
 
   /* While a model is selected, the wide-overview poster never shows (round 9, Brandon:
      "make the refresh and loading states feel very natural and clean") — a deep-linked or
@@ -203,7 +202,10 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   @media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
     .wwm .orbit-hero--large .map-stage { transition: height 0.85s cubic-bezier(0.45, 0, 0.55, 1); }
   }
-  /* Returning to the Overview: the rows and shared sections fade back in instead of popping. */
+  /* Browser Back to the Overview (D1): the stage cuts with no flight, so its box cuts back to
+     the Overview height too (no 0.85s ride), and the rows and shared sections fade back in
+     instead of popping. */
+  .wwm.wwm-returning .orbit-hero--large .map-stage { transition: none; }
   @media (prefers-reduced-motion: no-preference) {
     .wwm.wwm-returning .wwm-select:not([hidden]),
     .wwm.wwm-returning [data-wwm-overview]:not([hidden]) { animation: wwm-in 0.35s ease-out; }
@@ -261,7 +263,6 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     .wwm-tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; padding: 2px var(--gutter) 4px 2px; scroll-snap-type: x proximity; }
     .wwm-tabs::-webkit-scrollbar { display: none; }
     .wwm-tab { scroll-snap-align: start; font-size: 14px; padding: 8px 14px; }
-    .wwm-restore { align-self: flex-start; font-size: 14px; }
     .sheet.wwm-close { padding-top: 64px; padding-bottom: 72px; }
     .wwm-close-btn { margin-top: 28px; display: flex; width: 100%; }
   }

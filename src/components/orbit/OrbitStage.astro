@@ -31,9 +31,10 @@ const poster = closeup
     <div class="hero-rest">
       <slot />
       <!-- Copy-column controls (Brandon, 2026-10-12 round 6): the three ways stay up as the
-           one persistent switcher, plus Overview when a way is chosen. No steps, context
-           caption or Pause here; context/steps/pause stay in markup only because the script
-           expects them. -->
+           one persistent switcher. No way back to the Overview (Brandon, 2026-10-12 round 14:
+           visitors switch directly; the Overview is the pre-selection state only). No steps,
+           context caption or Pause here; context/steps/pause stay in markup only because the
+           script expects them. -->
       {controls === 'copy' && (
         <div class="engagement-dock engagement-dock--copy" role="group" aria-label="Ways to work together" data-dock>
           <p class="dock-context" data-context hidden></p>
@@ -42,7 +43,6 @@ const poster = closeup
               <i class={`dot dot-${i + 1}`} aria-hidden="true"></i>{w.name}
             </button>
           ))}
-          <button class="engagement-chip" type="button" data-back hidden>↑ Overview</button>
           <span class="dock-steps" data-steps hidden></span>
           <button class="engagement-chip dock-pause" type="button" data-pause aria-pressed="false" hidden><i aria-hidden="true"></i><span>Pause motion</span></button>
         </div>
@@ -61,7 +61,8 @@ const poster = closeup
     <div class="sr-only" aria-live="polite">
       <h2 id="map-current-title" tabindex="-1" data-title>Your outcome</h2>
     </div>
-    <!-- The one control row (Brandon, 2026-10-06): ways in, or Back and the chosen way's steps; Pause sits here too. -->
+    <!-- The one control row (Brandon, 2026-10-06): ways in, or Back and the chosen way's steps; Pause sits here too.
+         No page passes controls="stage" since round 6 (2026-10-12); kept, not deleted. -->
     {(controls === 'stage' || controls === 'none') && (
     <div class="engagement-dock" role="group" aria-label="Ways to work together" data-dock hidden={controls === 'none'}>
       <p class="dock-context" data-context hidden></p>
@@ -99,7 +100,8 @@ const poster = closeup
     const host = q('.scene-host');
     const title = q('[data-title]');
     const dock = q('[data-dock]');
-    const back = q<HTMLButtonElement>('[data-back]');
+    // Only the unused controls="stage" dock still has a Back button (round 14 retired "↑ Overview").
+    const back = hero.querySelector<HTMLButtonElement>('[data-back]');
     const pauseBtn = q<HTMLButtonElement>('[data-pause]');
     const stepsEl = q('[data-steps]');
     const context = q('[data-context]');
@@ -166,13 +168,13 @@ const poster = closeup
       const inWay = !!(w && map && (mode === 'collection' || mode === 'entering'));
       const focused = document.activeElement as HTMLElement | null;
       const hadFocus = !!focused && dock.contains(focused);
-      // Copy-column dock (round 6): the three ways stay visible as the switcher, Overview
-      // replaces Back, and steps/context/Pause never show.
+      // Copy-column dock (round 6): the three ways stay visible as the switcher; there is
+      // no way back to the Overview (round 14), and steps/context never show.
       const copyDock = dock.classList.contains('engagement-dock--copy');
       stage.dataset.mode = mode;
       title.textContent = w && mode === 'collection' ? w.name : 'Your outcome';
       chips.forEach((b) => { b.hidden = copyDock ? false : inWay; b.setAttribute('aria-pressed', String(b.dataset.id === current)); });
-      back.hidden = !inWay;
+      if (back) back.hidden = !inWay;
       stepsEl.hidden = copyDock || !inWay;
       if (!copyDock && inWay && w) renderSteps(w.id);
       // Where the visitor is, once a moon is chosen (no text sits on the planet).
@@ -192,8 +194,12 @@ const poster = closeup
       pauseBtn.setAttribute('aria-pressed', String(paused));
       pauseBtn.querySelector('span')!.textContent = paused ? 'Resume motion' : 'Pause motion';
       if (current) renderSheet(current);
-      // Keep keyboard focus in the row when the chip that had it is swapped out.
-      if (hadFocus && focused && (focused.hidden || !focused.isConnected || focused.offsetParent === null)) (inWay ? back : chips.find((c) => c.dataset.id === stepsFor) ?? chips[0]).focus();
+      // Keep keyboard focus in the row when the chip that had it is swapped out: Back in the
+      // stage dock, otherwise the pressed chip (round 14), else the first.
+      if (hadFocus && focused && (focused.hidden || !focused.isConnected || focused.offsetParent === null)) {
+        const pressed = chips.find((c) => c.dataset.id === current && !c.hidden);
+        (inWay && back && !back.hidden ? back : pressed ?? chips.find((c) => !c.hidden) ?? chips[0])?.focus();
+      }
     }
 
     function select(id: CategoryId, instant = false) {
@@ -211,19 +217,21 @@ const poster = closeup
       render();
     }
 
-    function goBack() {
-      if (!map || (mode !== 'collection' && mode !== 'entering')) return;
+    function goBack(instant = false) {
+      if (!map) { if (current) { current = null; render(); } return; }
+      if (mode !== 'collection' && mode !== 'entering') return;
       if (mode === 'entering') map.completeTransition();
       map.hideChildren();
       mode = 'leaving'; token++;
-      map.leave({ token, instant: reduced });
+      map.leave({ token, instant: reduced || instant });
       render();
     }
 
-    back.addEventListener('click', () => { pending = null; goBack(); }, opts);
-    document.addEventListener('keydown', (e) => {
-      if (!decorative && e.key === 'Escape' && (mode === 'collection' || mode === 'entering')) { pending = null; goBack(); }
-    }, opts);
+    // The unused stage dock's Back button flies home; nothing on any page uses it today.
+    back?.addEventListener('click', () => { pending = null; goBack(); }, opts);
+    // A host page's reset (Work with me's browser Back to the bare URL, D1): an instant cut to
+    // the Overview, never the leave flight. Escape no longer leaves a model (round 14).
+    stage.addEventListener('orbit:reset', () => { pending = null; goBack(true); }, opts);
     pauseBtn.addEventListener('click', () => { paused = !paused; map?.pause(paused); render(); }, opts);
     chips.forEach((b) => b.addEventListener('click', () => select(b.dataset.id as CategoryId), opts));
     render();
@@ -260,7 +268,9 @@ const poster = closeup
         useSet(set);
         map = createMap(host, {
           onCategoryRequest: (id) => { if (!decorative) select(id); },
-          onItem: (item) => navigate(item.href),
+          // Step moons (the retired child moons) are the only items; their meshes stay in the
+          // scene hidden, so a click can still raycast them. Navigate only while they show.
+          onItem: (item) => { if (host.dataset.childrenVisible === 'true') navigate(item.href); },
           onSettled(t) {
             if (t !== token || !map) return;
             // The selected view shows only the moon and its mission formation (Brandon,
