@@ -28,8 +28,9 @@ import MotionLine from '../components/orbit/MotionLine.astro';
 
 <style>
   /* Brandon, 2026-10-06: "Let's talk" on the left, the contact card in the column on the right. */
-  :global(#main-content):has(.contact-layout) { display: flex; flex-direction: column; justify-content: center; }
-  .contact-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 600px); gap: 56px; align-items: center; padding: 56px var(--gutter) 96px; }
+  /* The h1 sits where the other page headers' do (ticket #17, F-04): no vertical centring, the
+     page header's 40px top, and the card column starts level with the title. */
+  .contact-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 600px); gap: 56px; align-items: start; padding: 40px var(--gutter) 96px; }
   .contact-layout :global(.contact-sheet) { margin: 0; padding: 32px; }
   @media (max-width: 860px) {
     .contact-layout { grid-template-columns: minmax(0, 1fr); gap: var(--space-hero-step); padding: 16px 0 var(--inset); }

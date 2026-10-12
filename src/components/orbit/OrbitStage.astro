@@ -450,7 +450,13 @@ const poster = scene
     .orbit-hero--large { grid-template-columns: minmax(340px, 430px) minmax(0, 1fr); gap: 32px; }
     /* Portfolio and Playbooks (size "small") share the rule, so the three stage pages size
        their stage one way (ticket #16); Home's close-up keeps its own clamp. */
-    .orbit-hero--large .map-stage, .orbit-hero--small .map-stage { height: clamp(540px, calc(100svh - 270px), 740px); }
+    .orbit-hero--large, .orbit-hero--small { --stage-h: clamp(540px, calc(100svh - 270px), 740px); }
+    .orbit-hero--large .map-stage, .orbit-hero--small .map-stage { height: var(--stage-h); }
+    /* The three copy-led stages put their h1 at one height for a given window (ticket #17, F-04):
+       the copy is top-aligned where Work with me's centred copy sat (a 400px column centred in
+       the stage), so a shorter column or the pause chip appearing never moves the title.
+       Home's close-up hero is not touched (R-01). */
+    .orbit-hero--large .hero-copy, .orbit-hero--small .hero-copy { align-self: start; padding-top: calc((var(--stage-h) - 400px) / 2); }
   }
   /* Home close-up: the scene is full-bleed behind the copy; the planet sits right, cropped by the
      edge, and the canvas fades out before the copy column (like the Quiet orbit banner). */
