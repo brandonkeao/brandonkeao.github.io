@@ -292,17 +292,23 @@ export function overviewSamples(layout: Layout = DEFAULT_LAYOUT) {
     ...sampleOrbits(overviewOrbits(layout), bodyRadii(layout)),
   ]);
 }
+/** The chosen moon fills a little more of the frame when selected (Brandon, 2026-10-12
+    round 7: "increase the zoom on the moons"). Scales the body, so the mission scales
+    with it — which is why the collection fit below must grow by the same factor. */
+export const CENTER_ZOOM = 1.25;
 export function collectionSamples() {
-  return (collectionCache ??= [
-    {
-      p: [0, 0, 0],
-      r: Math.max(...CENTER_SCALES.map((s, i) => s * BODY_RADII[i])) * 1.03,
-    },
-    ...sampleOrbits(
-      CHILD_ORBITS,
-      BODY_RADII.map((r) => r * CHILD_SCALE),
-    ),
-  ]);
+  if (!collectionCache) {
+    // The selected view holds the zoomed body plus its mission's whole flight envelope
+    // (Brandon, 2026-10-12 round 11: "The annimation is out of frame"): the loops reach
+    // ~1.7r out plus craft size, and Advisory's observer holds station 1.7r straight up
+    // (formation-craft.ts). The retired child moons no longer steer this camera.
+    const R = Math.max(...CENTER_SCALES.map((s, i) => s * BODY_RADII[i])) * CENTER_ZOOM;
+    collectionCache = [
+      { p: [0, 0, 0], r: R * 1.85 },
+      { p: [0, R * 1.7, 0], r: R * 0.3 },
+    ];
+  }
+  return collectionCache;
 }
 function extent(samples: Sample[], pose: Pose, aspect: number) {
   let top = -Infinity,

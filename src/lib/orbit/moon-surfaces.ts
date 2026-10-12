@@ -229,9 +229,13 @@ totalEmissiveRadiance+=uMsEmber*msS.glow*(uMsVein+2.4*emph);}`,
 
 /** The stages' clear color, calibrated so ACES tone mapping (exposure 1.05) renders it as
  *  the page's --ground #2b2d29 (Brandon, 2026-10-12: the stage read as "a different black
- *  than the background on the page"). A transparent canvas is not an option: UnrealBloomPass
- *  writes black halos over transparent regions. Recalibrate if tone mapping/exposure change. */
-export const STAGE_GROUND = 0x0a0b0a;
+ *  than the background on the page"; round 11: the first calibration still sat 2/255 low
+ *  in red — "I can still tell where the video animation container box is"). ACES mixes
+ *  channels, so whole-hex steps overshoot (0x0a0b0a → rgb(41,45,41), 0x0b0b0a →
+ *  rgb(46,46,42) against the page's rgb(43,45,41)); the fractional red below pixel-matches
+ *  exactly. A transparent canvas is not an option: UnrealBloomPass writes black halos over
+ *  transparent regions. Recalibrate if tone mapping/exposure change. */
+export const STAGE_GROUND = new THREE.Color().setRGB(10.3 / 255, 10.75 / 255, 9.75 / 255, THREE.SRGBColorSpace);
 
 /* ---- Shared procedural textures (no external assets) -------------------------------------
    Moved here from map-scene.ts so the story scene (formation-scene.ts) can dress its

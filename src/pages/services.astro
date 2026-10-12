@@ -171,10 +171,12 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm-detail-intro { padding-top: var(--space-band-sm); }
   /* Selected on desktop: the stage gives up height so that intro — tag, name and summary —
      shows above the fold beside the moon (Brandon, 2026-10-12 round 10: the details were
-     "Not above the fold"). The renderer re-fits the camera whenever the box resizes, so the
-     reframe rides the selection flight; Overview restores the tall wide view. */
+     "Not above the fold"; round 11: the lower section "a little higher up vertically", so
+     tall windows cap at 720px instead of riding 100svh). The renderer re-fits the camera
+     whenever the box resizes, so the reframe rides the selection flight; Overview restores
+     the tall wide view. */
   @media (min-width: 861px) {
-    .wwm[data-state='selected'] .orbit-hero--large .map-stage { height: clamp(480px, calc(100svh - 320px), 820px); }
+    .wwm[data-state='selected'] .orbit-hero--large .map-stage { height: clamp(480px, calc(100svh - 320px), 720px); }
   }
   @media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
     .wwm .orbit-hero--large .map-stage { transition: height 0.45s ease; }

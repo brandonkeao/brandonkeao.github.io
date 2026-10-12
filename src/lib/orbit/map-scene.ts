@@ -18,6 +18,7 @@ import {
   FOV_Y,
   overviewPose,
   collectionPose,
+  CENTER_ZOOM,
   cameraPosition,
   stageReserve,
   orbitPosition,
@@ -265,9 +266,8 @@ export function createMap(
     moonStyle === 'spheres'
       ? CENTER_SCALES.map((c, i) => (i === 1 ? c : SPHERE_CENTER_RADII[i] / RADII[i]))
       : CENTER_SCALES;
-  // The chosen moon fills a little more of the frame (Brandon, 2026-10-12 round 7:
-  // "increase the zoom on the moons"). Scales the body, so the mission scales with it.
-  const CENTER_ZOOM = 1.25;
+  // CENTER_ZOOM (the round-7 "increase the zoom on the moons") lives in orbits.ts now,
+  // shared with the collection fit so the mission's flight envelope stays in frame.
   const edgeMaterials: THREE.LineBasicMaterial[] = [];
   function edges(geometry: THREE.BufferGeometry, opacity: number) {
     const material = new THREE.LineBasicMaterial({
