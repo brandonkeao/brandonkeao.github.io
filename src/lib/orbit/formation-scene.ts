@@ -26,11 +26,20 @@ import type { EngagementSlug } from './orbit-data';
  */
 
 export interface FormationHandle {
-  /** Story progress 0..1 (the reading line across the three beats); smoothed internally. */
+  /** Story progress 0..1 (the reading line across the three beats); smoothed internally.
+   *  A no-op in the establish view, which holds its own progress. */
   setProgress(p: number): void;
+  /** Host-driven hold (the stage's Pause control); offscreen pausing is automatic. */
+  pause(v: boolean): void;
   resize(): void;
   dispose(): void;
 }
+
+/** 'story' scrubs the three beats by scroll; 'establish' is the selected-state hero shot:
+ *  a wider fourth camera on the beat-1 tableau, progress held just past the arrival gates
+ *  so the copper craft is present, with the orbit clock free-running. */
+export type FormationView = 'story' | 'establish';
+const ESTABLISH_P: Record<EngagementSlug, number> = { 'full-time': 0.12, fractional: 0.12, advisory: 0.1 };
 
 /* ---- render profile (map-scene.ts values; the lab's `formation.html` header) ---- */
 const KEY_DIR = new THREE.Vector3(-5.2, 3.4, 3.6).normalize();
@@ -88,10 +97,15 @@ interface CamKey {
   fov: number;
 }
 interface Story {
-  update(p: number, t: number): { K: CamKey[]; up: THREE.Vector3 };
+  update(p: number, t: number): { K: CamKey[]; up: THREE.Vector3; E: CamKey };
 }
 
-export function createFormation(container: HTMLElement, model: EngagementSlug): FormationHandle {
+export function createFormation(
+  container: HTMLElement,
+  model: EngagementSlug,
+  opts?: { view?: FormationView },
+): FormationHandle {
+  const view: FormationView = opts?.view ?? 'story';
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setClearColor(GROUND);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
@@ -288,7 +302,10 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
           { pos: rig(f, F0, -2.6, 1.3, 1.1), look: rig(f, F0, 0.4, -0.1, 0.1), fov: 33 },
           { pos: rig(fd, F, -3.0, 1.5, 2.4), look: rig(fd, F, 1.4, -0.7, 0.2), fov: 38 },
         ];
-        return { K, up: fd.N };
+        // The establishing shot: the row with its gap and the arriving copper craft, pulled
+        // back far enough that the planet's disc grounds the frame.
+        const E = { pos: rig(f, F0, -7.0, 3.6, 6.4), look: F0.clone().lerp(V(), 0.55), fov: 44 };
+        return { K, up: fd.N, E };
       },
     };
   }
@@ -412,7 +429,9 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
           { pos: rig(f, Fm, -1.6, 0.6, 7.2), look: rig(f, F, 0.2, 0.4 * (R2 - r), 0.0), fov: 35 },
           { pos: rig(f, F, -4.2, 2.6, 8.2), look: rig(f, F, 1.2, 0.5, 0), fov: 36 },
         ];
-        return { K, up: f.N };
+        // The establishing shot: the low-orbit team with the rocket on its wing, wide.
+        const E = { pos: rig(f, Fm, -4.5, 2.2, 10.5), look: Fm.clone().lerp(V(), 0.5), fov: 42 };
+        return { K, up: f.N, E };
       },
     };
   }
@@ -520,7 +539,9 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
           // held still: the team visibly drops into the glow
           { pos: rig(f3, f3.P, -0.2, 0.8, 4.6), look: rig(f3, f3.P, 0.05, 0.4, 0), fov: 38 },
         ];
-        return { K, up: head.f.N };
+        // The establishing shot: the looping team under the high copper observer, wide.
+        const E = { pos: rig(f, C, -1.6, 2.0, 8.6), look: C.clone().lerp(V(), 0.5), fov: 42 };
+        return { K, up: head.f.N, E };
       },
     };
   }
@@ -535,7 +556,8 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
   let disposed = false;
   let t = 24; // the study's reference clock start; advanced only while running
   let last = 0;
-  let pTarget = 0,
+  let hostPaused = false;
+  let pTarget = view === 'establish' ? ESTABLISH_P[model] : 0,
     pS = 0,
     first = true;
   const camPos = V(),
@@ -549,10 +571,19 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
     t += dt;
     pS = first ? pTarget : pS + (pTarget - pS) * (1 - Math.exp(-dt / 0.14));
     planet.update(t, 0, 0, 1, 0.45);
-    const { K, up } = story.update(pS, t);
-    const { i, f } = beatMix(pS);
-    const pos = K[i].pos.clone().lerp(K[i + 1].pos, f),
+    const { K, up, E } = story.update(pS, t);
+    let pos: THREE.Vector3, look: THREE.Vector3, fov: number;
+    if (view === 'establish') {
+      // One wide rig, recomputed each frame so the camera rides the free-running orbit.
+      pos = E.pos;
+      look = E.look;
+      fov = E.fov;
+    } else {
+      const { i, f } = beatMix(pS);
+      pos = K[i].pos.clone().lerp(K[i + 1].pos, f);
       look = K[i].look.clone().lerp(K[i + 1].look, f);
+      fov = mix(K[i].fov, K[i + 1].fov, f);
+    }
     const k = first ? 1 : 1 - Math.exp(-dt / 0.18);
     camPos.lerp(pos, k);
     camLook.lerp(look, k);
@@ -560,14 +591,14 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
     camera.position.copy(camPos);
     camera.up.copy(up);
     camera.lookAt(camLook);
-    camera.fov = mix(K[i].fov, K[i + 1].fov, f);
+    camera.fov = fov;
     camera.updateProjectionMatrix();
     orientCrafts();
     composer.render();
     raf = requestAnimationFrame(tick);
   }
   function setRunning() {
-    const want = onScreen && !document.hidden && !disposed;
+    const want = onScreen && !document.hidden && !disposed && !hostPaused;
     if (want === running) return;
     running = want;
     if (running) {
@@ -612,7 +643,11 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
 
   return {
     setProgress(p) {
-      pTarget = clamp(p);
+      if (view === 'story') pTarget = clamp(p);
+    },
+    pause(v) {
+      hostPaused = v;
+      setRunning();
     },
     resize,
     dispose() {
