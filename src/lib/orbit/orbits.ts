@@ -300,12 +300,21 @@ export function collectionSamples() {
   if (!collectionCache) {
     // The selected view holds the zoomed body plus its mission's whole flight envelope
     // (Brandon, 2026-10-12 round 11: "The annimation is out of frame"): the loops reach
-    // ~1.7r out plus craft size, and Advisory's observer holds station 1.7r straight up
-    // (formation-craft.ts). The retired child moons no longer steer this camera.
+    // ~1.7r out plus craft size, the observer holds station 1.7r straight up, and the
+    // row circuit dips 1.45r below (formation-craft.ts). The travel frame rotates with
+    // the orbit, so the side reach applies in every horizontal direction. One sample per
+    // extreme keeps the fit tight — a single bounding sphere cost ~a fifth of the moon's
+    // size (Brandon, round 12: "the plannets are too small … zoom in more but keep it
+    // cented so the whole annimation is in frame").
     const R = Math.max(...CENTER_SCALES.map((s, i) => s * BODY_RADII[i])) * CENTER_ZOOM;
     collectionCache = [
-      { p: [0, 0, 0], r: R * 1.85 },
-      { p: [0, R * 1.7, 0], r: R * 0.3 },
+      { p: [0, 0, 0], r: R * 1.03 },
+      { p: [0, R * 1.7, 0], r: R * 0.28 },
+      { p: [0, -R * 1.45, 0], r: R * 0.2 },
+      { p: [R * 1.7, 0, 0], r: R * 0.18 },
+      { p: [-R * 1.7, 0, 0], r: R * 0.18 },
+      { p: [0, 0, R * 1.7], r: R * 0.18 },
+      { p: [0, 0, -R * 1.7], r: R * 0.18 },
     ];
   }
   return collectionCache;
@@ -368,10 +377,13 @@ export function overviewPose(width: number, height: number, layout: Layout = DEF
   return fitPose(overviewSamples(layout), width / height, stageFrame(width, height));
 }
 export function collectionPose(width: number, height: number) {
+  // The selected stage carries no toolbar or dock overlay (the controls moved to the
+  // copy column, round 6), so it keeps only a slim breathing edge instead of the
+  // overview's reserves — the moon reads bigger in the same box.
   return fitPose(
     collectionSamples(),
     width / height,
-    stageFrame(width, height),
+    stageFrame(width, height, { top: 20, bottom: 24 }),
   );
 }
 /** Kept for callers of the first proof: overview distance for an aspect. */

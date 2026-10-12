@@ -1327,8 +1327,12 @@ export function createMap(
           m.rotateZ(0.35);
         }
       } else {
-        m.rotation.x = 0.3 + simT * 0.045;
-        m.rotation.y = 0.5 + simT * 0.1;
+        // Axial spin rides microT, not simT: simT freezes while a model is selected, which
+        // froze the chosen moon mid-turn (Brandon, 2026-10-12 round 12: "the moons themselves
+        // also have to have their own rotation"). The clocks tick together until the first
+        // selection, so the swap is seamless; Pause and reduced motion still freeze both.
+        m.rotation.x = 0.3 + microT * 0.045;
+        m.rotation.y = 0.5 + microT * 0.1;
       }
       const lit = emphasized === id;
       setGlow(

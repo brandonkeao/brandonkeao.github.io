@@ -89,7 +89,15 @@ export function initWorkWithMe(): (() => void) | undefined {
   if (hero) watch.observe(hero, { subtree: true, attributes: true, attributeFilter: ['aria-pressed', 'class', 'data-mode'] });
 
   /* ---- state ---------------------------------------------------------------------------- */
+  let returning: ReturnType<typeof setTimeout> | undefined;
   function apply(slug: Slug | null, origin: Origin) {
+    // Returning to the Overview fades its sections back in (round 12: the pop was jarring);
+    // the one-shot class keeps the first paint and deep links animation-free.
+    if (!slug && current && origin !== 'init') {
+      root.classList.add('wwm-returning');
+      clearTimeout(returning);
+      returning = setTimeout(() => root.classList.remove('wwm-returning'), 450);
+    }
     current = slug;
     root.dataset.state = slug ? 'selected' : 'overview';
     selector.hidden = !!slug;
@@ -212,5 +220,6 @@ export function initWorkWithMe(): (() => void) | undefined {
     ctl.abort();
     watch.disconnect();
     switcherSize.disconnect();
+    clearTimeout(returning);
   };
 }

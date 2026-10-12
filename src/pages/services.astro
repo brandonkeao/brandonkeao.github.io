@@ -178,8 +178,16 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   @media (min-width: 861px) {
     .wwm[data-state='selected'] .orbit-hero--large .map-stage { height: clamp(480px, calc(100svh - 320px), 720px); }
   }
+  /* The box's height ride matches the camera flight (850ms, smootherstep in orbits.ts), so
+     the resize and the flight read as one motion instead of two (round 12: the Overview
+     transitions were "very jarring"; moon-to-moon felt smooth — it never resizes the box). */
   @media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
-    .wwm .orbit-hero--large .map-stage { transition: height 0.45s ease; }
+    .wwm .orbit-hero--large .map-stage { transition: height 0.85s cubic-bezier(0.45, 0, 0.55, 1); }
+  }
+  /* Returning to the Overview: the rows and shared sections fade back in instead of popping. */
+  @media (prefers-reduced-motion: no-preference) {
+    .wwm.wwm-returning .wwm-select:not([hidden]),
+    .wwm.wwm-returning [data-wwm-overview]:not([hidden]) { animation: wwm-in 0.35s ease-out; }
   }
   .wwm-fits { list-style: none; margin: 0; padding: 0; }
   .wwm-fits li { padding: 16px 0; border-top: 1px solid var(--line-on-ground); color: var(--on-ground-muted); }
