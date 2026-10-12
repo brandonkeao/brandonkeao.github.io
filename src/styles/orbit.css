@@ -151,6 +151,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .nav-links { display: flex; gap: 30px; align-items: center; font-size: 15px; color: var(--on-ground-muted); list-style: none; margin: 0; padding: 0; }
 .nav-links a:not(.btn):hover, .nav-links a[aria-current='page'] { color: var(--on-ground); }
+/* The current page is marked by more than colour (ticket #17, F-10): an underline that does not
+   change the link's width, in the desktop nav and the phone menu. "Let's talk" is excluded. */
+.nav-links a[aria-current='page']:not(.btn), .mobile-menu li a[aria-current='page'] { text-decoration: underline 1.5px currentColor; text-underline-offset: 6px; }
 .nav-desktop { display: flex; gap: 30px; align-items: center; }
 .menu-btn {
   display: none; font-size: 15px; color: var(--on-ground);
