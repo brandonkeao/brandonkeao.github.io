@@ -32,7 +32,7 @@ import MotionLine from '../components/orbit/MotionLine.astro';
   .contact-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 600px); gap: 56px; align-items: center; padding: 56px var(--gutter) 96px; }
   .contact-layout :global(.contact-sheet) { margin: 0; padding: 32px; }
   @media (max-width: 860px) {
-    .contact-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 16px 0 var(--inset); }
+    .contact-layout { grid-template-columns: minmax(0, 1fr); gap: var(--space-hero-step); padding: 16px 0 var(--inset); }
     .contact-intro { padding: 0 var(--gutter); }
     .contact-layout :global(.contact-sheet) { margin: 0 var(--inset); padding: 20px 16px; }
   }

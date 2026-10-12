@@ -43,13 +43,15 @@
   /* the closing sheet's own top (its bottom adds 8 to balance the button), desktop and phone */
   --space-close: 96px;
   --space-close-sm: 64px;
+  /* hero to the first surface: the step under a page header or a collection stage (ticket #17, F-03) */
+  --space-hero-step: 64px;
 
   --font: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: dark;
 }
 
 @media (max-width: 860px) {
-  :root { --inset: 8px; }
+  :root { --inset: 8px; --space-hero-step: 40px; }
 }
 
 /* ---- base ---------------------------------------------------------------- */
@@ -108,7 +110,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 /* ---- surfaces and layout -------------------------------------------------- */
 .ground-pad { padding-left: var(--gutter); padding-right: var(--gutter); }
-.page-header { padding: 40px var(--gutter) 64px; }
+.page-header { padding: 40px var(--gutter) var(--space-hero-step); }
 .section-ground { padding: var(--space-band) var(--gutter); }
 .sheet {
   background: var(--sheet);
@@ -129,7 +131,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 860px) {
-  .page-header { padding: 16px var(--gutter) 28px; }
+  .page-header { padding: 16px var(--gutter) var(--space-hero-step); }
   .section-ground { padding: var(--space-band-sm) var(--gutter); }
   /* Sheet content sits on the ground's left edge (Home v2 review DS-1, AD-13). */
   .sheet { padding: var(--space-sheet-sm) calc(var(--gutter) - var(--inset)); }

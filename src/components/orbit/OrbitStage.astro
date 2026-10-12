@@ -433,7 +433,7 @@ const poster = scene
 
 <style is:global>
   .orbit-hero { display: grid; grid-template-columns: minmax(360px, 520px) minmax(0, 1fr); gap: 8px; align-items: center; padding: 8px 0 0 var(--gutter); }
-  .orbit-hero--small { grid-template-columns: minmax(0, 1fr) minmax(0, 760px); padding-bottom: 24px; }
+  .orbit-hero--small { grid-template-columns: minmax(0, 1fr) minmax(0, 760px); padding-bottom: var(--space-hero-step); }
   /* Home: a compact copy column so the orbit takes more of the hero. */
   .orbit-hero--xl { grid-template-columns: minmax(320px, 480px) minmax(0, 1fr); }
   .orbit-hero--xl .t-display br { display: block; }
@@ -534,6 +534,7 @@ const poster = scene
     .stage-poster img { bottom: auto; height: 400px; }
     .hero-rest { order: 3; padding: 0 var(--gutter) 32px; }
     .hero-rest > :first-child { margin-top: 8px; }
+    .orbit-hero--small .hero-rest { padding-bottom: var(--space-hero-step); }
     .engagement-dock { position: relative; left: auto; right: auto; bottom: auto; padding: 8px 12px 4px; }
     .engagement-dock--copy { padding: 0; margin-top: 24px; }
     .scene-labels, .label-leaders { display: none; }
