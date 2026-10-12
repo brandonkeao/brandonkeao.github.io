@@ -46,7 +46,7 @@ export const ENGAGEMENTS: Engagement[] = [
       'The work crosses teams and needs someone who can connect the decisions without losing the details.',
       'You need senior judgment and hands-on contribution in the same role.',
     ],
-    takeOn: 'I would work with the team to understand the problem, decide where to focus, and turn that direction into work we can deliver and learn from. That includes customer discovery, product strategy, prioritization and the decisions that come up along the way.',
+    takeOn: 'I would work with the team to understand the problem, decide where to focus, and turn that direction into work we can deliver and learn from. That includes customer discovery, product strategy, prioritization, and the decisions that come up along the way.',
     together: "I'd join your team with ongoing ownership of a product area or initiative. We'd be clear about the outcomes, the decisions I own, and how I work with the people around me. I want to stay involved as the work moves from an idea into something customers can use.",
     evidenceLead: 'Examples of product ownership, cross-functional decisions, and work carried through to delivery.',
     portfolio: [
@@ -88,7 +88,7 @@ export const ENGAGEMENTS: Engagement[] = [
       'You need a clearer picture of performance before making a business decision.',
       'A change crosses functions and needs someone to connect the analysis with the work that follows.',
     ],
-    takeOn: "We'd look at the process, the data and the decisions around the problem. The work might be a focused assessment, a recommendation, or helping your team make and evaluate a change. We'd choose the approach based on what you need to accomplish.",
+    takeOn: "We'd look at the process, the data, and the decisions around the problem. The work might be a focused assessment, a recommendation, or helping your team make and evaluate a change. We'd choose the approach based on what you need to accomplish.",
     together: "We'd start by agreeing on the question, who needs to be involved, and how we'll know whether the work helped. Advisory can mean working through decisions with you. Consulting can include doing the analysis and helping implement the changes. We'll define that responsibility up front.",
     evidenceLead: 'Examples of business analysis, process improvement, and changes that needed several teams to work together.',
     portfolio: [
