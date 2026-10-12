@@ -12,6 +12,7 @@
 // "presses" its chips or its Back button, and watches the chips' aria-pressed and the stage's
 // data-mode to follow selections the visitor makes on the orbit itself.
 import { SETS, type CategoryId, type EngagementSlug } from '../../../lib/orbit/orbit-data';
+import { createEstablish } from './establish';
 
 type Slug = EngagementSlug;
 type Origin = 'init' | 'rows' | 'tabs' | 'stage' | 'restore' | 'history';
@@ -44,6 +45,9 @@ export function initWorkWithMe(): (() => void) | undefined {
   const stage = hero?.querySelector<HTMLElement>('.map-stage[data-orbit="work"]') ?? null;
   const chips = hero ? [...hero.querySelectorAll<HTMLButtonElement>('.engagement-chip[data-id]')] : [];
   const stageBack = hero?.querySelector<HTMLButtonElement>('[data-back]') ?? null;
+  // The selected-state establishing shot (ticket #13, Brandon's Oct 11 direction): the
+  // zoomed-out view of the chosen concept, layered over the orbital stage on desktop.
+  const establish = createEstablish(stage);
 
   let current: Slug | null = null;
   // Where the page last asked the orbit to be; undefined once it is there.
@@ -93,6 +97,7 @@ export function initWorkWithMe(): (() => void) | undefined {
     switcher.hidden = !slug;
     details.forEach((d) => { d.hidden = d.dataset.wwmDetail !== slug; });
     overviewOnly.forEach((el) => { el.hidden = !!slug; });
+    establish.set(slug);
     tabs.forEach((t) => t.setAttribute('aria-pressed', String(t.dataset.wwmTab === slug)));
     // Phones: the tab row scrolls sideways; keep the pressed tab in view (horizontal only).
     const on = tabs.find((t) => t.dataset.wwmTab === slug);
@@ -206,5 +211,6 @@ export function initWorkWithMe(): (() => void) | undefined {
     ctl.abort();
     watch.disconnect();
     switcherSize.disconnect();
+    establish.dispose();
   };
 }

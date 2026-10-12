@@ -540,7 +540,7 @@ export function createFormation(
           { pos: rig(f3, f3.P, -0.2, 0.8, 4.6), look: rig(f3, f3.P, 0.05, 0.4, 0), fov: 38 },
         ];
         // The establishing shot: the looping team under the high copper observer, wide.
-        const E = { pos: rig(f, C, -1.6, 2.0, 8.6), look: C.clone().lerp(V(), 0.5), fov: 42 };
+        const E = { pos: rig(f, C, -1.6, 2.7, 9.8), look: C.clone().lerp(V(), 0.42), fov: 42 };
         return { K, up: head.f.N, E };
       },
     };

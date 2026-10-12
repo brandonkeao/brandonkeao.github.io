@@ -20,9 +20,12 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   <div class="wwm" data-wwm data-state="overview">
     {/* speed matches the Home hero so a moon moves at the same rate on both pages
         (Brandon, 2026-10-09); per-moon variety comes from Kepler periods in orbits.ts. */}
-    {/* Selecting a model keeps the stage orbital (ticket #13): the Formation story below
-        carries the selected-state imagery; the rows stay the canonical path. */}
+    {/* Selecting a model lands on its concept's establishing shot (ticket #13, Brandon's
+        Oct 11 direction): the live Formation scene, zoomed out, layered over the orbital
+        stage on desktop. Phones keep the orbital stage; the story below carries the
+        concept there. The rows stay the canonical path. */}
     <OrbitStage set="work" size="large" controls="stage" speed={2}>
+      <div class="stage-establish" slot="stage" data-establish-host aria-hidden="true"></div>
       <div slot="headline" style="width:fit-content;max-width:100%">
         <h1 class="t-page-title">Work with me</h1>
         <MotionLine kind="align" stretch />
@@ -158,6 +161,31 @@ const lead = 'Bring me into your team full time, work with me on a product outco
      Back remains, and the chips return with the overview. */
   .wwm[data-state='selected'] .orbit-hero [data-steps] { display: none; }
   .wwm[data-state='selected'] .orbit-hero [data-context] span { display: none; }
+
+  /* ---- the establishing shot (ticket #13, round 3) --------------------------------------
+     Desktop only: the layer sits over the orbital scene (z3 also covers the collection
+     labels) under the dock (z4), opaque ground so the async scene never flashes, with the
+     plates' old inset vignette melting its edges into the stage. While it is up, the
+     orbital layers fade out and stop taking clicks. Phones never show it: the phone
+     scene-host is in normal flow and the orbital stage marks the selection itself. */
+  .stage-establish { display: none; }
+  @media (min-width: 861px) {
+    .stage-establish { display: block; position: absolute; inset: 0; z-index: 3; opacity: 0;
+      pointer-events: none; visibility: hidden; background: var(--ground);
+      transition: opacity 0.4s ease, visibility 0s 0.4s; }
+    .stage-establish::after { content: ''; position: absolute; inset: -2px; pointer-events: none;
+      box-shadow: inset 0 0 150px 48px var(--ground); }
+    .stage-establish[data-on] { opacity: 1; visibility: visible; transition: opacity 0.9s ease 0.3s, visibility 0s; }
+    .stage-establish canvas { display: block; width: 100%; height: 100%; opacity: 0; transition: opacity 0.4s ease; }
+    .stage-establish.is-live canvas { opacity: 1; }
+    .map-stage[data-establish] .scene-host,
+    .map-stage[data-establish] .stage-poster img,
+    .map-stage[data-establish] .scene-labels,
+    .map-stage[data-establish] .label-leaders { opacity: 0; transition: opacity 0.7s ease 0.15s; }
+    .map-stage[data-establish] .scene-host,
+    .map-stage[data-establish] .scene-labels { pointer-events: none; visibility: hidden;
+      transition: opacity 0.7s ease 0.15s, visibility 0s 0.9s; }
+  }
 
   /* ---- a selected model's detail -------------------------------------------------------- */
   .wwm-detail-intro { padding-top: var(--space-band-sm); }
