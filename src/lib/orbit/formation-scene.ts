@@ -4,7 +4,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { surfaceMaterial, rustTexture } from './moon-surfaces';
+import { surfaceMaterial, rustTexture, STAGE_GROUND } from './moon-surfaces';
 import { makeCraftKit, RED, IVORY, COPPER_DEEP } from './formation-craft';
 import type { EngagementSlug } from './orbit-data';
 
@@ -40,7 +40,6 @@ export interface FormationHandle {
 const KEY_DIR = new THREE.Vector3(-5.2, 3.4, 3.6).normalize();
 const FILL_DIR = new THREE.Vector3(4, -2.5, 3).normalize();
 const RIM_DIR = new THREE.Vector3(2.6, 1.8, -6).normalize();
-const GROUND = 0x0a0b0a;
 const COPPER = new THREE.Color(0xf0a468); // the rocket hull's emissive (ticket #10 body)
 const PLANET_R = 3.4;
 
@@ -96,10 +95,10 @@ interface Story {
 }
 
 export function createFormation(container: HTMLElement, model: EngagementSlug): FormationHandle {
-  // Transparent canvas (round 7): the story panel sits on the page's own --ground, so the
-  // backgrounds match by construction instead of fighting the tone-mapped clear color.
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setClearColor(GROUND, 0);
+  // Clear color calibrated to tone-map onto the page's --ground (see STAGE_GROUND);
+  // a transparent canvas is not viable — the bloom pass writes black halos over it.
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setClearColor(STAGE_GROUND);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;

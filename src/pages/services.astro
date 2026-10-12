@@ -158,6 +158,12 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm-tab[aria-pressed='true'] { color: var(--on-ground); border-color: var(--accent-on-ground); }
   .wwm-restore { white-space: nowrap; }
 
+  /* While a model is selected, the wide-overview poster never shows (round 9, Brandon:
+     "make the refresh and loading states feel very natural and clean") — a deep-linked or
+     refreshed selected page keeps plain ground until the scene fades in already settled
+     on its moon, instead of flashing the overview still first. */
+  .wwm[data-state='selected'] .orbit-hero .stage-poster { display: none; }
+
   /* ---- a selected model's detail -------------------------------------------------------- */
   /* The chosen model's intro is the page-wide top section under the hero (Brandon,
      2026-10-12 round 7: "the detailed paragraph go the length of the page, so not under

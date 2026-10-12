@@ -196,11 +196,11 @@ const poster = closeup
       if (hadFocus && focused && (focused.hidden || !focused.isConnected || focused.offsetParent === null)) (inWay ? back : chips.find((c) => c.dataset.id === stepsFor) ?? chips[0]).focus();
     }
 
-    function select(id: CategoryId) {
+    function select(id: CategoryId, instant = false) {
       if (!map) { current = id; render(); return; }
       if (mode === 'overview') {
         current = id; mode = 'entering'; token++;
-        map.enter(id, { token, instant: reduced, phase: map.getPhase() });
+        map.enter(id, { token, instant: reduced || instant, phase: map.getPhase() });
       } else if ((mode === 'collection' || mode === 'entering') && id !== current) {
         // Direct switch (Brandon, 2026-10-12 round 7): fly moon-to-moon at full zoom,
         // no out-and-back flight.
@@ -283,8 +283,10 @@ const poster = closeup
         }, undefined, Number(stage.dataset.speed) || 1, framing);
         map.pause(paused);
         map.reduceMotion(reduced);
-        // A choice made before the renderer arrived flies in now.
-        if (current) { const c = current; current = null; select(c); }
+        // A choice made before the renderer arrived settles instantly: a refresh or deep
+        // link lands on the chosen moon with no overview flash (Brandon, 2026-10-12:
+        // "make the refresh and loading states feel very natural and clean").
+        if (current) { const c = current; current = null; select(c, true); }
       } catch {
         fail();
       }
@@ -350,7 +352,7 @@ const poster = closeup
   .stage-poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transition: opacity 0.4s; }
   .map-stage.is-ready .stage-poster img { opacity: 0; }
   .scene-host { position: absolute; inset: 0; z-index: 1; }
-  .scene-host canvas { display: block; width: 100%; height: 100%; }
+  .scene-host canvas { display: block; width: 100%; height: 100%; transition: opacity 0.6s ease; }
   .map-stage:not(.is-ready) .scene-host canvas { opacity: 0; }
 
   [data-pause] i { width: 8px; height: 10px; border-left: 2.5px solid currentColor; border-right: 2.5px solid currentColor; }

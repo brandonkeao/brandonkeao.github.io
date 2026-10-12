@@ -227,6 +227,12 @@ totalEmissiveRadiance+=uMsEmber*msS.glow*(uMsVein+2.4*emph);}`,
   return material;
 }
 
+/** The stages' clear color, calibrated so ACES tone mapping (exposure 1.05) renders it as
+ *  the page's --ground #2b2d29 (Brandon, 2026-10-12: the stage read as "a different black
+ *  than the background on the page"). A transparent canvas is not an option: UnrealBloomPass
+ *  writes black halos over transparent regions. Recalibrate if tone mapping/exposure change. */
+export const STAGE_GROUND = 0x0a0b0a;
+
 /* ---- Shared procedural textures (no external assets) -------------------------------------
    Moved here from map-scene.ts so the story scene (formation-scene.ts) can dress its
    world-scale rust moon without importing the whole map module. */

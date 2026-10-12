@@ -29,7 +29,7 @@ import {
 import { labelBounds, placeLabel, type Rect } from './label-layout';
 import { createPlanet } from './planet';
 import { resolveMoonStyle, SPHERE_RADII, SPHERE_CENTER_RADII } from './moon-style';
-import { surfaceMaterial, valueNoise, dataTexture, rustTexture, type SurfaceUniforms } from './moon-surfaces';
+import { surfaceMaterial, valueNoise, dataTexture, rustTexture, STAGE_GROUND, type SurfaceUniforms } from './moon-surfaces';
 import { attachMicroFormation, type MicroFormation } from './formation-craft';
 
 /**
@@ -180,25 +180,26 @@ export type Framing = { zoom: number; offsetX: number; offsetY: number; maxPixel
 export function createMap(
   host: HTMLElement,
   hooks: Hooks,
-  clearColor = 0x0a0b0a,
+  clearColor = STAGE_GROUND,
   speed = 1,
   framing: Framing = { zoom: 1, offsetX: 0, offsetY: 0, maxPixelRatio: 1.8 },
 ): MapController {
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
-    // Transparent canvas (Brandon, 2026-10-12 round 7: the stage read as a different black
-    // than the page): the page's own --ground shows through, so they match by construction.
-    alpha: true,
+    alpha: false,
     powerPreference: 'high-performance',
   });
-  renderer.setClearColor(clearColor, 0);
+  // Calibrated so the tone-mapped output matches the page ground (see STAGE_GROUND); a
+  // transparent canvas is not viable — the bloom pass writes black halos over it.
+  renderer.setClearColor(clearColor);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, framing.maxPixelRatio));
   const moonScale = framing.moonScale ?? 1;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   host.appendChild(renderer.domElement);
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x0d110c, 0.018);
+  // Fog settles toward the stage ground so distance fades into the page, not into black.
+  scene.fog = new THREE.FogExp2(STAGE_GROUND, 0.018);
   const environmentRoom = new RoomEnvironment();
   const pmrem = new THREE.PMREMGenerator(renderer);
   const environment = pmrem.fromScene(environmentRoom, 0.045);
