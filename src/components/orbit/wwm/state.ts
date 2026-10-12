@@ -39,9 +39,6 @@ export function initWorkWithMe(): (() => void) | undefined {
   const rows = [...root.querySelectorAll<HTMLAnchorElement>('[data-wwm-choose]')];
   const details = [...root.querySelectorAll<HTMLElement>('[data-wwm-detail]')];
   const overviewOnly = [...root.querySelectorAll<HTMLElement>('[data-wwm-overview]')];
-  // The chosen model's intro in the hero copy column (round 6): desktop reads it beside
-  // the moon without scrolling; a media query hides it on phones.
-  const heroIntros = [...root.querySelectorAll<HTMLElement>('[data-wwm-intro]')];
 
   const hero = document.querySelector<HTMLElement>('.orbit-hero');
   const stage = hero?.querySelector<HTMLElement>('.map-stage[data-orbit="work"]') ?? null;
@@ -99,7 +96,6 @@ export function initWorkWithMe(): (() => void) | undefined {
     switcher.hidden = !slug;
     details.forEach((d) => { d.hidden = d.dataset.wwmDetail !== slug; });
     overviewOnly.forEach((el) => { el.hidden = !!slug; });
-    heroIntros.forEach((el) => { el.hidden = el.dataset.wwmIntro !== slug; });
     tabs.forEach((t) => t.setAttribute('aria-pressed', String(t.dataset.wwmTab === slug)));
     // Phones: the tab row scrolls sideways; keep the pressed tab in view (horizontal only).
     const on = tabs.find((t) => t.dataset.wwmTab === slug);

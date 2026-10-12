@@ -201,8 +201,12 @@ const poster = closeup
       if (mode === 'overview') {
         current = id; mode = 'entering'; token++;
         map.enter(id, { token, instant: reduced, phase: map.getPhase() });
-      } else if (mode === 'collection' && id !== current) {
-        pending = id; goBack();
+      } else if ((mode === 'collection' || mode === 'entering') && id !== current) {
+        // Direct switch (Brandon, 2026-10-12 round 7): fly moon-to-moon at full zoom,
+        // no out-and-back flight.
+        if (mode === 'entering') map.completeTransition();
+        current = id; mode = 'entering'; token++;
+        map.switchTo(id, { token, instant: reduced });
       }
       render();
     }

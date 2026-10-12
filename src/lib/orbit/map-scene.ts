@@ -54,6 +54,9 @@ export type MapController = {
   enter(id: CategoryId, o: TransitionOptions & { phase: number }): void;
   /** Fly back to the overview from the current blend. */
   leave(o: TransitionOptions): void;
+  /** Switch straight to another moon at full zoom — no out-and-back flight
+   *  (Brandon, 2026-10-12 round 7). Only valid while a collection is open. */
+  switchTo(id: CategoryId, o: TransitionOptions): void;
   showChildren(): void;
   hideChildren(): void;
   /** Set the overview clock (simulation time) to a snapshotted phase. */
@@ -183,10 +186,12 @@ export function createMap(
 ): MapController {
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
-    alpha: false,
+    // Transparent canvas (Brandon, 2026-10-12 round 7: the stage read as a different black
+    // than the page): the page's own --ground shows through, so they match by construction.
+    alpha: true,
     powerPreference: 'high-performance',
   });
-  renderer.setClearColor(clearColor);
+  renderer.setClearColor(clearColor, 0);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, framing.maxPixelRatio));
   const moonScale = framing.moonScale ?? 1;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -259,6 +264,9 @@ export function createMap(
     moonStyle === 'spheres'
       ? CENTER_SCALES.map((c, i) => (i === 1 ? c : SPHERE_CENTER_RADII[i] / RADII[i]))
       : CENTER_SCALES;
+  // The chosen moon fills a little more of the frame (Brandon, 2026-10-12 round 7:
+  // "increase the zoom on the moons"). Scales the body, so the mission scales with it.
+  const CENTER_ZOOM = 1.25;
   const edgeMaterials: THREE.LineBasicMaterial[] = [];
   function edges(geometry: THREE.BufferGeometry, opacity: number) {
     const material = new THREE.LineBasicMaterial({
@@ -615,8 +623,14 @@ export function createMap(
         a1 = new THREE.Vector3();
       hintTickers.push((t) => {
         // The mission belongs to the focused moon: absent in the wide view, fading in
-        // through the back half of the selection flight (Brandon, 2026-10-12 round 5).
-        const focus = i === selectedIndex ? THREE.MathUtils.smoothstep(blend, 0.45, 0.95) : 0;
+        // through the back half of the selection flight (round 5). During a direct
+        // moon-to-moon switch the old mission hands off to the new one (round 7).
+        const focus =
+          i === selectedIndex
+            ? THREE.MathUtils.smoothstep(blend, 0.45, 0.95) * swapT
+            : swap && i === prevSelected
+              ? 1 - swapT
+              : 0;
         micro.setFade(focus);
         if (focus <= 0.001) return;
         anchor.position.copy(b.position);
@@ -750,6 +764,10 @@ export function createMap(
     disposed = false,
     frame = 0;
   let selectedIndex = 0;
+  // A direct moon-to-moon switch (round 7): the moon being left, and the swap's own clock.
+  let prevSelected = -1;
+  let swap: { started: number; duration: number } | null = null;
+  let swapT = 1;
   const snapshotPositions = moons.map(() => new THREE.Vector3());
   let fatal = false,
     meshHeld = false;
@@ -846,6 +864,28 @@ export function createMap(
   function leave(o: TransitionOptions) {
     category = null;
     startTransition(0, o);
+  }
+  // Direct switch between moons at full zoom (round 7): the camera never moves; the old
+  // moon recedes at the centre while the new one and its mission arrive in its place.
+  function switchTo(id: CategoryId, o: TransitionOptions) {
+    if (transition) completeTransition();
+    held = false;
+    meshHeld = false;
+    prevSelected = selectedIndex;
+    selectedIndex = CATEGORIES.findIndex((c) => c.id === id);
+    category = id;
+    transitionToken = o.token;
+    swap = { started: performance.now(), duration: o.instant || fallback ? 0 : 700 };
+    swapT = 0;
+    if (swap.duration === 0) completeSwap();
+    else wake();
+  }
+  function completeSwap() {
+    swap = null;
+    swapT = 1;
+    prevSelected = -1;
+    settle();
+    wake();
   }
   function settle() {
     updateLabelsText();
@@ -1223,6 +1263,11 @@ export function createMap(
         settle();
       }
     }
+    if (swap) {
+      const t = swap.duration === 0 ? 1 : Math.min(1, (now - swap.started) / swap.duration);
+      swapT = ease(t);
+      if (t >= 1) completeSwap();
+    }
     // Camera follows the level fit.
     pose.distance = THREE.MathUtils.lerp(poses.overview.distance, poses.collection.distance, blend);
     pose.elevation = THREE.MathUtils.lerp(poses.overview.elevation, poses.collection.elevation, blend);
@@ -1255,16 +1300,23 @@ export function createMap(
       else m.position.set(...orbitPosition(ORBITS[i], simT));
       if (blend > 0) {
         if (i === selectedIndex) m.position.lerp(origin, blend);
+        else if (swap && i === prevSelected) m.position.copy(origin);
         else m.position.multiplyScalar(systemScale).add(planet.position);
       }
-      m.visible = i === selectedIndex || systemShown;
+      m.visible = i === selectedIndex || systemShown || (!!swap && i === prevSelected);
       const cue = depthCue(m.position, ORBITS[i].a * 1.05);
       const cueScale = THREE.MathUtils.lerp(cue.scale, 1, blend);
-      m.scale.setScalar(
+      // During a direct switch both moons hold the centre: the old one recedes as the new
+      // one arrives, under the unmoving collection camera.
+      let bodyScale =
         i === selectedIndex
-          ? cueScale * THREE.MathUtils.lerp(moonScale, 1, blend) + blend * (CENTER[i] - 1)
-          : systemScale * cueScale * moonScale,
-      );
+          ? cueScale * THREE.MathUtils.lerp(moonScale, 1, blend) + blend * (CENTER[i] * CENTER_ZOOM - 1)
+          : systemScale * cueScale * moonScale;
+      if (swap) {
+        if (i === selectedIndex) bodyScale *= swapT;
+        else if (i === prevSelected) bodyScale = CENTER[i] * CENTER_ZOOM * (1 - swapT);
+      }
+      m.scale.setScalar(bodyScale);
       if (m.userData.vessel) {
         // Flight attitude: nose along the orbit's velocity, with a slight bank. Frozen while
         // a zoom transition holds the body (position is lerped then, so headings would lie).
@@ -1413,6 +1465,7 @@ export function createMap(
   return {
     enter,
     leave,
+    switchTo,
     showChildren() {
       childrenShown = true;
       wake();

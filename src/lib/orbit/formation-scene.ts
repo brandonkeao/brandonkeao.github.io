@@ -96,8 +96,10 @@ interface Story {
 }
 
 export function createFormation(container: HTMLElement, model: EngagementSlug): FormationHandle {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-  renderer.setClearColor(GROUND);
+  // Transparent canvas (round 7): the story panel sits on the page's own --ground, so the
+  // backgrounds match by construction instead of fighting the tone-mapped clear color.
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer.setClearColor(GROUND, 0);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -450,10 +452,10 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
     const RA = 3.95,
       RE = 3.64,
       W = TAU / 60,
-      // Softer loops: busy, not farcical — the friction is the process's, not the team's
-      // (review round 1, PM).
-      RHO = 0.24,
-      OMEGA = 2.4;
+      // A lazy, legible wander (Brandon, 2026-10-12: "keep the looping but" without "the
+      // jagged and random turns" — a group flying around, not really going in a direction).
+      RHO = 0.3,
+      OMEGA = 1.1;
     const SL = [
       [0, 0, 0],
       [-0.17, 0.07, 0.12],
@@ -468,16 +470,27 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
     }));
     const obs = { light: craft(COPPER_DEEP, 0.21, 2.9, true), tr: trail(1.6) };
     const OBS_OFF: [number, number, number] = [0.35, 1.25, 0]; // Brandon: a higher orbit, just ahead, in the same plane
-    const sight = trail(1.1),
+    // The perspective reaches the whole team, not one craft (Brandon, 2026-10-12).
+    const sights = SL.map(() => trail(1.0)),
       plan = trail(1.3);
-    /** Formation centre at orbit time s. `go` straightens the loops (0 = circling, 1 = clean);
+    /** Formation centre at orbit time s. `go` straightens the loops (0 = wandering, 1 = clean);
      *  `dv` takes it down into the atmosphere. Returns the local frame too. */
     const centre = (s: number, go: number, dv: number) => {
       const d = ss(0, 1, dv),
         f = frame(W * s + 0.45 * d, mix(RA, RE, d));
       const amt = RHO * (1 - ss(0, 1, go)),
         ph = OMEGA * s;
-      return { f, P: at(f, amt * Math.sin(ph), amt * (1 - Math.cos(ph)), 0) }; // loop-the-loops: busy, going in circles
+      // A slow three-axis weave: the group drifts through gentle loops in different
+      // directions, with incommensurate frequencies so it never repeats or kinks.
+      return {
+        f,
+        P: at(
+          f,
+          amt * Math.sin(ph),
+          amt * 0.8 * (1 - Math.cos(ph * 0.85)),
+          amt * 0.7 * Math.sin(ph * 0.6 + 1.2),
+        ),
+      };
     };
     return {
       update(p, t) {
@@ -489,6 +502,7 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
           ds = 0.05,
           dg = 0.01;
         const hist = (i: number) => [clamp(go - i * dg), clamp(dive - i * dg)];
+        const heads: THREE.Vector3[] = [];
         for (const k of team) {
           const pts = [];
           for (let i = 0; i < N; i++) {
@@ -503,6 +517,7 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
               c.P.clone().addScaledVector(T, k.slot[0]).addScaledVector(Nv, k.slot[1]).addScaledVector(Bv, k.slot[2]),
             );
           }
+          heads.push(pts[0]);
           place(k.light, pts);
           const h = setSheath(k.sh, pts);
           k.light.setOpacity(0.72 + 0.28 * ss(0.2, 0.4, p));
@@ -518,17 +533,18 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
           place(obs.light, pts);
           setTrail(obs.tr, pts, RED, 0.7);
         }
-        // the perspective: a sight line down to the team, then a clean line ahead of them, drawn on
-        const head = centre(t, go, dive),
-          mid = head.P;
-        // The sight line thins but never leaves: through the final hold it still points at
-        // the team it is checking on (review round 1 — "whether the work helped").
+        // the perspective: sight lines down to the whole team (Brandon, 2026-10-12 — the
+        // signal reaches everyone, not one craft), then a clean line ahead of them, drawn on
+        const head = centre(t, go, dive);
+        // The sight lines thin but never leave: through the final hold they still point at
+        // the team they are checking on (review round 1 — "whether the work helped").
         const look = scan * (1 - 0.72 * ss(0.66, 0.8, p));
-        {
+        sights.forEach((sight, si) => {
+          const target = heads[si] ?? head.P;
           const pts = [];
-          for (let i = 0; i <= 24; i++) pts.push(O.clone().lerp(mid, i / 24));
-          setTrail(sight, pts.reverse(), IVORY, 0.55 * look, 0.2);
-        }
+          for (let i = 0; i <= 24; i++) pts.push(O.clone().lerp(target, i / 24));
+          setTrail(sight, pts.reverse(), IVORY, 0.4 * look, 0.2);
+        });
         {
           const pts = [],
             A = 0.9 * draw,
