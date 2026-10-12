@@ -111,6 +111,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ---- surfaces and layout -------------------------------------------------- */
 .ground-pad { padding-left: var(--gutter); padding-right: var(--gutter); }
 .page-header { padding: 40px var(--gutter) var(--space-hero-step); }
+/* The lead under a page header's h1 (ticket #17, F-08). */
+.page-lead { margin-top: 20px; }
 .section-ground { padding: var(--space-band) var(--gutter); }
 .sheet {
   background: var(--sheet);
