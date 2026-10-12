@@ -11,11 +11,11 @@ import MotionLine from '../MotionLine.astro';
 import type { CollectionKind } from '../../../lib/orbit/collection-scene';
 import './collection.css';
 
-interface Props { title: string; lead: string; body: string; note: string; scene?: CollectionKind }
+interface Props { title: string; lead: string; body: string; note: string; scene: CollectionKind }
 const { title, lead, body, note, scene } = Astro.props;
 ---
 
-<OrbitStage {...(scene ? { scene } : { set: 'home' as const, speed: 2 })} size="small" controls="none">
+<OrbitStage scene={scene} size="small">
   <div slot="headline" style="width:fit-content;max-width:100%">
     <h1 id="cl-hero-title" class="t-page-title">{title}</h1>
     <MotionLine kind="align" stretch />

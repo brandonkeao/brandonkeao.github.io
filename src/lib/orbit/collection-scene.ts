@@ -102,7 +102,9 @@ interface Stage {
   /** Camera position and target, as framed in the study. */
   look: { pos: THREE.Vector3; target: THREE.Vector3 };
 }
-type Build = (s: Stage) => { tick(t: number): void; t0: number; poster: number };
+/** `t0`: the clock at load (records already laid); `poster`: the settled frame's clock;
+ *  `narrowZoom`: extra zoom on phone-shaped boxes where the figure has room to spare. */
+type Build = (s: Stage) => { tick(t: number): void; t0: number; poster: number; narrowZoom?: number };
 
 /** A formation: lead + wingmen, offsets (along, side) in units of the craft spacing. */
 const WEDGE: [number, number][] = [[0, 0], [-1, -1], [-1, 1], [-2, 0]];
@@ -217,7 +219,9 @@ const maneuver: Build = (s) => {
   const pts: THREE.Vector3[] = [];
   return {
     t0: 6.2,
-    poster: 7.5,
+    poster: 10.2, // the copper craft coasting outside, the ivory craft at its first burn
+    // The route spans ~65% of a phone-width box at the study's framing; 1.2 keeps it inside.
+    narrowZoom: 1.2,
     tick(t) {
       planet.update(t, 0, 0, 1, 1);
       for (const f of fliers) {
@@ -431,7 +435,7 @@ export function createCollectionScene(
     feather.uniforms.uSoft.value = 40 * pr;
     camera.aspect = w / h;
     // Keep the study's horizontal extent in narrower boxes (taller desktop stages, phones).
-    const k = Math.max(1, DESIGN_ASPECT / camera.aspect);
+    const k = Math.max(1, DESIGN_ASPECT / camera.aspect) / (camera.aspect < 1.1 ? build.narrowZoom ?? 1 : 1);
     camera.fov = (2 * Math.atan(Math.tan((BASE_FOV * Math.PI) / 360) * k) * 180) / Math.PI;
     camera.updateProjectionMatrix();
     if (!running) draw();
