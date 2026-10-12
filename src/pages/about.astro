@@ -107,8 +107,10 @@ import MotionLine from '../components/orbit/MotionLine.astro';
   .about-link { margin-top: 24px; padding-left: 320px; }
   .about-sheet .divider-list > :first-child { border-top: 0; padding-top: 0; }
   @media (max-width: 860px) {
-    .about-head { display: block; }
-    .about-head .portrait { width: 120px; height: 120px; margin-bottom: 20px; }
+    /* Phones: the portrait floats right of the title as Home's About band does, so the h1 starts
+       where every other page's does (ticket #17, F-09). */
+    .about-head { display: flow-root; }
+    .about-head .portrait { float: right; width: 104px; height: 104px; margin: 4px 0 12px 16px; }
     .about-link { padding-left: 0; }
     .about-process { grid-template-columns: minmax(0, 1fr); row-gap: 24px; padding-top: 0; padding-bottom: var(--space-band-sm); }
     .about-process-head, .about-steps { grid-column: 1 / -1; }
