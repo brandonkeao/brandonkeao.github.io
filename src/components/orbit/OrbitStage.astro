@@ -253,7 +253,9 @@ const poster = closeup
           onItem: (item) => navigate(item.href),
           onSettled(t) {
             if (t !== token || !map) return;
-            if (mode === 'entering') { mode = 'collection'; map.showChildren(); }
+            // The selected view shows only the moon and its mission formation (Brandon,
+            // 2026-10-12: "remove the extra moons"); the child moons stay retired.
+            if (mode === 'entering') mode = 'collection';
             else if (mode === 'leaving') {
               mode = 'overview'; current = null;
               if (pending) { const p = pending; pending = null; render(); select(p); return; }

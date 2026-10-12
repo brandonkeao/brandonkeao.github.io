@@ -30,7 +30,7 @@ import {
 import { labelBounds, placeLabel, type Rect } from './label-layout';
 import { createPlanet } from './planet';
 import { resolveMoonStyle, SPHERE_RADII, SPHERE_CENTER_RADII } from './moon-style';
-import { surfaceMaterial, type SurfaceUniforms } from './moon-surfaces';
+import { surfaceMaterial, valueNoise, dataTexture, rustTexture, type SurfaceUniforms } from './moon-surfaces';
 import { attachMicroFormation, type MicroFormation } from './formation-craft';
 
 /**
@@ -158,74 +158,13 @@ function pathMaterial() {
   });
 }
 
-// ---- Procedural textures (no external assets) -----------------------------
-function valueNoise(seed: number) {
-  const h = (x: number, y: number, z: number) => {
-    let n = (x * 374761393 + y * 668265263 + z * 2147483647 + seed) | 0;
-    n = (n ^ (n >>> 13)) * 1274126177;
-    return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
-  };
-  const s = (t: number) => t * t * (3 - 2 * t);
-  return (x: number, y: number, z: number) => {
-    const xi = Math.floor(x),
-      yi = Math.floor(y),
-      zi = Math.floor(z);
-    const fx = s(x - xi),
-      fy = s(y - yi),
-      fz = s(z - zi);
-    const l = (a: number, b: number, t: number) => a + (b - a) * t;
-    const c = (dx: number, dy: number, dz: number) =>
-      h(xi + dx, yi + dy, zi + dz);
-    return l(
-      l(l(c(0, 0, 0), c(1, 0, 0), fx), l(c(0, 1, 0), c(1, 1, 0), fx), fy),
-      l(l(c(0, 0, 1), c(1, 0, 1), fx), l(c(0, 1, 1), c(1, 1, 1), fx), fy),
-      fz,
-    );
-  };
-}
-function dataTexture(w: number, h: number, fn: (u: number, v: number) => number) {
-  const data = new Uint8Array(w * h * 4);
-  for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++) {
-      const k = Math.max(0, Math.min(255, Math.round(fn(x / w, y / h) * 255)));
-      const i = (y * w + x) * 4;
-      data[i] = data[i + 1] = data[i + 2] = k;
-      data[i + 3] = 255;
-    }
-  const tex = new THREE.DataTexture(data, w, h);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.magFilter = THREE.LinearFilter;
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
-  tex.generateMipmaps = true;
-  tex.needsUpdate = true;
-  return tex;
-}
+// ---- Procedural textures (shared helpers live in moon-surfaces.ts) --------
 /** Brushed graphite: fine streaks along one axis, used as roughness. */
 function brushedTexture() {
   const n = valueNoise(17);
   return dataTexture(256, 256, (u, v) => {
     const streak = n(u * 3, v * 180, 0.5) * 0.6 + n(u * 9, v * 420, 3.1) * 0.4;
     return 0.34 + streak * 0.3;
-  });
-}
-/** Rust: seamless spherical fbm sampled on the unit sphere (equirect UVs). */
-function rustTexture() {
-  const n = valueNoise(91);
-  return dataTexture(512, 256, (u, v) => {
-    const th = u * Math.PI * 2,
-      ph = v * Math.PI;
-    const x = Math.sin(ph) * Math.cos(th),
-      y = Math.cos(ph),
-      z = Math.sin(ph) * Math.sin(th);
-    let a = 0.5,
-      f = 4,
-      s = 0;
-    for (let i = 0; i < 5; i++) {
-      s += a * n(x * f + 11, y * f + 3, z * f + 7);
-      f *= 2.1;
-      a *= 0.5;
-    }
-    return Math.min(1, Math.max(0, (s - 0.5) * 1.8 + 0.5));
   });
 }
 
@@ -401,19 +340,19 @@ export function createMap(
     return mesh;
   }
   /**
-   * The Fractional body is the rocket ship (Brandon, 2026-10-09: "I love the rocket" →
-   * default on both stages). Built from primitives in the rust/copper family; bounding size
-   * matches the old rust moon so orbits, labels, depth cues and zoom scales hold. Its nose
-   * follows the orbit (set per frame); the rust descending-vessel hint stays retired since
-   * the body is the vessel. `?body=moon` restores the moon for comparison.
+   * All three bucket anchors are moons (Brandon, 2026-10-12: "the different moons are the
+   * different work buckets and each formation around each moon is different because each
+   * moon is a different mission"); Fractional returns to the rust moon and the rocket idiom
+   * lives on as the copper guide in its formation. `?body=vessel` restores the rocket
+   * (Brandon's Oct 9 pick, superseded for the stages) for comparison.
    */
-  const vesselMode = !(typeof location !== 'undefined' && new URLSearchParams(location.search).get('body') === 'moon');
+  const vesselMode = typeof location !== 'undefined' && new URLSearchParams(location.search).get('body') === 'vessel';
   /**
-   * The engagement buckets fly as micro-formation vignettes (ticket #13, Brandon's Oct 11
-   * direction; extended to Home the same day): the row with its copper middle, the climbing
-   * wedge with the guide on its wing, the loops under the observer. Each bucket's real body
-   * is an invisible proxy sphere, so raycasts, labels, glow/haze and the camera fit keep
-   * working on a Mesh of the same bounding radius. `?buckets=plain` restores the old bodies.
+   * Each engagement moon carries its mission as a live micro-formation flying around it
+   * (ticket #13, Brandon's Oct 12 direction): the row sweeping its circuit, the wedge
+   * climbing its spiral with the guide off its wing, the loops under the high observer.
+   * The moons stay visible — the formations ride identity-rotation anchor groups that
+   * follow each body. `?buckets=plain` restores the plain bodies with their old hints.
    */
   const microFormations = !(typeof location !== 'undefined' && new URLSearchParams(location.search).get('buckets') === 'plain');
   function vesselBody(): THREE.Mesh {
@@ -468,15 +407,6 @@ export function createMap(
     return hull;
   }
   function body(index: number, scale = 1) {
-    if (microFormations && scale === 1) {
-      const proxy = new THREE.Mesh(
-        new THREE.SphereGeometry(RADII[index], 16, 12),
-        new THREE.MeshPhysicalMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false, emissiveIntensity: 0 }),
-      );
-      proxy.userData.vignette = true;
-      proxy.userData.envBase = 0;
-      return proxy;
-    }
     if (index === 1 && scale === 1 && vesselMode) {
       const mesh = vesselBody();
       (mesh.material as THREE.MeshPhysicalMaterial).envMapIntensity = 0.7;
@@ -662,22 +592,35 @@ export function createMap(
   }
 
   const micros: MicroFormation[] = [];
+  const microAnchors: THREE.Group[] = [];
+  // The formations fly on their own clock: simT freezes while a model is selected (childT
+  // runs instead), but the selected moon's mission must keep flying in the zoomed view.
+  // microT only advances when the stage is moving, so Pause and reduced motion freeze it.
+  let microT = 0;
   const moons = CATEGORIES.map((c, i) => {
     const b = body(i);
     b.userData.category = c.id;
     if (microFormations) {
-      // The vignette is the bucket's whole treatment; the old hints retire with the bodies.
-      const micro = attachMicroFormation(b, camera, i as 0 | 1 | 2, RADII[i]);
+      // The mission flies around the visible moon. The craft kit needs an identity-rotation,
+      // uniform-scale parent and the bodies tumble (or bank, in vessel mode), so each
+      // formation rides its own anchor, synced to the moon's position and scale every frame
+      // after the moon transforms settle — including the selection flight to the centre.
+      const anchor = new THREE.Group();
+      scene.add(anchor);
+      microAnchors.push(anchor);
+      const micro = attachMicroFormation(anchor, camera, i as 0 | 1 | 2, RADII[i]);
       micros.push(micro);
       const dir = new THREE.Vector3(0, 0, 1);
       const a0 = new THREE.Vector3(),
         a1 = new THREE.Vector3();
       hintTickers.push((t) => {
+        anchor.position.copy(b.position);
+        anchor.scale.setScalar(b.scale.x);
         a0.set(...orbitPosition(ORBITS[i], t));
         a1.set(...orbitPosition(ORBITS[i], t + 0.4));
         a1.sub(a0);
         if (a1.lengthSq() > 1e-9) dir.copy(a1.normalize());
-        micro.tick(t, dir);
+        micro.tick(microT, dir);
       });
     } else if (!(i === 1 && vesselMode)) attachHints(b, i);
     scene.add(b);
@@ -1093,7 +1036,9 @@ export function createMap(
     });
     labelButtons.forEach((l) => {
       const { el, index } = l;
-      if (transition || fallback || (category && empty)) return hideLabel(l);
+      // No labels in the selected view: the child moons are retired (Brandon, 2026-10-12)
+      // and the moon's name is carried by the page, not the stage.
+      if (transition || fallback || category) return hideLabel(l);
       const { mesh, world, s, radiusPx } = bodies[index];
       if (!l.full.w) measureLabels();
       const result = placeLabel({
@@ -1132,7 +1077,7 @@ export function createMap(
     });
   }
   function pointerHit(e: MouseEvent) {
-    if (category && empty) return -1;
+    if (category) return -1; // the selected view has no child targets (retired 2026-10-12)
     const rect = host.getBoundingClientRect();
     pointer.set(
       ((e.clientX - rect.left) / rect.width) * 2 - 1,
@@ -1260,6 +1205,8 @@ export function createMap(
       if (category) childT += dt * speed;
       else simT += dt * speed;
     }
+    // Missions keep flying through the selection flight and in the zoomed view.
+    if (moving) microT += dt * speed;
     if (transition) {
       const t =
         transition.duration === 0
@@ -1316,7 +1263,7 @@ export function createMap(
           m.lookAt(vesselAhead);
           m.rotateZ(0.35);
         }
-      } else if (!m.userData.vignette) {
+      } else {
         m.rotation.x = 0.3 + simT * 0.045;
         m.rotation.y = 0.5 + simT * 0.1;
       }
@@ -1346,7 +1293,7 @@ export function createMap(
     host.dataset.childrenVisible = String(childGroup.visible);
     host.dataset.speaking = String(envelopeIn > 0.002);
     host.dataset.speechEnvelope = String(speechEnvelope);
-    children.forEach((m, i) => {
+    if (childGroup.visible) children.forEach((m, i) => {
       m.position.set(...orbitPosition(CHILD_ORBITS[i], childT));
       m.scale.setScalar(CHILD_SCALE * depthCue(m.position, CHILD_ORBITS[i].a * 1.05).scale);
       m.rotation.y = childT * 0.1 + i;
@@ -1519,6 +1466,7 @@ export function createMap(
       renderer.domElement.removeEventListener('click', pointerClick);
       renderer.domElement.removeEventListener('webglcontextlost', contextLost);
       micros.forEach((mf) => mf.dispose());
+      microAnchors.forEach((a) => a.removeFromParent());
       scene.traverse((obj) => {
         const m = obj as THREE.Mesh;
         m.geometry?.dispose();

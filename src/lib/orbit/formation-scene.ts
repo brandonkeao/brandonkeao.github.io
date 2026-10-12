@@ -4,17 +4,19 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createPlanet } from './planet';
+import { surfaceMaterial, rustTexture } from './moon-surfaces';
 import { makeCraftKit, RED, IVORY, COPPER_DEEP } from './formation-craft';
 import type { EngagementSlug } from './orbit-data';
 
 /**
- * Formation (ticket #13): the engagement story told live over the hero planet.
+ * Formation (ticket #13): the engagement story told live around the model's own moon
+ * (Brandon, 2026-10-12: each moon is a work bucket, each formation its mission — the
+ * story plays at the moon, not the planet).
  *
  * The team is a formation of ivory chevron craft with red motion trails; Brandon is the
  * copper one. The three models differ by where he sits — inside (Full time), alongside
  * (Fractional), above (Advisory) — and every story ends with the team flying down into
- * the planet's atmosphere for its mission. Accepted in Brandon OS
+ * the moon's atmosphere for its mission. Accepted in Brandon OS
  * `analysis/2026-10-10-imagery-reset/STORY_CONTRACT.md` (study reviews 1–2); this is the
  * study's final choreography, ported verbatim from the scene lab's `formation.html`.
  *
@@ -26,20 +28,13 @@ import type { EngagementSlug } from './orbit-data';
  */
 
 export interface FormationHandle {
-  /** Story progress 0..1 (the reading line across the three beats); smoothed internally.
-   *  A no-op in the establish view, which holds its own progress. */
+  /** Story progress 0..1 (the reading line across the three beats); smoothed internally. */
   setProgress(p: number): void;
   /** Host-driven hold (the stage's Pause control); offscreen pausing is automatic. */
   pause(v: boolean): void;
   resize(): void;
   dispose(): void;
 }
-
-/** 'story' scrubs the three beats by scroll; 'establish' is the selected-state hero shot:
- *  a wider fourth camera on the beat-1 tableau, progress held just past the arrival gates
- *  so the copper craft is present, with the orbit clock free-running. */
-export type FormationView = 'story' | 'establish';
-const ESTABLISH_P: Record<EngagementSlug, number> = { 'full-time': 0.12, fractional: 0.12, advisory: 0.1 };
 
 /* ---- render profile (map-scene.ts values; the lab's `formation.html` header) ---- */
 const KEY_DIR = new THREE.Vector3(-5.2, 3.4, 3.6).normalize();
@@ -97,15 +92,10 @@ interface CamKey {
   fov: number;
 }
 interface Story {
-  update(p: number, t: number): { K: CamKey[]; up: THREE.Vector3; E: CamKey };
+  update(p: number, t: number): { K: CamKey[]; up: THREE.Vector3 };
 }
 
-export function createFormation(
-  container: HTMLElement,
-  model: EngagementSlug,
-  opts?: { view?: FormationView },
-): FormationHandle {
-  const view: FormationView = opts?.view ?? 'story';
+export function createFormation(container: HTMLElement, model: EngagementSlug): FormationHandle {
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setClearColor(GROUND);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
@@ -161,14 +151,38 @@ export function createFormation(
     return { g, m };
   })();
 
-  // The hero planet, unchanged.
-  const planet = createPlanet({ radius: PLANET_R, lights: { key: KEY_DIR, fill: FILL_DIR, rim: RIM_DIR } });
-  scene.add(planet.group);
-
   /* ---- primitives: the shared craft kit, plus this scene's entry sheaths ---- */
   const kit = makeCraftKit(scene, camera);
   const { craft, place, orientCrafts, trail, setTrail, staticLine, glowTex, lineMats } = kit;
   const ADD = THREE.AdditiveBlending;
+
+  // The story's world is the model's own moon (Brandon, 2026-10-12: "we need the moons at
+  // play, not the plannet … each moon is a different mission"), dressed as the stage's
+  // bodies — basalt for Full time, rust for Fractional, ivory for Advisory — at the old
+  // planet radius, so every rig, orbit, entry path and heat threshold holds unchanged.
+  const rustTex = model === 'fractional' ? rustTexture() : null;
+  const moonMat = rustTex
+    ? new THREE.MeshPhysicalMaterial({
+        color: 0x6c2d17, metalness: 0.1, roughness: 0.66, roughnessMap: rustTex, bumpMap: rustTex,
+        bumpScale: 3, clearcoat: 0.08, clearcoatRoughness: 0.6, emissive: 0x8b3512, emissiveIntensity: 0,
+      })
+    : surfaceMaterial(model === 'full-time' ? 'basalt' : 'ivory', PLANET_R, {
+        clearcoat: model === 'full-time' ? 0.12 : 0.04,
+        clearcoatRoughness: model === 'full-time' ? 0.45 : 0.7,
+        emissive: 0x8b3512,
+        emissiveIntensity: 0,
+      });
+  const moonGeo = new THREE.SphereGeometry(PLANET_R, 128, 96);
+  const moon = new THREE.Mesh(moonGeo, moonMat);
+  moon.rotation.set(0.3, 0.5, 0.15);
+  scene.add(moon);
+  // A soft warm limb so the entry beats still read against an atmosphere.
+  const atmo = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: glowTex, color: new THREE.Color(0xd98a4f).multiplyScalar(0.55),
+    transparent: true, opacity: 0.5, depthWrite: false, blending: ADD,
+  }));
+  atmo.scale.setScalar(PLANET_R * 2.75);
+  scene.add(atmo);
 
   /** Hot sheath on the leading edge of a craft entering the atmosphere. */
   function sheath(size = 0.2) {
@@ -302,10 +316,7 @@ export function createFormation(
           { pos: rig(f, F0, -2.6, 1.3, 1.1), look: rig(f, F0, 0.4, -0.1, 0.1), fov: 33 },
           { pos: rig(fd, F, -3.0, 1.5, 2.4), look: rig(fd, F, 1.4, -0.7, 0.2), fov: 38 },
         ];
-        // The establishing shot: the row with its gap and the arriving copper craft, pulled
-        // back far enough that the planet's disc grounds the frame.
-        const E = { pos: rig(f, F0, -7.0, 3.6, 6.4), look: F0.clone().lerp(V(), 0.55), fov: 44 };
-        return { K, up: fd.N, E };
+        return { K, up: fd.N };
       },
     };
   }
@@ -429,9 +440,7 @@ export function createFormation(
           { pos: rig(f, Fm, -1.6, 0.6, 7.2), look: rig(f, F, 0.2, 0.4 * (R2 - r), 0.0), fov: 35 },
           { pos: rig(f, F, -4.2, 2.6, 8.2), look: rig(f, F, 1.2, 0.5, 0), fov: 36 },
         ];
-        // The establishing shot: the low-orbit team with the rocket on its wing, wide.
-        const E = { pos: rig(f, Fm, -4.5, 2.2, 10.5), look: Fm.clone().lerp(V(), 0.5), fov: 42 };
-        return { K, up: f.N, E };
+        return { K, up: f.N };
       },
     };
   }
@@ -539,9 +548,7 @@ export function createFormation(
           // held still: the team visibly drops into the glow
           { pos: rig(f3, f3.P, -0.2, 0.8, 4.6), look: rig(f3, f3.P, 0.05, 0.4, 0), fov: 38 },
         ];
-        // The establishing shot: the looping team under the high copper observer, wide.
-        const E = { pos: rig(f, C, -1.6, 2.7, 9.8), look: C.clone().lerp(V(), 0.42), fov: 42 };
-        return { K, up: head.f.N, E };
+        return { K, up: head.f.N };
       },
     };
   }
@@ -557,7 +564,7 @@ export function createFormation(
   let t = 24; // the study's reference clock start; advanced only while running
   let last = 0;
   let hostPaused = false;
-  let pTarget = view === 'establish' ? ESTABLISH_P[model] : 0,
+  let pTarget = 0,
     pS = 0,
     first = true;
   const camPos = V(),
@@ -570,20 +577,12 @@ export function createFormation(
     last = now;
     t += dt;
     pS = first ? pTarget : pS + (pTarget - pS) * (1 - Math.exp(-dt / 0.14));
-    planet.update(t, 0, 0, 1, 0.45);
-    const { K, up, E } = story.update(pS, t);
-    let pos: THREE.Vector3, look: THREE.Vector3, fov: number;
-    if (view === 'establish') {
-      // One wide rig, recomputed each frame so the camera rides the free-running orbit.
-      pos = E.pos;
-      look = E.look;
-      fov = E.fov;
-    } else {
-      const { i, f } = beatMix(pS);
-      pos = K[i].pos.clone().lerp(K[i + 1].pos, f);
-      look = K[i].look.clone().lerp(K[i + 1].look, f);
-      fov = mix(K[i].fov, K[i + 1].fov, f);
-    }
+    moon.rotation.y = 0.5 + t * 0.012; // a slow turn; the craft carry the motion
+    const { K, up } = story.update(pS, t);
+    const { i, f } = beatMix(pS);
+    const pos = K[i].pos.clone().lerp(K[i + 1].pos, f);
+    const look = K[i].look.clone().lerp(K[i + 1].look, f);
+    const fov = mix(K[i].fov, K[i + 1].fov, f);
     const k = first ? 1 : 1 - Math.exp(-dt / 0.18);
     camPos.lerp(pos, k);
     camLook.lerp(look, k);
@@ -643,7 +642,7 @@ export function createFormation(
 
   return {
     setProgress(p) {
-      if (view === 'story') pTarget = clamp(p);
+      pTarget = clamp(p);
     },
     pause(v) {
       hostPaused = v;
@@ -664,7 +663,10 @@ export function createFormation(
         if (Array.isArray(m)) m.forEach((x) => x.dispose());
         else m?.dispose();
       });
-      planet.dispose();
+      moonGeo.dispose();
+      moonMat.dispose();
+      rustTex?.dispose();
+      atmo.material.dispose();
       dust.g.dispose();
       dust.m.dispose();
       kit.dispose();

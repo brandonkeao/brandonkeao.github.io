@@ -226,3 +226,67 @@ totalEmissiveRadiance+=uMsEmber*msS.glow*(uMsVein+2.4*emph);}`,
   };
   return material;
 }
+
+/* ---- Shared procedural textures (no external assets) -------------------------------------
+   Moved here from map-scene.ts so the story scene (formation-scene.ts) can dress its
+   world-scale rust moon without importing the whole map module. */
+export function valueNoise(seed: number) {
+  const h = (x: number, y: number, z: number) => {
+    let n = (x * 374761393 + y * 668265263 + z * 2147483647 + seed) | 0;
+    n = (n ^ (n >>> 13)) * 1274126177;
+    return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
+  };
+  const s = (t: number) => t * t * (3 - 2 * t);
+  return (x: number, y: number, z: number) => {
+    const xi = Math.floor(x),
+      yi = Math.floor(y),
+      zi = Math.floor(z);
+    const fx = s(x - xi),
+      fy = s(y - yi),
+      fz = s(z - zi);
+    const l = (a: number, b: number, t: number) => a + (b - a) * t;
+    const c = (dx: number, dy: number, dz: number) => h(xi + dx, yi + dy, zi + dz);
+    return l(
+      l(l(c(0, 0, 0), c(1, 0, 0), fx), l(c(0, 1, 0), c(1, 1, 0), fx), fy),
+      l(l(c(0, 0, 1), c(1, 0, 1), fx), l(c(0, 1, 1), c(1, 1, 1), fx), fy),
+      fz,
+    );
+  };
+}
+export function dataTexture(w: number, h: number, fn: (u: number, v: number) => number) {
+  const data = new Uint8Array(w * h * 4);
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const k = Math.max(0, Math.min(255, Math.round(fn(x / w, y / h) * 255)));
+      const i = (y * w + x) * 4;
+      data[i] = data[i + 1] = data[i + 2] = k;
+      data[i + 3] = 255;
+    }
+  const tex = new THREE.DataTexture(data, w, h);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
+  tex.needsUpdate = true;
+  return tex;
+}
+/** Rust: seamless spherical fbm sampled on the unit sphere (equirect UVs). */
+export function rustTexture() {
+  const n = valueNoise(91);
+  return dataTexture(512, 256, (u, v) => {
+    const th = u * Math.PI * 2,
+      ph = v * Math.PI;
+    const x = Math.sin(ph) * Math.cos(th),
+      y = Math.cos(ph),
+      z = Math.sin(ph) * Math.sin(th);
+    let a = 0.5,
+      f = 4,
+      s = 0;
+    for (let i = 0; i < 5; i++) {
+      s += a * n(x * f + 11, y * f + 3, z * f + 7);
+      f *= 2.1;
+      a *= 0.5;
+    }
+    return Math.min(1, Math.max(0, (s - 0.5) * 1.8 + 0.5));
+  });
+}
