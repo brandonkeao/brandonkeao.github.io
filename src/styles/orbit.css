@@ -40,6 +40,9 @@
   /* content sheets (inner pages, collection lists): the sheet's own top and bottom */
   --space-sheet: 72px;
   --space-sheet-sm: 40px;
+  /* the closing sheet's own top (its bottom adds 8 to balance the button), desktop and phone */
+  --space-close: 96px;
+  --space-close-sm: 64px;
 
   --font: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: dark;
@@ -248,3 +251,23 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ---- closing band --------------------------------------------------------- */
 .closing { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
 .closing h2 { max-width: 820px; }
+
+/* ---- closing sheet (ClosingSheet.astro) ------------------------------------ */
+/* One white sheet ends Home, Work with me (overview and each detail), Portfolio and Playbooks:
+   eyebrow, title, one brand-red button. Home's display variant keeps its larger title with one
+   band step more air (ticket #17, F-02). */
+.sheet.closing-sheet { padding-top: var(--space-close); padding-bottom: calc(var(--space-close) + 8px); }
+.closing-sheet-text { max-width: 760px; }
+.closing-sheet-eyebrow { font-weight: 500; color: var(--on-sheet-muted); margin-bottom: 16px; }
+.closing-sheet-title { color: var(--on-sheet); text-wrap: balance; }
+.closing-sheet-btn { margin-top: 40px; font-size: 18px; padding: 18px 32px; min-height: 60px; }
+.sheet.closing-sheet--display { padding-top: calc(var(--space-close) + 24px); padding-bottom: calc(var(--space-close) + 32px); }
+.closing-sheet--display .closing-sheet-btn { margin-top: 48px; }
+@media (max-width: 860px) {
+  .sheet.closing-sheet { padding-top: var(--space-close-sm); padding-bottom: calc(var(--space-close-sm) + 8px); }
+  .sheet.closing-sheet--display { padding-top: calc(var(--space-close-sm) + 8px); padding-bottom: calc(var(--space-close-sm) + 16px); }
+  .closing-sheet-title.t-section { font-size: 28px; }
+  .closing-sheet-title.t-page-title { font-size: 32px; }
+  .closing-sheet-btn { margin-top: 28px; display: flex; width: 100%; }
+  .closing-sheet--display .closing-sheet-btn { margin-top: 32px; }
+}

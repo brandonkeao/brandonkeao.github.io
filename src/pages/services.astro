@@ -9,6 +9,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import OrbitStage from '../components/orbit/OrbitStage.astro';
 import Sheet from '../components/orbit/Sheet.astro';
+import ClosingSheet from '../components/orbit/ClosingSheet.astro';
 import MotionLine from '../components/orbit/MotionLine.astro';
 import EngagementDetail from '../components/orbit/wwm/EngagementDetail.astro';
 import { ENGAGEMENTS } from '../components/orbit/wwm/content';
@@ -84,11 +85,7 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     </section>
 
     <div data-wwm-overview>
-      <Sheet class="wwm-close" label="Let's talk">
-        <p class="t-caption wwm-close-eyebrow">Let's talk</p>
-        <h2 class="t-title wwm-close-title">Not sure where your work fits? Tell me what you're trying to do.</h2>
-        <a href="/contact/" class="btn btn-brand wwm-close-btn">Let's talk</a>
-      </Sheet>
+      <ClosingSheet class="wwm-close" eyebrow="Let's talk" title="Not sure where your work fits? Tell me what you're trying to do." button="Let's talk" />
     </div>
   </div>
   <script is:inline data-astro-rerun>
@@ -225,11 +222,8 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm-origin { margin: 0; font-size: 13px; padding: 4px 10px; }
   .wwm-group-link { margin-top: 4px; }
 
-  /* ---- closing sheets: one brand-red button per field ----------------------------------- */
-  .sheet.wwm-close { margin-top: var(--space-band-sm); padding-top: var(--space-sheet-band); padding-bottom: 104px; }
-  .wwm-close-eyebrow { font-weight: 500; color: var(--on-sheet-muted); margin-bottom: 16px; }
-  .wwm-close-title { color: var(--on-sheet); max-width: 24em; text-wrap: balance; }
-  .wwm-close-btn { margin-top: 40px; font-size: 18px; padding: 18px 32px; min-height: 60px; }
+  /* ---- closing sheets (ClosingSheet): one seam above them on this page --------------------- */
+  .sheet.wwm-close { margin-top: var(--space-band-sm); }
 
   /* ---- shared body ---------------------------------------------------------------------- */
   .wwm-links { display: flex; flex-wrap: wrap; gap: 16px 32px; margin-top: 28px; }
@@ -263,7 +257,5 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     .wwm-tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; padding: 2px var(--gutter) 4px 2px; scroll-snap-type: x proximity; }
     .wwm-tabs::-webkit-scrollbar { display: none; }
     .wwm-tab { scroll-snap-align: start; font-size: 14px; padding: 8px 14px; }
-    .sheet.wwm-close { padding-top: 64px; padding-bottom: 72px; }
-    .wwm-close-btn { margin-top: 28px; display: flex; width: 100%; }
   }
 </style>

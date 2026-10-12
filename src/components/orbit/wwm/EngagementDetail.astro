@@ -6,6 +6,7 @@
 // together, told over the landed plate) → Relevant work and methods → one closing sheet
 // with the one brand-red button. DRAFT COPY under Brandon's review; it lives in ./content.ts.
 import Sheet from '../Sheet.astro';
+import ClosingSheet from '../ClosingSheet.astro';
 import SectionHead from '../SectionHead.astro';
 import SurfaceStory from './SurfaceStory.astro';
 import type { Engagement } from './content';
@@ -71,9 +72,5 @@ const id = `wwm-${e.slug}`;
     </div>
   </div>
 
-  <Sheet class="wwm-close" label={`Let's talk about ${e.name}`}>
-    <p class="t-caption wwm-close-eyebrow">Let's talk</p>
-    <h3 class="t-title wwm-close-title">{e.cta.title}</h3>
-    <a href={e.cta.href} class="btn btn-brand wwm-close-btn">{e.cta.button}</a>
-  </Sheet>
+  <ClosingSheet class="wwm-close" level="h3" label={`Let's talk about ${e.name}`} eyebrow="Let's talk" title={e.cta.title} button={e.cta.button} href={e.cta.href} />
 </section>
