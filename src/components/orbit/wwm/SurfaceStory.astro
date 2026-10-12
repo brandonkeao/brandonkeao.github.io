@@ -2,8 +2,9 @@
 // Scrolly story for one engagement model (ticket #10, Brandon's Oct 9 direction; imagery
 // reset ticket #13): no buttons that jump — the scroll tells the story. The media panel
 // rides sticky beside the steps and plays the live Formation scene (lib/orbit/formation-
-// scene.ts): the team as chevron craft over the hero planet, scrubbed by reading progress;
-// image and text swap sides as topics change; a red thread draws with the scroll. Copy is
+// scene.ts): the team as chevron craft over the hero planet, scrubbed by reading progress,
+// holding one column while the copy holds the other; a red thread draws with the scroll
+// (Brandon, Oct 11: no side-swapping — it was too distracting to follow). Copy is
 // verbatim from ./content.ts (honesty rules); without JavaScript, WebGL or with reduced
 // motion everything reads as a plain stacked document over a static poster.
 import type { Engagement } from './content';
@@ -13,9 +14,9 @@ const { e } = Astro.props;
 const id = `wwm-${e.slug}`;
 
 const steps = [
-  { key: 'fits', id: `${id}-fits`, kicker: e.tag, title: 'When this fits', alt: false },
-  { key: 'work', id: `${id}-work`, kicker: 'The work', title: 'What I would take on', alt: true },
-  { key: 'together', id: `${id}-together`, kicker: 'Working together', title: 'How we would work together', alt: false },
+  { key: 'fits', id: `${id}-fits`, kicker: e.tag, title: 'When this fits' },
+  { key: 'work', id: `${id}-work`, kicker: 'The work', title: 'What I would take on' },
+  { key: 'together', id: `${id}-together`, kicker: 'Working together', title: 'How we would work together' },
 ] as const;
 ---
 
@@ -29,7 +30,7 @@ const steps = [
   <div class="story-steps">
     <span class="story-thread" aria-hidden="true" data-story-thread></span>
     {steps.map((st) => (
-      <section class={`story-step${st.alt ? ' is-alt' : ''}`} id={st.id} data-story-step={st.key}>
+      <section class="story-step" id={st.id} data-story-step={st.key}>
         <div class="step-copy">
           <p class="t-caption wwm-eyebrow"><i class={`dot dot-${e.dot}`} aria-hidden="true"></i>{st.kicker}</p>
           <h3 class="t-title">{st.title}</h3>
@@ -89,8 +90,6 @@ const steps = [
     }
     const key = active?.dataset.storyStep ?? 'overview';
     if (story.dataset.active !== key) story.dataset.active = key;
-    if (active) story.dataset.side = active.classList.contains('is-alt') ? 'right' : 'left';
-    else delete story.dataset.side;
     for (const st of steps) {
       const cur = st === active;
       st.classList.toggle('is-current', cur);
@@ -212,14 +211,9 @@ const steps = [
   .story-scene { position: absolute; inset: 0; opacity: 0; transition: opacity 0.7s ease; }
   .wwm-story.is-live .story-scene { opacity: 1; }
   .story-scene canvas { display: block; width: 100%; height: 100%; }
-  /* The media slides to the right column when an alt step is active — text and image swap. */
-  .story-media { transition: transform 0.85s cubic-bezier(0.3, 0, 0.2, 1); }
-  .wwm-story.is-enhanced[data-side='right'] .story-media { transform: translateX(calc(100% + 32px)); }
-
   .story-steps { grid-column: 1 / -1; grid-row: 1; position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; }
   .story-step { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; min-height: 84svh; align-items: center; }
   .story-step .step-copy { grid-column: 8 / -1; min-width: 0; }
-  .wwm-story.is-enhanced .story-step.is-alt .step-copy { grid-column: 1 / span 5; }
   .story-step .t-title { margin-top: 10px; }
   .story-step .wwm-fits, .story-step .wwm-measure { margin-top: 18px; }
   /* The entrance rise plays once (is-in), but full brightness belongs to the current beat
@@ -236,12 +230,8 @@ const steps = [
   .wwm-story.is-enhanced[data-active='overview'] .story-thread { opacity: 0; }
 
   @media (prefers-reduced-motion: reduce) {
-    .story-media, .story-scene { transition: none; }
+    .story-scene { transition: none; }
     .story-thread { display: none; }
-  }
-  @media (max-width: 1100px) {
-    .story-media { grid-column: 1 / span 6; }
-    .story-step .step-copy { grid-column: 8 / -1; }
   }
   @media (max-width: 860px) {
     .wwm-story { display: block; padding-top: 24px; }
@@ -255,7 +245,6 @@ const steps = [
     .story-steps { display: block; }
     /* Hash jumps must land headings below the sticky media. */
     .story-step { display: block; min-height: 0; padding: 40px 0 8px; scroll-margin-top: calc(var(--wwm-switcher-h, 46px) + 8px + 32svh + 16px); }
-    .wwm-story.is-enhanced[data-side='right'] .story-media { transform: none; }
     .story-thread { display: none; }
   }
 </style>
