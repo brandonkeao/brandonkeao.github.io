@@ -1,4 +1,4 @@
-// Captures stage posters from the live scenes: `npm run build`, serve dist on 127.0.0.1:4217 (or BASE), then `node scripts/capture-collection-posters.mjs [collections|stages|poses|stories|all]` (default collections: {portfolio,playbooks}-{desktop,mobile}.jpg; stages: home-closeup-* and work-*.jpg with page masks and copy hidden; stories: formation/{full-time,fractional,advisory}.webp at 1152×1224, mid-story; bands: band/{work,full-time,fractional,advisory}-{desktop,mobile}.webp, the end band's landscape frame (#37); poses: work-{full-time,fractional,advisory}-*.jpg, each way's settled moon) (Playwright from the repo or PLAYWRIGHT_FROM).
+// Captures stage posters from the live scenes: `npm run build`, serve dist on 127.0.0.1:4217 (or BASE), then `node scripts/capture-collection-posters.mjs [collections|stages|poses|stories|all]` (default collections: {portfolio,playbooks}-{desktop,mobile}.jpg; stages: home-closeup-* and work-*.jpg with page masks and copy hidden; stories: formation/{full-time,fractional,advisory}.webp at 1152×1224, mid-story; bands [keys]: band/{work,full-time,fractional,advisory,portfolio,playbooks}-{desktop,mobile}.webp, the end band's landscape frame (#37, #38); poses: work-{full-time,fractional,advisory}-*.jpg, each way's settled moon) (Playwright from the repo or PLAYWRIGHT_FROM).
 import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -100,10 +100,15 @@ for (const slug of want('stories') ? ['full-time', 'fractional', 'advisory'] : [
 // band's own canvas with its CSS masks lifted (the page masks the poster as it masks the canvas).
 // Desktop: the 1296×378 band at 1440, at 1.5x; phones: the 16:9 band at 390, at 2x.
 const bandLift = `.scene-band-host, .scene-band-poster img { -webkit-mask-image: none !important; mask-image: none !important; }`;
-for (const key of want('bands') ? ['work', 'full-time', 'fractional', 'advisory'] : []) {
+// Portfolio and Playbooks (ticket #38): their built worlds in the same band, at the settled
+// frame (?scene-t=poster).
+const bandUrl = (key) => key === 'work' ? '/services/'
+  : key === 'portfolio' || key === 'playbooks' ? `/${key}/?scene-t=poster`
+  : `/services/?engagement=${key}&scene-p=0.5`;
+for (const key of want('bands') ? (process.argv[3]?.split(',') ?? ['work', 'full-time', 'fractional', 'advisory', 'portfolio', 'playbooks']) : []) {
   for (const [name, [width, height], dsf] of [['desktop', sizes.desktop, 1.5], ['mobile', sizes.mobile, 2]]) {
     const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: dsf });
-    await page.goto(`${base}/services/${key === 'work' ? '' : `?engagement=${key}&scene-p=0.5`}`);
+    await page.goto(`${base}${bandUrl(key)}`);
     await page.addStyleTag({ content: bandLift });
     await page.evaluate(() => { const r = document.querySelector('.scene-band-stage').getBoundingClientRect(); scrollBy(0, r.top + r.height / 2 - innerHeight / 2); });
     await page.waitForFunction(() => document.querySelector('.scene-band-stage')?.classList.contains('is-ready'), null, { timeout: 60000 });

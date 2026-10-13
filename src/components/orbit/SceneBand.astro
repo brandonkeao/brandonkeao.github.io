@@ -22,17 +22,24 @@
 //
 // Built from OrbitStage's fallback and lazy-load idiom, but its own markup and class names, so
 // OrbitStage's single-stage script never picks it up.
+//
+// Collection scenes (ticket #38): given `scene` (portfolio | playbooks), the band plays that
+// page's built world (lib/orbit/collection-scene.ts: Portfolio's Three approaches, Playbooks'
+// Limb and lights), which left the page's hero for this band.
 import type { OrbitSet, EngagementSlug } from '../../lib/orbit/orbit-data';
+import type { CollectionKind } from '../../lib/orbit/collection-scene';
 
-interface Props { set?: OrbitSet; speed?: number; models?: EngagementSlug[] }
-const { set = 'work', speed = 1, models = [] } = Astro.props;
+interface Props { set?: OrbitSet; speed?: number; models?: EngagementSlug[]; scene?: CollectionKind }
+const { set = 'work', speed = 1, models = [], scene } = Astro.props;
+// The poster and scene key for the general (no model) state: the page's collection, or the set.
+const key = scene ?? set;
 ---
 
 <div class="scene-band ground-pad" aria-hidden="true">
-  <div class="scene-band-stage" data-scene-band={set} data-speed={speed} data-scene-models={models.join(' ') || undefined}>
+  <div class="scene-band-stage" data-scene-band={set} data-scene-collection={scene} data-speed={speed} data-scene-models={models.join(' ') || undefined}>
     <picture class="scene-band-poster" data-scene-poster="">
-      <source media="(max-width: 860px)" srcset={`/images/orbit/band/${set}-mobile.webp`} />
-      <img src={`/images/orbit/band/${set}-desktop.webp`} alt="" width="1296" height="378" loading="lazy" decoding="async" />
+      <source media="(max-width: 860px)" srcset={`/images/orbit/band/${key}-mobile.webp`} />
+      <img src={`/images/orbit/band/${key}-desktop.webp`} alt="" width="1296" height="378" loading="lazy" decoding="async" />
     </picture>
     {/* Each model's still (its Formation story mid-story, in the band's landscape frame; captured
         by scripts/capture-collection-posters.mjs `bands`); hidden until
@@ -49,6 +56,7 @@ const { set = 'work', speed = 1, models = [] } = Astro.props;
 
 <script>
   import { useSet, type OrbitSet, type EngagementSlug } from '../../lib/orbit/orbit-data';
+  import type { CollectionKind } from '../../lib/orbit/collection-scene';
 
   /** The one live scene: what it is, and how to stop it. */
   interface Live { key: string; dispose(): void; setProgress?(p: number): void }
@@ -57,6 +65,10 @@ const { set = 'work', speed = 1, models = [] } = Astro.props;
 
   /** The band's framings (AI-made, reversible; tuned against the 1440, 1280 and 390 captures). */
   const FORMATION_VIEW = { wide: { fovScale: 0.8, shiftY: 0.55 }, phone: { fovScale: 0.9, shiftY: 0.4 } };
+  const COLLECTION_VIEW: Record<CollectionKind, Record<'wide' | 'phone', { fovScale: number; shiftX: number; shiftY: number }>> = {
+    portfolio: { wide: { fovScale: 0.85, shiftX: 0, shiftY: -0.2 }, phone: { fovScale: 0.8, shiftX: 0, shiftY: -0.2 } },
+    playbooks: { wide: { fovScale: 0.7, shiftX: 0.3, shiftY: -0.6 }, phone: { fovScale: 0.8, shiftX: 0.3, shiftY: -0.4 } },
+  };
   const MAP_FRAMING = {
     wide: { zoom: 2.6, offsetX: 0, offsetY: -0.8, maxPixelRatio: 1.5, moonScale: 0.8 },
     phone: { zoom: 3.2, offsetX: 0, offsetY: -0.75, maxPixelRatio: 1.5, moonScale: 0.8 },
@@ -102,15 +114,21 @@ const { set = 'work', speed = 1, models = [] } = Astro.props;
     let disposed = false;
     let failed = false;
 
-    // Off production, ?scene-p=<0..1> pins the Formation story's progress (poster capture), and
-    // ?band-fov, ?band-shift, ?band-zoom, ?band-oy override the framing below (tuning).
+    // Off production, ?scene-p=<0..1> pins the Formation story's progress (poster capture),
+    // ?scene-t freezes a collection scene's clock, and
+    // ?band-fov, ?band-shift, ?band-sx, ?band-zoom, ?band-oy override the framing below (tuning).
     let pinned: number | undefined;
+    let freeze: number | 'poster' | undefined;
     const tune: Record<string, number> = {};
     if (!/(^|\.)brandonkeao\.com$/.test(location.hostname)) {
       const q = new URLSearchParams(location.search);
       const v = parseFloat(q.get('scene-p') ?? '');
       if (!Number.isNaN(v)) pinned = Math.min(Math.max(v, 0), 1);
-      for (const k of ['fov', 'shift', 'zoom', 'oy']) {
+      // ?scene-t=<seconds|poster> freezes a collection scene's clock (as OrbitStage did).
+      const ft = q.get('scene-t');
+      if (ft === 'poster') freeze = 'poster';
+      else if (ft && !Number.isNaN(parseFloat(ft))) freeze = parseFloat(ft);
+      for (const k of ['fov', 'shift', 'sx', 'zoom', 'oy']) {
         const n = parseFloat(q.get(`band-${k}`) ?? '');
         if (!Number.isNaN(n)) tune[k] = n;
       }
@@ -121,6 +139,11 @@ const { set = 'work', speed = 1, models = [] } = Astro.props;
     // as a horizon, with the formation or the moons above it. Phones are less wide (16:9) and keep a little more of the world.
     const phone = () => matchMedia('(max-width: 860px)').matches;
     const formationView = () => ({ fovScale: tune.fov ?? (phone() ? FORMATION_VIEW.phone.fovScale : FORMATION_VIEW.wide.fovScale), shiftY: tune.shift ?? (phone() ? FORMATION_VIEW.phone.shiftY : FORMATION_VIEW.wide.shiftY) });
+    const collectionView = () => {
+      const c = COLLECTION_VIEW[stage.dataset.sceneCollection as CollectionKind];
+      const v = phone() ? c.phone : c.wide;
+      return { fovScale: tune.fov ?? v.fovScale, shiftX: tune.sx ?? v.shiftX, shiftY: tune.shift ?? v.shiftY };
+    };
     const mapFraming = () => {
       const f = phone() ? MAP_FRAMING.phone : MAP_FRAMING.wide;
       return { ...f, zoom: tune.zoom ?? f.zoom, offsetY: tune.oy ?? f.offsetY };
@@ -174,6 +197,14 @@ const { set = 'work', speed = 1, models = [] } = Astro.props;
           scene.setProgress(progress());
           // The scene draws on its next frame; let it land before the poster fades out.
           requestAnimationFrame(() => requestAnimationFrame(ready));
+        } else if (stage.dataset.sceneCollection) {
+          const { createCollectionScene } = await import('../../lib/orbit/collection-scene');
+          if (token !== building || disposed) return;
+          const handle = createCollectionScene(host, stage.dataset.sceneCollection as CollectionKind, {
+            onReady: ready,
+            onFailure: fallBack,
+          }, freeze, collectionView());
+          live = { key, dispose: () => handle.dispose() };
         } else {
           const { createMap } = await import('../../lib/orbit/map-scene');
           if (token !== building || disposed) return;

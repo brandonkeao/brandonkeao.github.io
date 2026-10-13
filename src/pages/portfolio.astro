@@ -7,6 +7,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import CollectionHero from '../components/orbit/collection/CollectionHero.astro';
+import SceneBand from '../components/orbit/SceneBand.astro';
 import Collection from '../components/orbit/collection/Collection.astro';
 import CollectionRow from '../components/orbit/collection/CollectionRow.astro';
 import DetailHead from '../components/orbit/collection/DetailHead.astro';
@@ -139,6 +140,9 @@ const [pie, ora, bitly] = stories;
   </Sheet>
 
   <LibraryNote title="More context in the library." />
+
+  {/* The page's built world, moved from the hero to a band at the end, above the closing (ticket #38). */}
+  <SceneBand scene="portfolio" />
 
   <Prefooter prompt="Not sure which story matters for your problem?" />
   <Prefooter when="pie" prompt="Want the fuller story behind this work?" />
