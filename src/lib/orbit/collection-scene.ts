@@ -498,17 +498,21 @@ export function createCollectionScene(
     kit.orientCrafts();
     composer.render();
   }
+  /** Longest step a frame may advance the clock (s): a stalled tab resumes, never jumps. */
+  const MAX_STEP_S = 0.05;
+  /** Frame times kept for the p50/p95 diagnostics. */
+  const FRAME_SAMPLES = 240;
   function tick(now: number) {
     raf = 0;
     if (!running || disposed) return;
     const dtMs = now - last;
     last = now;
-    if (frozen === undefined) t += Math.min(dtMs / 1000, 0.05) || 0;
+    if (frozen === undefined) t += Math.min(dtMs / 1000, MAX_STEP_S) || 0;
     draw();
     totalFrames++;
     if (totalFrames > 1) {
       frameTimes.push(dtMs);
-      if (frameTimes.length > 240) frameTimes.shift();
+      if (frameTimes.length > FRAME_SAMPLES) frameTimes.shift();
     }
     if (now - diagnosticAt > 1000) publish(now);
     if (!ready) {
@@ -552,7 +556,9 @@ export function createCollectionScene(
   io.observe(host);
   const onVisibility = () => setRunning();
   document.addEventListener('visibilitychange', onVisibility);
-  // A lost context cannot be rendered into: stop for good; the host swaps to its poster.
+  // A lost context cannot be rendered into: stop the loop and mark the scene disposed. The GPU
+  // resources went with the context; the owner still calls dispose() to release the rest
+  // (listeners, observers, CPU-side geometry). Stop for good; the host swaps to its poster.
   const onContextLost = (e: Event) => {
     e.preventDefault();
     disposed = true;
@@ -602,9 +608,12 @@ export function createCollectionScene(
       dust.dispose();
       kit.dispose();
       envTex.dispose();
+      envRoom.dispose();
       pmrem.dispose();
+      // The composer frees only its own two render targets and copy pass: each pass it holds
+      // (render, bloom with its targets and materials, output, feather) is released here.
+      composer.passes.forEach((pass) => pass.dispose());
       composer.dispose();
-      feather.dispose();
       renderer.dispose();
       try {
         renderer.forceContextLoss();
