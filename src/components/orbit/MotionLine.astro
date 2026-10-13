@@ -20,8 +20,11 @@ interface Props {
   /** stretched align only: merge the strands this many px past the enclosing header's h1 left
    *  edge instead of at the middle (the page hero's full-width line, ticket #34). */
   merge?: number;
+  /** stretched align only: merge the strands at this fraction of the line's width (the page
+   *  hero, #41: the three strands run across the first ~28% of the content column). */
+  mergeAt?: number;
 }
-const { kind, stretch = false, merge } = Astro.props;
+const { kind, stretch = false, merge, mergeAt } = Astro.props;
 // blocks: the twelve blocks' top-left corners (three structures: 3, 6 and 3 blocks), placed in
 // order, 85 ms apart, after the ground (0.12–1.48 s).
 const BLOCKS: [number, number][] = [[16, 42], [44, 42], [30, 28], [100, 42], [128, 42], [156, 42], [114, 28], [142, 28], [128, 14], [214, 42], [242, 42], [242, 28]];
@@ -33,7 +36,7 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
   // "segmented... I can visually see where the lines are drawn and overlap"). A script sizes the
   // viewBox to the container so curves stay undistorted; without JS the default geometry
   // stretches mildly. The glow underlay echoes the orbital traces' softness.
-  <div class="motion-line motion-line-align motion-line-stretch" data-motion data-ml-stretch data-ml-merge={merge} aria-hidden="true">
+  <div class="motion-line motion-line-align motion-line-stretch" data-motion data-ml-stretch data-ml-merge={merge} data-ml-merge-at={mergeAt} aria-hidden="true">
     <svg width="100%" height="40" viewBox="0 0 720 40" preserveAspectRatio="none" fill="none" focusable="false">
       <defs>
         <filter id="mls-glow-f" x="-10%" y="-200%" width="120%" height="500%">
@@ -158,11 +161,15 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
     svg.setAttribute('viewBox', `0 0 ${W} 40`);
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     // A merge offset anchors the strands' meeting point this far past the title's left edge.
+    // A merge fraction places it at that share of the line's own width.
     const merge = Number(root.dataset.mlMerge);
+    const mergeAt = Number(root.dataset.mlMergeAt);
     const anchor = merge ? root.closest('header')?.querySelector('h1') : null;
-    const mx = anchor
-      ? Math.round(anchor.getBoundingClientRect().left - root.getBoundingClientRect().left + merge)
-      : Math.round(W * 0.5);
+    const mx = mergeAt
+      ? Math.round(W * mergeAt)
+      : anchor
+        ? Math.round(anchor.getBoundingClientRect().left - root.getBoundingClientRect().left + merge)
+        : Math.round(W * 0.5);
     const cw = Math.min(64, Math.round(mx * 0.4));
     const outer = (y0: number) =>
       `M 1 ${y0} H ${mx - cw} C ${mx - cw + cw * 0.48} ${y0} ${mx - cw * 0.52} 20 ${mx} 20`;
