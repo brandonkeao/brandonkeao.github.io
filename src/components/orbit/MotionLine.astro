@@ -3,22 +3,26 @@
 // request (2026-10-06). Each draws once when it comes into view; it never replays.
 // The final drawing is plain SVG, so reduced motion and no-JS readers see it still.
 //
-// `record` (Portfolio) and `route` (Playbooks) exist only stretched (Brandon, 2026-10-13: "We need
-// different animations here for Playbook and Portfolio"). record: three shallow arcs land one
-// after another as stacked lines of a record, the newest brightest with a small head — the
-// Flight record's missions flown. route: a dashed planned route, then a solid line flies it,
-// with a bright tick at each bend as the head passes — the Maneuver's burns.
-import { recordGeometry, routeGeometry } from '../../lib/orbit/motion-line-geometry';
-
+// `blocks` (Portfolio) and `blueprint` (Playbooks): Brandon's third-round picks (2026-10-13,
+// Brandon OS analysis/2026-10-13-title-mark-concepts-r3: P3 Blocks, K1 Blueprint to built), in
+// the Bookshelf mark's spirit: solid, filled objects placed on a quiet ground line. blocks:
+// twelve chunky blocks (a front, a top and a side face) drop and settle one after another into
+// three stepped structures, small, tallest, small. blueprint: a dashed plan with dimension lines
+// wipes in, then the solid building (a gabled wing, a tower, a long low wing) fills it from the
+// ground up; the dimension lines stay, soft. Both are 430 × 60 drawings that scale as a whole
+// (never stretched) to the mark's width, so at 351 they are 351 × 49. The faces are opaque mixes
+// of the red on the ground (12, 22, 30%), so overlapping blocks never double their tint.
 interface Props {
-  kind: 'momentum' | 'map' | 'align' | 'record' | 'route' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
-  /** align, record, route: size the mark to its container (Brandon, 2026-10-06 / 2026-10-13). */
+  kind: 'momentum' | 'map' | 'align' | 'blocks' | 'blueprint' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
+  /** align: size the mark to its container (Brandon, 2026-10-06); blocks and blueprint always
+   *  take the container's width, scaled as a whole. */
   stretch?: boolean;
 }
 const { kind, stretch = false } = Astro.props;
-// The no-JS default geometry (720 wide, stretched mildly); the script rebuilds it to the container.
-const rec = recordGeometry(720);
-const rte = routeGeometry(720);
+// blocks: the twelve blocks' top-left corners (three structures: 3, 6 and 3 blocks), placed in
+// order, 85 ms apart, after the ground (0.12–1.48 s).
+const BLOCKS: [number, number][] = [[16, 42], [44, 42], [30, 28], [100, 42], [128, 42], [156, 42], [114, 28], [142, 28], [128, 14], [214, 42], [242, 42], [242, 28]];
+const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
 ---
 
 {stretch && kind === 'align' ? (
@@ -50,32 +54,33 @@ const rte = routeGeometry(720);
       </g>
     </svg>
   </div>
-) : stretch && kind === 'record' ? (
-  <div class="motion-line motion-line-record motion-line-stretch" data-motion data-ml-stretch="record" aria-hidden="true">
-    <svg width="100%" height="40" viewBox="0 0 720 40" preserveAspectRatio="none" fill="none" focusable="false">
-      <defs>
-        <filter id="mlr-glow-f" x="-10%" y="-200%" width="120%" height="500%"><feGaussianBlur stdDeviation="2.4" /></filter>
-      </defs>
-      <g class="mls-glow" filter="url(#mlr-glow-f)">
-        {['r0', 'r1', 'r2'].map((k) => <path class:list={['mls-path', k !== 'r2' && 'ml-soft']} data-ml={k} pathLength="1" d={rec.d[k]} />)}
-      </g>
-      <g class="mls-sharp">
-        {['r0', 'r1', 'r2'].map((k) => <path class:list={['mls-path', k !== 'r2' && 'ml-soft']} data-ml={k} pathLength="1" d={rec.d[k]} />)}
-        <circle class="ml-head" cx={rec.head.cx} cy={rec.head.cy} r="3" />
-      </g>
+) : kind === 'blocks' ? (
+  <div class="motion-line motion-line-stretch motion-line-scene motion-line-blocks" data-motion aria-hidden="true">
+    <svg width="100%" height="100%" viewBox="0 0 430 60" preserveAspectRatio="xMinYMax meet" fill="none" focusable="false">
+      <path class="mlx-ground" pathLength="1" d="M2 56H428" />
+      {BLOCKS.map(([x, y], i) => (
+        <g class="mlx-drop" style={`--ml-delay:${120 + i * 85}ms`}>
+          <path class="mlx-f3" d={`M${x + 28} ${y}l4 -4v14l-4 4z`} />
+          <path class="mlx-f2" d={`M${x} ${y}l4 -4h28l-4 4z`} />
+          <rect class="mlx-f1" x={x} y={y} width="28" height="14" rx="0.5" />
+        </g>
+      ))}
     </svg>
   </div>
-) : stretch && kind === 'route' ? (
-  <div class="motion-line motion-line-route motion-line-stretch" data-motion data-ml-stretch="route" aria-hidden="true">
-    <svg width="100%" height="40" viewBox="0 0 720 40" preserveAspectRatio="none" fill="none" focusable="false">
-      <defs>
-        <filter id="mlt-glow-f" x="-10%" y="-200%" width="120%" height="500%"><feGaussianBlur stdDeviation="2.4" /></filter>
-      </defs>
-      <g class="mlt-plan"><path class="mlt-plan-path" data-ml="plan" d={rte.d} /></g>
-      <g class="mls-glow" filter="url(#mlt-glow-f)"><path class="mls-path" data-ml="route" pathLength="1" d={rte.d} /></g>
-      <g class="mls-sharp">
-        <path class="mls-path" data-ml="route" pathLength="1" d={rte.d} />
-        {rte.ticks.map((t, i) => <path class="ml-tick" data-ml={`tick${i}`} d={t} />)}
+) : kind === 'blueprint' ? (
+  <div class="motion-line motion-line-stretch motion-line-scene motion-line-blueprint" data-motion aria-hidden="true">
+    <svg width="100%" height="100%" viewBox="0 0 430 60" preserveAspectRatio="xMinYMax meet" fill="none" focusable="false">
+      <path class="mlx-ground" pathLength="1" d="M2 56H428" />
+      <g class="mlx-plan">
+        <path class="mlx-dash" d={PLAN} />
+        <path class="mlx-dash" d="M112 56V44H124V56M152 44h14v6h-14zM176 44h14v6h-14z" />
+        <path class="mlx-dim" d="M40 4H200M40 1v6M200 1v6M214 12V56M211 12h6M211 56h6" />
+      </g>
+      <g class="mlx-reveal">
+        <path class="mlx-f1" d={`${PLAN}Z`} />
+        <rect class="mlx-f3" x="128" y="12" width="8" height="44" rx="1" />
+        <path class="mlx-f2" d="M112 56V44H124V56" />
+        <path class="mlx-f2" d="M152 44h14v6h-14zM176 44h14v6h-14z" />
       </g>
     </svg>
   </div>
@@ -134,7 +139,6 @@ const rte = routeGeometry(720);
 )}
 
 <script>
-  import { recordGeometry, routeGeometry } from '../../lib/orbit/motion-line-geometry';
   const played = new WeakSet<Element>();
   let observer: IntersectionObserver | undefined;
   let resizer: ResizeObserver | undefined;
@@ -147,9 +151,6 @@ const rte = routeGeometry(720);
   function buildStretch(root: HTMLElement) {
     const svg = root.querySelector('svg');
     if (!svg) return;
-    const kind = root.dataset.mlStretch;
-    if (kind === 'record') return buildRecord(root, svg);
-    if (kind === 'route') return buildRoute(root, svg);
     const W = Math.max(220, Math.round(root.clientWidth));
     svg.setAttribute('viewBox', `0 0 ${W} 40`);
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
@@ -169,66 +170,6 @@ const rte = routeGeometry(720);
     const lenC = center?.getTotalLength() || W;
     svg.querySelectorAll<SVGPathElement>('.mls-path').forEach((p) => {
       p.style.setProperty('--mls-dur', `${Math.round(950 * (p.getTotalLength() / lenC))}ms`);
-    });
-  }
-
-  const fit = (root: HTMLElement, svg: SVGSVGElement) => {
-    const W = Math.max(220, Math.round(root.clientWidth));
-    svg.setAttribute('viewBox', `0 0 ${W} 40`);
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    return W;
-  };
-
-  /**
-   * record (Portfolio): three arcs, oldest first, 130ms apart, all at one drawing speed set by
-   * the newest (it ends at 1.1s). The head rides the newest line's straight run from touchdown.
-   */
-  function buildRecord(root: HTMLElement, svg: SVGSVGElement) {
-    const g = recordGeometry(fit(root, svg));
-    svg.querySelectorAll<SVGPathElement>('.mls-path').forEach((p) => p.setAttribute('d', g.d[p.dataset.ml ?? 'r2']));
-    const head = svg.querySelector<SVGCircleElement>('.ml-head');
-    head?.setAttribute('cx', String(g.head.cx));
-    head?.setAttribute('cy', String(g.head.cy));
-    const newest = svg.querySelector<SVGPathElement>('.mls-sharp [data-ml="r2"]');
-    const lenN = newest?.getTotalLength() || 1;
-    const STAGGER = 130, END = 1100;
-    const durN = END - 2 * STAGGER;
-    svg.querySelectorAll<SVGPathElement>('.mls-path').forEach((p) => {
-      const i = Number((p.dataset.ml ?? 'r2').slice(1));
-      p.style.setProperty('--mls-dur', `${Math.round(durN * (p.getTotalLength() / lenN))}ms`);
-      p.style.setProperty('--mls-delay', `${i * STAGGER}ms`);
-    });
-    if (head) {
-      const arc = lenN - g.straight;
-      head.style.setProperty('--ml-head-delay', `${Math.round(2 * STAGGER + durN * (arc / lenN))}ms`);
-      head.style.setProperty('--ml-head-dur', `${Math.round(durN * (g.straight / lenN))}ms`);
-      head.style.setProperty('--ml-head-from', `${-g.straight}px`);
-    }
-  }
-
-  /**
-   * route (Playbooks): the dashed plan wipes in left to right (0–420ms), then the solid line
-   * flies it (380–1200ms, linear); each bend's tick flares as the solid head reaches it.
-   */
-  function buildRoute(root: HTMLElement, svg: SVGSVGElement) {
-    const g = routeGeometry(fit(root, svg));
-    svg.querySelectorAll<SVGPathElement>('[data-ml="plan"], [data-ml="route"]').forEach((p) => p.setAttribute('d', g.d));
-    const route = svg.querySelector<SVGPathElement>('.mls-sharp [data-ml="route"]');
-    const len = route?.getTotalLength() || 1;
-    const START = 380, DUR = 820;
-    svg.querySelectorAll<SVGPathElement>('[data-ml="route"]').forEach((p) => {
-      p.style.setProperty('--mls-dur', `${DUR}ms`);
-      p.style.setProperty('--mls-delay', `${START}ms`);
-    });
-    svg.querySelectorAll<SVGPathElement>('.ml-tick').forEach((t, i) => {
-      t.setAttribute('d', g.ticks[i]);
-      // The length at which the path reaches the bend's x (the route runs left to right).
-      let lo = 0, hi = len;
-      for (let k = 0; k < 18 && route; k++) {
-        const mid = (lo + hi) / 2;
-        if (route.getPointAtLength(mid).x < g.bendX[i]) lo = mid; else hi = mid;
-      }
-      t.style.setProperty('--ml-delay', `${Math.round(START + DUR * (lo / len))}ms`);
     });
   }
 
@@ -276,11 +217,16 @@ const rte = routeGeometry(720);
   .mls-sharp .mls-soft { opacity: 0.65; stroke: url(#mls-fade-g); }
   .mls-glow { opacity: 0.42; stroke-width: 4; }
   .mls-glow .mls-path[data-ml='top'], .mls-glow .mls-path[data-ml='bottom'] { opacity: 0.6; stroke: url(#mls-fade-g); }
-  /* record (Portfolio): the earlier two lines soft, the newest full with its head. */
-  .ml-head { fill: currentColor; stroke: none; }
-  /* route (Playbooks): the plan dashed and soft under the flown line; the burns brighter. */
-  .mlt-plan-path { stroke-dasharray: 4 5; opacity: 0.55; }
-  .ml-tick { stroke-width: 2; }
+  /* blocks and blueprint: 430 × 60 scenes scaled as a whole to the mark's width (351 × 49 on
+     phones); faces are opaque mixes of the red on the ground. */
+  .motion-line-scene { width: var(--mark-max, 430px); max-width: 100%; height: auto; aspect-ratio: 430 / 60; }
+  .motion-line-scene svg { width: 100%; height: 100%; }
+  .mlx-ground { stroke-dasharray: 1; stroke-dashoffset: 0; opacity: 0.55; }
+  .mlx-f1 { fill: color-mix(in srgb, currentColor 12%, var(--ground)); }
+  .mlx-f2 { fill: color-mix(in srgb, currentColor 22%, var(--ground)); }
+  .mlx-f3 { fill: color-mix(in srgb, currentColor 30%, var(--ground)); }
+  .mlx-dash { stroke-dasharray: 3 4; opacity: 0.75; }
+  .mlx-dim { stroke-width: 1; opacity: 0.55; }
   .ml-dot { fill: currentColor; stroke: none; }
   .ml-soft { opacity: 0.65; }
   .ml-track { opacity: 0.25; }
@@ -296,12 +242,17 @@ const rte = routeGeometry(720);
        script), so the strands land on the merge as the centre head passes — one gesture. */
     .motion-line[data-motion-armed]:not([data-motion-play]) .mls-path { stroke-dashoffset: 1; }
     .motion-line[data-motion-play] .mls-path { animation: ml-draw var(--mls-dur, 950ms) linear var(--mls-delay, 0ms) both; }
-    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-head,
-    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-tick { opacity: 0; }
-    .motion-line[data-motion-armed]:not([data-motion-play]) .mlt-plan { clip-path: inset(0 100% 0 0); }
-    .motion-line[data-motion-play] .ml-head { opacity: 0; animation: ml-head var(--ml-head-dur, 400ms) linear var(--ml-head-delay, 700ms) forwards; }
-    .motion-line[data-motion-play] .ml-tick { animation: ml-burn 420ms ease-out var(--ml-delay, 0ms) both; }
-    .motion-line[data-motion-play] .mlt-plan { animation: ml-wipe 420ms linear both; }
+    /* blocks: the ground draws (0–0.4 s), then each block drops 14px and settles, 85 ms apart.
+       blueprint: the ground and the dashed plan with its dimensions wipe in (0–0.52 s), then the
+       solid building is revealed from the ground up (0.56–1.38 s). */
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlx-ground { stroke-dashoffset: 1; }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlx-drop { opacity: 0; }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlx-plan { clip-path: inset(-8px 100% -8px -8px); }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlx-reveal { clip-path: inset(100% -8px -8px -8px); }
+    .motion-line[data-motion-play] .mlx-ground { animation: ml-draw 400ms ease-out both; }
+    .motion-line[data-motion-play] .mlx-drop { animation: ml-drop 420ms ease-out var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-play] .mlx-plan { animation: ml-wipe-x 520ms linear both; }
+    .motion-line[data-motion-play] .mlx-reveal { animation: ml-reveal 820ms cubic-bezier(0.45, 0, 0.3, 1) 560ms both; }
     .motion-line[data-motion-play] .ml-arrive { animation: ml-arrive 650ms ease-out var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-place { animation: ml-place 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-meet { animation: ml-meet 950ms ease-out both; }
@@ -311,9 +262,9 @@ const rte = routeGeometry(720);
   }
 
   @keyframes ml-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-  @keyframes ml-head { from { opacity: 1; transform: translateX(var(--ml-head-from, 0px)); } to { opacity: 1; transform: translateX(0); } }
-  @keyframes ml-burn { 0% { opacity: 0; stroke-width: 3.5; } 30% { opacity: 1; stroke-width: 3.5; } 100% { opacity: 1; stroke-width: 2; } }
-  @keyframes ml-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+  @keyframes ml-drop { 0% { transform: translateY(-14px); opacity: 0; } 25% { opacity: 1; } 70% { transform: translateY(1.5px); } 100% { transform: none; opacity: 1; } }
+  @keyframes ml-wipe-x { from { clip-path: inset(-8px 100% -8px -8px); } to { clip-path: inset(-8px -8px -8px -8px); } }
+  @keyframes ml-reveal { from { clip-path: inset(100% -8px -8px -8px); } to { clip-path: inset(-8px -8px -8px -8px); } }
   @keyframes ml-arrive { from { opacity: 0.45; } to { opacity: 1; } }
   @keyframes ml-place { from { transform: translateY(-4px); } to { transform: translateY(0); } }
   @keyframes ml-meet { from { transform: scale(0.6); opacity: 0.45; } to { transform: scale(1); opacity: 1; } }

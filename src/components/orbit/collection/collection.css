@@ -137,4 +137,4 @@
 
 /* The collection title marks stop where Work with me's does (--mark-max, OrbitStage); the title
    and copy keep the column's width (Brandon, 2026-10-13). */
-.orbit-hero--small .motion-line-stretch { max-width: var(--mark-max); }
+.orbit-hero--small .motion-line-stretch { max-width: min(var(--mark-max), 100%); }
