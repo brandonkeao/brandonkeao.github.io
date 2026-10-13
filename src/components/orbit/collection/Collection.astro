@@ -75,6 +75,7 @@ const { param, label, items, restoreLabel } = Astro.props;
     const ids = details.map((d) => d.dataset.clDetail ?? '');
     const named = new Set(variants.flatMap((v) => (v.dataset.clWhen ?? '').split(/\s+/)).filter((w) => w && w !== 'default'));
     const pathname = location.pathname;
+    let baseIndex: number | undefined = history.state?.index;
     const ctl = new AbortController();
     const opts = { signal: ctl.signal };
 
@@ -108,6 +109,7 @@ const { param, label, items, restoreLabel } = Astro.props;
       // Keep Astro's state shape (index, scroll) so the router can return to these entries later,
       // and record the real positions so Back/Forward restore them.
       if (history.state) history.replaceState({ ...history.state, scrollX, scrollY }, '');
+      baseIndex ??= history.state?.index;
       apply(id);
       keepPlace(wasInside);
       const url = new URL(location.href);
@@ -148,16 +150,25 @@ const { param, label, items, restoreLabel } = Astro.props;
       select(null, 'row');
     }, opts);
 
-    // Same-page back/forward between collection states: handle it here and keep the router out.
-    window.addEventListener('popstate', (e) => {
-      if (location.pathname !== pathname) return;
-      e.stopImmediatePropagation();
+    // SiteHead installs this hook before Astro's router registers its own listener. A late
+    // capture listener alone cannot prevent the router from replacing the page and canvas.
+    const onPop = (e: PopStateEvent): boolean => {
+      if (location.pathname !== pathname) return false;
+      const st = e.state as { index?: number; scrollX?: number; scrollY?: number } | null;
+      // A return to a different visit of this URL belongs to Astro, even on the same path.
+      if (baseIndex === undefined || st?.index !== baseIndex) return false;
       apply(read());
-      const st = e.state as { scrollX?: number; scrollY?: number } | null;
       if (st && typeof st.scrollY === 'number') scrollTo(st.scrollX ?? 0, st.scrollY);
-    }, { capture: true, signal: ctl.signal });
+      return true;
+    };
+    const w = window as Window & { __samePagePop?: (e: PopStateEvent) => boolean };
+    w.__samePagePop = onPop;
+    window.addEventListener('popstate', (e) => { if (onPop(e)) e.stopImmediatePropagation(); }, { capture: true, signal: ctl.signal });
 
-    dispose = () => ctl.abort();
+    dispose = () => {
+      if (w.__samePagePop === onPop) delete w.__samePagePop;
+      ctl.abort();
+    };
   }
 
   document.addEventListener('astro:page-load', initCollection);

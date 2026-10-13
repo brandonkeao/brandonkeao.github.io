@@ -162,8 +162,10 @@ const poster = scene
   function init() {
     teardown?.();
     teardown = undefined;
-    const stage = document.querySelector<HTMLElement>('.map-stage[data-orbit]');
-    if (!stage) return;
+    const found = document.querySelector<HTMLElement>('.map-stage[data-orbit]');
+    if (!found) return;
+    // Keep the checked element's non-null type inside the lifecycle callbacks below.
+    const stage: HTMLElement = found;
     if (stage.dataset.stageScene) { teardown = initCollection(stage); return; }
 
     const set = (stage.dataset.orbit as OrbitSet) || 'home';
