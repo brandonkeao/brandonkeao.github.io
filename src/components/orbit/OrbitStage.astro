@@ -400,9 +400,13 @@ const poster = scene
      Desktop only: the phone block's plain .map-stage rule must keep winning there. */
   @media (min-width: 861px) {
     .orbit-hero--large { grid-template-columns: minmax(340px, 430px) minmax(0, 1fr); gap: 32px; }
-    /* Portfolio and Playbooks (size "small") share the rule, so the three stage pages size
-       their stage one way (ticket #16); Home's close-up keeps its own clamp. */
-    .orbit-hero--large, .orbit-hero--small { --stage-h: clamp(540px, calc(100svh - 270px), 740px); }
+    .orbit-hero--large { --stage-h: clamp(540px, calc(100svh - 270px), 740px); }
+    /* Portfolio and Playbooks (size "small"): a shorter stage of their own and a 32px step into
+       the sheet, so the collection heading and its first rows show above the fold (Brandon,
+       2026-10-13: "the vertical spacing after the hero here can be reduced so we can see more
+       of the projects and portfolio sections"). Their copy still top-aligns by the same formula,
+       so their h1 sits higher than Work with me's at a given window, the same on both pages. */
+    .orbit-hero--small { --stage-h: clamp(440px, calc(100svh - 380px), 580px); padding-bottom: 32px; }
     .orbit-hero--large .map-stage, .orbit-hero--small .map-stage { height: var(--stage-h); }
     /* The three copy-led stages put their h1 at one height for a given window (ticket #17, F-04):
        the copy is top-aligned where Work with me's centred copy sat (a 400px column centred in

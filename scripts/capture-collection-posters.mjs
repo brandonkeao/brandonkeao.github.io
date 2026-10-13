@@ -11,7 +11,7 @@ try {
 }
 const base = process.env.BASE || 'http://127.0.0.1:4217';
 const out = fileURLToPath(new URL('../public/images/orbit/', import.meta.url));
-// Desktop at 1440×900 (the stage box is 760×630, the clamp's middle); mobile at 390×844 (390×400).
+// Desktop at 1440×900 (the collection stage box is 760×520 since 2026-10-13); mobile at 390×844 (390×400).
 const sizes = { desktop: [1440, 900], mobile: [390, 844] };
 // The GPU on macOS (Metal), SwiftShader elsewhere.
 const gl = process.platform === 'darwin' ? ['--use-angle=metal', '--enable-gpu'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
