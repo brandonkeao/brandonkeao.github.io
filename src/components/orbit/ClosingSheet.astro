@@ -1,0 +1,29 @@
+---
+// The closing sheet (ticket #17, F-02): one white sheet that ends a page with an eyebrow, a
+// title and the page's one brand-red button. Home keeps its larger display title
+// (size="display"); every other page uses the section title. Spacing comes from
+// --space-close / --space-close-sm in orbit.css. The quiet ground variant is Closing.astro.
+import Sheet from './Sheet.astro';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  button: string;
+  href?: string;
+  size?: 'section' | 'display';
+  level?: 'h2' | 'h3';
+  titleId?: string;
+  label?: string;
+  class?: string;
+}
+const { eyebrow, title, button, href = '/contact/', size = 'section', level = 'h2', titleId, label, class: extra } = Astro.props;
+const Heading = level;
+---
+
+<Sheet class:list={['closing-sheet', size === 'display' && 'closing-sheet--display', extra]} label={label ?? eyebrow}>
+  <div class="closing-sheet-text">
+    <p class="t-caption closing-sheet-eyebrow">{eyebrow}</p>
+    <Heading class:list={[size === 'display' ? 't-page-title' : 't-section', 'closing-sheet-title']} id={titleId}>{title}</Heading>
+  </div>
+  <a href={href} class="btn btn-brand closing-sheet-btn">{button}</a>
+</Sheet>
