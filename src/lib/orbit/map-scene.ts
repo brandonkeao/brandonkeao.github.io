@@ -1491,6 +1491,20 @@ export function createMap(
   );
   intersection.observe(host);
   resize();
+  // Compile the missions' materials now, with the rest of the scene, while the canvas is
+  // still fading in over the poster. They are hidden in the wide view, so the first render
+  // skips them and their programs used to compile at the first selection, halfway through
+  // the flight where the mission fades in (2026-10-13 enter-transition rework).
+  if (micros.length) {
+    // One draw into the composer's buffer, as the RenderPass draws (the render target is part
+    // of a program's key): a bare compile() left three's first-use program checks to the
+    // flight. The next frame's RenderPass clears the buffer.
+    micros.forEach((m) => m.setFade(1));
+    renderer.setRenderTarget(composer.readBuffer);
+    renderer.render(scene, camera);
+    renderer.setRenderTarget(null);
+    micros.forEach((m) => m.setFade(0));
+  }
   wake();
   started = true;
   hooks.onReady();
