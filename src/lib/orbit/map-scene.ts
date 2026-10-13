@@ -25,6 +25,9 @@ import {
   orbitPosition,
   depthScale,
   ease,
+  FLIGHT_MS,
+  SWAP_MS,
+  MISSION_FADE,
   type Orbit,
   type Pose,
 } from './orbits';
@@ -640,7 +643,7 @@ export function createMap(
         // moon-to-moon switch the old mission hands off to the new one (round 7).
         const focus =
           i === selectedIndex
-            ? THREE.MathUtils.smoothstep(blend, 0.45, 0.95) * swapT
+            ? THREE.MathUtils.smoothstep(blend, MISSION_FADE[0], MISSION_FADE[1]) * swapT
             : swap && i === prevSelected
               ? 1 - swapT
               : 0;
@@ -861,7 +864,7 @@ export function createMap(
       from: blend,
       to,
       started: performance.now(),
-      duration: o.instant || fallback ? 0 : 850,
+      duration: o.instant || fallback ? 0 : FLIGHT_MS,
     };
     // An instant transition settles now: a hidden tab runs no frames.
     if (transition.duration === 0) completeTransition();
@@ -888,7 +891,7 @@ export function createMap(
     selectedIndex = CATEGORIES.findIndex((c) => c.id === id);
     category = id;
     transitionToken = o.token;
-    swap = { started: performance.now(), duration: o.instant || fallback ? 0 : 700 };
+    swap = { started: performance.now(), duration: o.instant || fallback ? 0 : SWAP_MS };
     swapT = 0;
     if (swap.duration === 0) completeSwap();
     else wake();

@@ -229,6 +229,12 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   @media (prefers-reduced-motion: no-preference) {
     .wwm[data-state='selected'] .wwm-detail:not([hidden]) { animation: wwm-in 0.28s ease-out; }
     @keyframes wwm-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    /* Overview → model on the flight's clock (state.ts sets the three times from orbits.ts):
+       the Overview fades out as the system starts to recede, the page swaps, and the model
+       arrives while its mission fades in. */
+    .wwm.wwm-leaving .wwm-select,
+    .wwm.wwm-leaving [data-wwm-overview] { opacity: 0; transition: opacity var(--wwm-out, 200ms) ease-in; pointer-events: none; }
+    .wwm.wwm-arriving .wwm-detail:not([hidden]) { animation: wwm-in var(--wwm-in-dur, 280ms) ease-out var(--wwm-in-delay, 0ms) both; }
   }
 
   /* Leaving the story: one and a half band steps, so the next band arrives as the media lets go
