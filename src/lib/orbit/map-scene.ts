@@ -968,7 +968,18 @@ export function createMap(
     }
     leaderLayer.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
     measureLabels();
-    wake();
+    // Resizing the canvas clears it, and a ResizeObserver runs after this frame's draw: left
+    // to the next frame, the cleared canvas is what gets painted, so a live box resize (a
+    // window drag, or the old Work with me height ride) strobes blank. Redraw now instead.
+    if (started) redrawNow();
+    else wake();
+  }
+  let started = false;
+  function redrawNow() {
+    if (disposed) return;
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    update(performance.now());
   }
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(host);
@@ -1481,6 +1492,7 @@ export function createMap(
   intersection.observe(host);
   resize();
   wake();
+  started = true;
   hooks.onReady();
   return {
     enter,
