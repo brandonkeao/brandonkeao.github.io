@@ -88,9 +88,11 @@ const lead = 'Bring me into your team full time, work with me on a product outco
         c.setAttribute('role', 'button');
         c.setAttribute('aria-pressed', String(c.getAttribute('data-wwm-choose') === v));
       });
+      /* The Overview hides the stacked no-JS details here too, before paint: left to the module
+         script, the shared band jumped up into view after load (a 0.29 layout shift at 1440). */
+      ds.forEach(function (d) { d.hidden = d.getAttribute('data-wwm-detail') !== v; });
       if (!v) return;
       r.setAttribute('data-state', 'selected');
-      ds.forEach(function (d) { d.hidden = d.getAttribute('data-wwm-detail') !== v; });
       r.querySelectorAll('[data-wwm-closing]').forEach(function (c) { c.hidden = c.getAttribute('data-wwm-closing') !== v; });
       r.querySelectorAll('[data-wwm-overview]').forEach(function (el) { el.hidden = true; });
     })();
