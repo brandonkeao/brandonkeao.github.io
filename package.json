@@ -11,7 +11,8 @@
     "test:navigation": "node tests/navigation.mjs",
     "audit": "node scripts/audit-static.mjs",
     "test:audit": "node --test scripts/audit-static.test.mjs",
-    "test": "node --experimental-strip-types --test tests/*.test.ts"
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test:stage": "node tests/stage-regression.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",
