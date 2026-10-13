@@ -34,6 +34,7 @@ Astro will print the local review address. Before opening a pull request, run th
 
 ```sh
 npm run check
+npm run test:audit
 npm run build
 npm run audit
 ```

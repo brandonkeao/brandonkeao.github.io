@@ -9,7 +9,8 @@
     "astro": "astro",
     "check": "astro check",
     "test:navigation": "node tests/navigation.mjs",
-    "audit": "node scripts/audit-static.mjs"
+    "audit": "node scripts/audit-static.mjs",
+    "test:audit": "node --test scripts/audit-static.test.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",

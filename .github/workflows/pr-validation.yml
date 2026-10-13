@@ -28,6 +28,9 @@ jobs:
       - name: Check Astro and TypeScript
         run: npm run check
 
+      - name: Test static audit
+        run: npm run test:audit
+
       - name: Build
         run: npm run build
 
