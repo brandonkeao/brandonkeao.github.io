@@ -31,7 +31,6 @@ import {
   type Orbit,
   type Pose,
 } from './orbits';
-import { labelBounds, placeLabel, type Rect } from './label-layout';
 import { createPlanet } from './planet';
 import { resolveMoonStyle, SPHERE_RADII, SPHERE_CENTER_RADII } from './moon-style';
 import { surfaceMaterial, valueNoise, dataTexture, rustTexture, STAGE_GROUND, type SurfaceUniforms } from './moon-surfaces';
@@ -44,7 +43,7 @@ import { addStarDust, EdgeFeather, setEdgeFade } from './star-dust';
  * machine when the renderer echoes that token through `onSettled`.
  */
 export type Hooks = {
-  /** Label or mesh click in the overview. The renderer does not self-select. */
+  /** Moon mesh click in the overview. The renderer does not self-select. */
   onCategoryRequest(id: CategoryId): void;
   onItem(item: ContentItem): void;
   /** Echoes the token of the enter/leave that finished. */
@@ -743,23 +742,6 @@ export function createMap(
   path.visible = false;
   scene.add(path);
 
-  // ---- Labels: chips with a short leader line, offset away from the centre.
-  const labelLayer = document.createElement('div');
-  labelLayer.className = 'scene-labels';
-  host.appendChild(labelLayer);
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const leaderLayer = document.createElementNS(svgNS, 'svg');
-  leaderLayer.setAttribute('class', 'label-leaders');
-  labelLayer.appendChild(leaderLayer);
-  type Label = {
-    el: HTMLButtonElement;
-    leader: SVGLineElement;
-    index: number;
-    full: { w: number; h: number };
-    compact: { w: number; h: number };
-  };
-  const labelButtons: Label[] = [];
-
   let category: CategoryId | null = null,
     transition: { from: number; to: number; started: number; duration: number } | null =
       null,
@@ -792,68 +774,6 @@ export function createMap(
     speechT = 0,
     speechEnvelope = 0;
   let emphasized: CategoryId | null = null;
-  let lastLabelUpdate = 0;
-
-  for (let i = 0; i < 3; i++) {
-    const el = document.createElement('button');
-    el.className = 'moon-label';
-    el.tabIndex = -1;
-    el.type = 'button';
-    el.addEventListener('pointerenter', () => {
-      held = true;
-      wake();
-    });
-    el.addEventListener('pointerleave', () => {
-      held = false;
-      meshHeld = false;
-      wake();
-    });
-    el.addEventListener('click', () => {
-      if (transition) return;
-      if (category) {
-        if (!empty) hooks.onItem(CATEGORIES[selectedIndex].items[i]);
-      } else hooks.onCategoryRequest(CATEGORIES[i].id);
-    });
-    labelLayer.appendChild(el);
-    const leader = document.createElementNS(svgNS, 'line');
-    leaderLayer.appendChild(leader);
-    labelButtons.push({ el, leader, index: i, full: { w: 0, h: 0 }, compact: { w: 0, h: 0 } });
-  }
-  function measureLabels() {
-    labelButtons.forEach((l) => {
-      l.el.classList.remove('is-compact');
-      l.full = { w: l.el.offsetWidth, h: l.el.offsetHeight };
-      l.el.classList.add('is-compact');
-      l.compact = { w: l.el.offsetWidth, h: l.el.offsetHeight };
-      l.el.classList.remove('is-compact');
-    });
-  }
-  function updateLabelsText() {
-    labelButtons.forEach(({ el, index }) => {
-      const c = CATEGORIES[selectedIndex];
-      const [title, meta] = category
-        ? [
-            c.items[index].title,
-            c.items[index].locked
-              ? 'Additional access'
-              : c.items[index].placeholder
-                ? 'Placeholder'
-                : (c.items[index].cta ?? `Explore ${c.singular}`),
-          ]
-        : [
-            CATEGORIES[index].name,
-            `${CATEGORIES[index].items.length} ${CATEGORIES[index].noun}`,
-          ];
-      const strong = document.createElement('strong');
-      strong.textContent = title;
-      const small = document.createElement('span');
-      small.textContent = meta;
-      el.replaceChildren(strong, small);
-      el.title = title;
-    });
-    measureLabels();
-  }
-  updateLabelsText();
 
   // Navigation guards live in lib/map-state; these only execute commands.
   function startTransition(to: number, o: TransitionOptions) {
@@ -904,7 +824,6 @@ export function createMap(
     wake();
   }
   function settle() {
-    updateLabelsText();
     hooks.onSettled(transitionToken);
   }
   function completeTransition() {
@@ -969,8 +888,6 @@ export function createMap(
       micros.forEach((mf) => mf.setResolution(r.width * pr, r.height * pr));
       if (feather) setEdgeFade(feather, r.width, r.height, pr);
     }
-    leaderLayer.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
-    measureLabels();
     // Resizing the canvas clears it, and a ResizeObserver runs after this frame's draw: left
     // to the next frame, the cleared canvas is what gets painted, so a live box resize (a
     // window drag, or the old Work with me height ride) strobes blank. Redraw now instead.
@@ -991,11 +908,10 @@ export function createMap(
     tmp = new THREE.Vector3(),
     ray = new THREE.Raycaster(),
     pointer = new THREE.Vector2();
-  const labelRay = new THREE.Raycaster();
   const camUp = new THREE.Vector3();
   function toScreen(v: THREE.Vector3) {
     tmp.copy(v).project(camera);
-    return { x: (tmp.x * 0.5 + 0.5) * dims.width, y: (-tmp.y * 0.5 + 0.5) * dims.height, ndc: tmp.clone() };
+    return { x: (tmp.x * 0.5 + 0.5) * dims.width, y: (-tmp.y * 0.5 + 0.5) * dims.height };
   }
   /**
    * The centre overlay (eyebrow, title, subtitle) is a sibling of the canvas;
@@ -1005,16 +921,6 @@ export function createMap(
    */
   const stageEl = host.parentElement;
   let publishedCenter = '';
-  // Toolbar height changes with its content (breadcrumb wrap); cache it from
-  // a ResizeObserver instead of forcing layout on every label pass.
-  const toolbarEl = stageEl?.querySelector<HTMLElement>('.stage-toolbar') ?? null;
-  let toolbarBottom: number | undefined;
-  const toolbarObserver = new ResizeObserver(() => {
-    if (!toolbarEl) return;
-    toolbarBottom = toolbarEl.offsetTop + toolbarEl.offsetHeight;
-    wake();
-  });
-  if (toolbarEl) toolbarObserver.observe(toolbarEl);
   function publishCenter() {
     const centred = blend >= 0.5 && category !== null ? moons[selectedIndex] : planet;
     centred.getWorldPosition(point);
@@ -1054,101 +960,6 @@ export function createMap(
     publishedCenter = '';
     wake();
   });
-  function hideLabel(l: Label) {
-    l.el.style.opacity = '0';
-    l.el.style.pointerEvents = 'none';
-    l.leader.style.opacity = '0';
-  }
-  function labels() {
-    const placed: Rect[] = [];
-    const center = toScreen(point.set(0, 0, 0));
-    camUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
-    // Labels stay below the toolbar (breadcrumb + instruction or suggestion),
-    // which can wrap on phones: measure it rather than assume one height.
-    const bounds = labelBounds({
-      width: dims.width,
-      height: dims.height,
-      bottomReserve: stageReserve(dims.width).bottom,
-      toolbarBottom,
-      breadcrumb: category !== null,
-    });
-    const centerRadius = category
-      ? CENTER[selectedIndex] * RADII[selectedIndex]
-      : PLANET_RADIUS;
-    const centerEdge = toScreen(tmp.set(0, 0, 0).addScaledVector(camUp, centerRadius));
-    // In the overview the obstacle includes the planet's bright limb halo, so
-    // chips never sit on the hottest part of the corona.
-    const obstacle = {
-      x: center.x,
-      y: center.y,
-      r: Math.hypot(centerEdge.x - center.x, centerEdge.y - center.y) * (category ? 0.92 : 1.08),
-    };
-    const obstacles = [obstacle];
-    // Inside a collection the shrunken overview (planet and its tilted rings)
-    // rests top-left; keep child labels off it.
-    if (category && blend === 1) {
-      const former = toScreen(planet.position);
-      const ring = toScreen(
-        tmp.copy(planet.position).addScaledVector(camUp, ORBITS[1].a * planet.scale.x),
-      );
-      obstacles.push({
-        x: former.x,
-        y: former.y,
-        r: Math.hypot(ring.x - former.x, ring.y - former.y),
-      });
-    }
-    // Project every labelled body first so a chip can also keep off the
-    // other bodies (on phones the three children crowd one small stage).
-    const bodies = labelButtons.map(({ index }) => {
-      const mesh = category ? children[index] : moons[index];
-      mesh.getWorldPosition(point);
-      const world = point.clone();
-      const s = toScreen(point);
-      const edge = toScreen(tmp.copy(world).addScaledVector(camUp, RADII[index] * mesh.scale.x));
-      return { mesh, world, s, radiusPx: Math.hypot(edge.x - s.x, edge.y - s.y) };
-    });
-    labelButtons.forEach((l) => {
-      const { el, index } = l;
-      // No labels in the selected view: the child moons are retired (Brandon, 2026-10-12)
-      // and the moon's name is carried by the page, not the stage.
-      if (transition || fallback || category) return hideLabel(l);
-      const { mesh, world, s, radiusPx } = bodies[index];
-      if (!l.full.w) measureLabels();
-      const result = placeLabel({
-        anchor: { x: s.x, y: s.y },
-        center: { x: center.x, y: center.y },
-        radius: radiusPx,
-        full: l.full,
-        compact: l.compact,
-        bounds,
-        placed,
-        obstacles: [
-          ...obstacles,
-          ...bodies
-            .filter((_, j) => j !== index)
-            .map((o) => ({ x: o.s.x, y: o.s.y, r: o.radiusPx + 3 })),
-        ],
-      });
-      placed.push(result.rect);
-      el.classList.toggle('is-compact', result.compact);
-      labelRay.setFromCamera(new THREE.Vector2(s.ndc.x, s.ndc.y), camera);
-      const blocker = category ? moons[selectedIndex] : planet;
-      const occluded =
-        labelRay.intersectObjects([blocker, mesh], false)[0]?.object !== mesh;
-      const r = result.rect;
-      el.style.transform = `translate(${r.x}px,${r.y}px)`;
-      // Labels of bodies on the far half of their orbit sit back slightly.
-      const far = world.distanceTo(camera.position) > camera.position.length() + 0.7;
-      const opacity = occluded ? '0' : far ? '.82' : '1';
-      el.style.opacity = opacity;
-      el.style.pointerEvents = occluded ? 'none' : 'auto';
-      l.leader.setAttribute('x1', result.leader.x1.toFixed(1));
-      l.leader.setAttribute('y1', result.leader.y1.toFixed(1));
-      l.leader.setAttribute('x2', result.leader.x2.toFixed(1));
-      l.leader.setAttribute('y2', result.leader.y2.toFixed(1));
-      l.leader.style.opacity = occluded || !result.leader.visible ? '0' : opacity;
-    });
-  }
   function pointerHit(e: MouseEvent) {
     if (category) return -1; // the selected view has no child targets (retired 2026-10-12)
     const rect = host.getBoundingClientRect();
@@ -1172,7 +983,7 @@ export function createMap(
     }
   }
   function pointerClick(e: MouseEvent) {
-    if ((e.target as HTMLElement).closest('.moon-label') || transition || fallback) return;
+    if (transition || fallback) return;
     const i = pointerHit(e);
     if (i < 0) return;
     if (category) {
@@ -1448,10 +1259,6 @@ export function createMap(
         diagnosticAt = now;
       }
       publishCenter();
-      if (now - lastLabelUpdate > 25 || !moving) {
-        labels();
-        lastLabelUpdate = now;
-      }
     }
     // The planet keeps its own motion while a moon is hovered or held, so the
     // loop runs whenever motion is allowed, not only while the orbits advance.
@@ -1551,7 +1358,6 @@ export function createMap(
       fallback = value || fatal;
       // The static view has no flight to show: finish any running one.
       if (fallback) completeTransition();
-      if (value) labelButtons.forEach(hideLabel);
       wake();
     },
     setPending(value) {
@@ -1570,7 +1376,6 @@ export function createMap(
       disposed = true;
       cancelAnimationFrame(frame);
       resizeObserver.disconnect();
-      toolbarObserver.disconnect();
       intersection.disconnect();
       document.removeEventListener('visibilitychange', visibility);
       renderer.domElement.removeEventListener('pointerleave', pointerLeave);

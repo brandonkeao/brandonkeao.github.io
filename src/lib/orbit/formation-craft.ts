@@ -189,23 +189,80 @@ export function makeCraftKit(parent: THREE.Object3D, camera: THREE.Camera): Craf
     return line;
   }
 
+  function writeTrailData(
+    geometry: LineGeometry,
+    pts: THREE.Vector3[],
+    color: THREE.Color,
+    gain: number,
+    fadePow: number,
+  ): LineGeometry {
+    const pointCount = pts.length;
+    const segmentValueCount = (pointCount - 1) * 6;
+    const start = geometry.getAttribute('instanceStart') as THREE.InterleavedBufferAttribute | undefined;
+    const colorStart = geometry.getAttribute('instanceColorStart') as THREE.InterleavedBufferAttribute | undefined;
+    const positions = start?.data;
+    const colors = colorStart?.data;
+
+    if (
+      !positions ||
+      !colors ||
+      positions.array.length !== segmentValueCount ||
+      colors.array.length !== segmentValueCount
+    ) {
+      const target = positions || colors ? new LineGeometry() : geometry;
+      const pointPositions = new Float32Array(pointCount * 3);
+      const pointColors = new Float32Array(pointCount * 3);
+      for (let i = 0; i < pointCount; i++) {
+        const offset = i * 3;
+        const alpha = gain * Math.pow(1 - i / (pointCount - 1), fadePow);
+        pointPositions[offset] = pts[i].x;
+        pointPositions[offset + 1] = pts[i].y;
+        pointPositions[offset + 2] = pts[i].z;
+        pointColors[offset] = color.r * alpha;
+        pointColors[offset + 1] = color.g * alpha;
+        pointColors[offset + 2] = color.b * alpha;
+      }
+      target.setPositions(pointPositions);
+      target.setColors(pointColors);
+      (target.getAttribute('instanceStart') as THREE.InterleavedBufferAttribute).data.setUsage(THREE.DynamicDrawUsage);
+      (target.getAttribute('instanceColorStart') as THREE.InterleavedBufferAttribute).data.setUsage(THREE.DynamicDrawUsage);
+      if (target !== geometry) geometry.dispose();
+      return target;
+    }
+
+    const positionArray = positions.array;
+    const colorArray = colors.array;
+    for (let i = 0; i < pointCount - 1; i++) {
+      const offset = i * 6;
+      const headAlpha = gain * Math.pow(1 - i / (pointCount - 1), fadePow);
+      const tailAlpha = gain * Math.pow(1 - (i + 1) / (pointCount - 1), fadePow);
+      positionArray[offset] = pts[i].x;
+      positionArray[offset + 1] = pts[i].y;
+      positionArray[offset + 2] = pts[i].z;
+      positionArray[offset + 3] = pts[i + 1].x;
+      positionArray[offset + 4] = pts[i + 1].y;
+      positionArray[offset + 5] = pts[i + 1].z;
+      colorArray[offset] = color.r * headAlpha;
+      colorArray[offset + 1] = color.g * headAlpha;
+      colorArray[offset + 2] = color.b * headAlpha;
+      colorArray[offset + 3] = color.r * tailAlpha;
+      colorArray[offset + 4] = color.g * tailAlpha;
+      colorArray[offset + 5] = color.b * tailAlpha;
+    }
+    positions.needsUpdate = true;
+    colors.needsUpdate = true;
+    geometry.computeBoundingBox();
+    geometry.computeBoundingSphere();
+    return geometry;
+  }
+
   function setTrail(line: Line2, pts: THREE.Vector3[], color: THREE.Color, gain: number, fadePow = 1.3) {
     if (pts.length < 2 || gain <= 0.001) {
       line.visible = false;
       return;
     }
     line.visible = true;
-    const p = new Float32Array(pts.length * 3),
-      c = new Float32Array(pts.length * 3);
-    for (let i = 0; i < pts.length; i++) {
-      const a = gain * Math.pow(1 - i / (pts.length - 1), fadePow);
-      p.set([pts[i].x, pts[i].y, pts[i].z], i * 3);
-      c.set([color.r * a, color.g * a, color.b * a], i * 3);
-    }
-    line.geometry.dispose();
-    line.geometry = new LineGeometry();
-    line.geometry.setPositions(p);
-    line.geometry.setColors(c);
+    line.geometry = writeTrailData(line.geometry, pts, color, gain, fadePow);
   }
 
   function staticLine(pts: THREE.Vector3[], color: number, alpha: number, width = 1.2, dashed = false) {

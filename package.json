@@ -10,7 +10,8 @@
     "check": "astro check",
     "test:navigation": "node tests/navigation.mjs",
     "audit": "node scripts/audit-static.mjs",
-    "test:audit": "node --test scripts/audit-static.test.mjs"
+    "test:audit": "node --test scripts/audit-static.test.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",
