@@ -827,6 +827,8 @@ export function createMap(
     hooks.onSettled(transitionToken);
   }
   function completeTransition() {
+    // A running moon-to-moon swap settles too (ticket #24), so "finish the flight" always lands.
+    if (swap) completeSwap();
     if (!transition) return;
     blend = transition.to;
     transition = null;
@@ -1265,19 +1267,23 @@ export function createMap(
     const alive = !paused && !reduced;
     if ((alive || moving || modulating || transition) && !fallback && visible && !offscreen)
       frame = requestAnimationFrame(update);
-    else if (transition && visible) frame = requestAnimationFrame(update);
+    else if ((transition || swap) && visible) frame = requestAnimationFrame(update);
   }
   function wake() {
     if (disposed) return;
     last = performance.now();
     if (!frame) frame = requestAnimationFrame(update);
   }
-  // Visibility is reported to the host; its state machine answers with
-  // `completeTransition` when a flight is running, so navigation never waits
-  // on an unseen animation.
+  // Visibility is reported to the host. A flight running when the stage goes unseen
+  // completes here (the host's onVisibility was a no-op, so it used to stall), so
+  // navigation never waits on an unseen animation.
   let reportedVisible = true;
   function visibilityChanged() {
     const now = visible && !offscreen;
+    // A flight that leaves the screen mid-way (ticket #24: on phones a row choice scrolls the
+    // page to the model's detail) lands at once instead of stalling until it is seen again —
+    // the frame loop stops below, and nobody watches the rest of the ride.
+    if (!now && (transition || swap)) completeTransition();
     if (!now && frame) {
       cancelAnimationFrame(frame);
       frame = 0;
