@@ -265,7 +265,7 @@ export function makeCraftKit(parent: THREE.Object3D, camera: THREE.Camera): Craf
    buckets and each formation around each moon is different because each moon is a
    different mission"). Each mounts under an identity-rotation anchor group that map-scene
    keeps synced to its moon's position and scale; map-scene drives `tick(t, dir)` from its
-   own clock (so Pause and reduced motion freeze them) and passes the orbit's world travel
+   own clock (so a paused stage and reduced motion freeze them) and passes the orbit's world travel
    direction, which the choreography uses as its forward axis. Gains sit low — craft ≤1.9,
    trail colour ≤0.9, under the 0.93 bloom threshold — so small lights stay crisp instead
    of blobbing.

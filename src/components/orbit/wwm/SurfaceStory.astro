@@ -144,8 +144,6 @@ const steps = [
               if (!ctl || ctl.signal.aborted || scenes.has(host)) return;
               const scene = createFormation(host, slug);
               scenes.set(host, scene);
-              // The page's pause chip (D3) may already be pressed when a story first shows.
-              if (document.querySelector('.map-stage[data-paused]')) scene.pause(true);
               scene.setProgress(progressOf(story));
               story.classList.add('is-live');
               // A lost context means the canvas is dead: back to the poster, for good.
@@ -180,12 +178,6 @@ const steps = [
     };
     raf = requestAnimationFrame(loop);
     signal.addEventListener('abort', () => cancelAnimationFrame(raf));
-
-    // The stage's pause chip (OrbitStage, D3) stops the story scenes' motion with the orbit's.
-    document.addEventListener('orbit:pause', (e) => {
-      const paused = !!(e as CustomEvent<{ paused: boolean }>).detail?.paused;
-      scenes.forEach((s) => s.pause(paused));
-    }, { signal });
   }
 
   function teardown() {
