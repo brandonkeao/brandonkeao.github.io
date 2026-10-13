@@ -112,17 +112,12 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm-body { grid-column: 6 / -1; min-width: 0; }
   .wwm-measure { max-width: 60ch; }
   .wwm-follow { margin-top: 16px; }
-  .wwm-arrow { font-size: 20px; line-height: 1; color: var(--on-ground-faint); transition: color 0.15s; }
-  .wwm-eyebrow { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.4; font-weight: 500; color: var(--on-ground-muted); margin-bottom: 12px; }
   .wwm h2[tabindex='-1']:focus { outline: none; }
   .wwm h2[tabindex='-1']:focus-visible { outline: 2px solid var(--accent-on-ground); }
-  /* The cards replaced the phone tabs, so nothing sticks above the story's media any more. */
-  .wwm { --wwm-switcher-h: 0px; }
 
   /* ---- the white sheet (layout O1) -------------------------------------------------------- */
-  /* The model's content was written for the ground; inside the sheet the ground roles take the
-     sheet's values, so every band, list and evidence card below reads dark on white without
-     forking its markup. Phase 2 rebuilds these sections for the sheet. */
+  /* Shared pieces written for the ground (SectionHead, the muted lead, link-ground) take the
+     sheet's values inside it, so they read dark on white without forking their markup. */
   .wwm-sheet {
     --ground: var(--sheet);
     --ground-raised: #f6f6f3;
@@ -134,7 +129,6 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     --accent-on-ground: var(--accent);
     margin-bottom: 0;
   }
-  .wwm-sheet .ground-pad { padding-left: 0; padding-right: 0; }
   @media (min-width: 861px) { .sheet.wwm-sheet { padding-top: 56px; } }
 
   /* ---- selector cards --------------------------------------------------------------------- */
@@ -153,54 +147,39 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   /* ---- what follows the cards in the sheet ------------------------------------------------ */
   .wwm-content { margin-top: 40px; border-top: 1px solid var(--line-on-sheet); }
   .wwm-content > .wwm-shared { padding-top: var(--space-band-sm); padding-bottom: 0; }
-  .wwm-detail > .wwm-evidence { padding-bottom: 0; }
 
   /* Browser Back to the Overview (D1): the overview sections fade back in instead of popping. */
   @media (prefers-reduced-motion: no-preference) {
     .wwm.wwm-returning [data-wwm-overview]:not([hidden]) { animation: wwm-in 0.35s ease-out; }
   }
 
-  /* ---- a selected model's detail -------------------------------------------------------- */
-  /* The chosen model's intro is the shared SectionHead band (round 13); on desktop it stays
-     stuck to the top of the screen while the story scrolls beneath — "the category they select
-     is ever present". Scoped to the enhanced selected state, so the no-JS stacked page keeps
-     plain bands. state.ts publishes the band's measured height as --wwm-intro-h for the story's
-     sticky media and hash jumps. */
-  .wwm-detail-intro { padding-top: var(--space-band-sm); }
+  /* ---- a selected model's detail: calm sections on the sheet ---------------------------- */
+  /* Readable pattern (designer review, Brandon approved the before and after): the heading in
+     columns 1–4, one reading column (about 630px, 18px, the sheet's ink, not muted), a hairline
+     between sections, nothing above a heading, no motion. */
+  .wwm-detail-intro { padding-top: var(--space-band-sm); padding-bottom: 40px; }
   .wwm-detail-intro .section-eyebrow { display: flex; align-items: center; gap: 8px; }
   .wwm-detail-intro .section-head { max-width: none; }
-  @media (min-width: 861px) {
-    .wwm[data-state='selected'] .wwm-detail-intro {
-      position: sticky;
-      top: 0;
-      z-index: 6;
-      background: var(--ground);
-      border-bottom: 1px solid var(--line-on-ground);
-      padding-top: 32px;
-      padding-bottom: 28px;
-    }
-    .wwm-evidence { scroll-margin-top: calc(var(--wwm-intro-h, 0px) + 16px); }
-  }
-  /* The story's media stays a dark plate on the sheet until Phase 2 retires it (the literal is
-     the page ground; --ground is the sheet in here). */
-  .wwm-sheet .story-media { --ground: #2b2d29; border-radius: 10px; }
-  .wwm-fits { list-style: none; margin: 0; padding: 0; }
-  .wwm-fits li { padding: 16px 0; border-top: 1px solid var(--line-on-ground); color: var(--on-ground-muted); }
-  .wwm-fits li:last-child { border-bottom: 1px solid var(--line-on-ground); }
-  .wwm-work .t-item + p { margin-top: 12px; }
+  .wwm-read { max-width: 630px; font-size: 18px; line-height: 1.6; color: var(--on-sheet); }
+  .wwm-detail-intro .wwm-read { font-size: clamp(18px, 1.4vw, 20px); line-height: 1.5; }
+  .wwm-section { padding-top: 40px; padding-bottom: 40px; border-top: 1px solid var(--line-on-sheet); }
+  .wwm-section-title { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; color: var(--on-sheet); }
+  .wwm-detail > .wwm-evidence { padding-bottom: 0; }
+  .wwm-fits { list-style: none; margin: 0; padding: 0; max-width: 630px; }
+  .wwm-fits li { padding: 12px 0; border-top: 1px solid var(--line-on-sheet); font-size: 18px; line-height: 1.6; color: var(--on-sheet); }
+  .wwm-fits li:first-child { border-top: 0; padding-top: 0; }
+  .wwm-fits li:last-child { padding-bottom: 0; }
 
-  .wwm-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
-  .wwm-group-label { font-weight: 500; color: var(--on-ground-muted); margin-bottom: 12px; }
-  .wwm-ev-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
-  .wwm-ev { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px; border: 1px solid var(--line-on-ground); border-radius: var(--r-sheet); background: var(--ground-raised); transition: border-color 0.15s; }
-  a.wwm-ev:hover { border-color: var(--control-line-on-ground); }
-  .wwm-ev-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; }
-  .wwm-ev-name { text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1.5px; text-underline-offset: 4px; transition: text-decoration-color 0.15s; }
-  .wwm-ev:hover .wwm-ev-name { text-decoration-color: var(--on-ground); }
-  .wwm-ev:hover .wwm-arrow { color: var(--on-ground); }
-  .wwm-ev .wwm-ev-name { font-size: 19px; }
-  .wwm-origin { margin: 0; font-size: 13px; padding: 4px 10px; }
-  .wwm-group-link { margin-top: 4px; }
+  .wwm-ev-lead { margin-bottom: 24px; }
+  .wwm-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; max-width: 630px; }
+  .wwm-group-label { font-size: 15px; font-weight: 600; color: var(--on-sheet); margin-bottom: 8px; }
+  .wwm-ev-list { list-style: none; margin: 0; padding: 0; }
+  .wwm-ev-list li { display: flex; flex-direction: column; gap: 2px; padding: 12px 0; border-top: 1px solid var(--line-on-sheet); }
+  .wwm-ev-name { font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--on-sheet); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; text-decoration-color: var(--line-on-sheet); transition: text-decoration-color 0.15s; align-self: flex-start; }
+  .wwm-ev-name:hover { text-decoration-color: var(--accent); }
+  .wwm-ev-note { font-size: 15px; line-height: 1.5; color: var(--on-sheet); }
+  .wwm-ev-origin { font-size: 14px; line-height: 1.5; color: var(--on-sheet-muted); }
+  .wwm-group-link { padding-top: 12px; border-top: 1px solid var(--line-on-sheet); }
 
   /* ---- closing sheets (ClosingSheet): one seam above them on this page --------------------- */
   .sheet.wwm-close { margin-top: var(--space-band-sm); }
@@ -214,24 +193,23 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     @keyframes wwm-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   }
 
-  /* Leaving the story: one and a half band steps, so the next band arrives as the media lets go
-     rather than while it still fills the column (the lab ends the story on a 40svh tail). */
-  @media (min-width: 861px) { .wwm-evidence { padding-top: calc(var(--space-band) * 1.5); } }
 
   @media (max-width: 1100px) {
     .wwm-head { grid-column: 1 / span 5; }
     .wwm-body { grid-column: 7 / -1; }
-    .wwm-groups { grid-template-columns: minmax(0, 1fr); }
+    .wwm-groups { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   }
 
   /* Phones: one column; compact stacked cards (tag and name: with the summary three cards do
      not fit above the fold at 390x844), and inline detail. */
   @media (max-width: 860px) {
-    .wwm-band { grid-template-columns: minmax(0, 1fr); row-gap: 24px; padding-top: var(--space-band-sm); padding-bottom: 0; }
+    .wwm-band { grid-template-columns: minmax(0, 1fr); row-gap: 16px; padding-top: var(--space-band-sm); padding-bottom: 0; }
     .wwm-head, .wwm-body { grid-column: 1 / -1; }
-    .wwm-band .t-item { font-size: 19px; }
     .wwm-band .t-body { font-size: 16px; }
-    .wwm-detail-intro { padding-top: 32px; }
+    .wwm-detail-intro { padding-top: 32px; padding-bottom: 32px; }
+    .wwm-section { padding-top: 32px; padding-bottom: 32px; }
+    .wwm-read, .wwm-fits li { font-size: 17px; }
+    .wwm-section-title { font-size: 20px; }
     .wwm-cards { grid-template-columns: minmax(0, 1fr); gap: 10px; }
     .wwm-card { padding: 14px 16px 16px; gap: 2px; }
     .wwm-card-name { font-size: 19px; }

@@ -148,16 +148,6 @@ export function initWorkWithMe(): (() => void) | undefined {
   w.__samePagePop = onPop;
   addEventListener('popstate', (e) => { if (onPop(e)) e.stopImmediatePropagation(); }, { signal: ctl.signal, capture: true });
 
-  /* ---- layout coupling ------------------------------------------------------------------ */
-  // Desktop's sticky model band (round 13): the story's sticky media and hash jumps sit
-  // below it, so publish the visible band's real height.
-  const intros = [...root.querySelectorAll<HTMLElement>('[data-wwm-intro]')];
-  const introSize = new ResizeObserver(() => {
-    const on = intros.find((el) => el.offsetParent !== null);
-    if (on?.offsetHeight) root.style.setProperty('--wwm-intro-h', `${on.offsetHeight}px`);
-  });
-  intros.forEach((el) => introSize.observe(el));
-
   /* ---- first paint ---------------------------------------------------------------------- */
   const initial = parse(new URLSearchParams(location.search).get('engagement'));
   apply(initial, 'init');
@@ -173,7 +163,6 @@ export function initWorkWithMe(): (() => void) | undefined {
   return () => {
     if (w.__samePagePop === onPop) delete w.__samePagePop;
     ctl.abort();
-    introSize.disconnect();
     clearTimeout(returning);
   };
 }
