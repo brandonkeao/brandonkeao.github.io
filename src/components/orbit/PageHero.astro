@@ -1,0 +1,66 @@
+---
+// The shared page hero (ticket #34, designer review Phase 1): Bookshelf's page header made one
+// component — the title, the lead, an optional body, and the page's own red mark run out as a
+// full-width line across the hero's lower edge, separating it from the content below
+// (Brandon, 2026-10-13, after Alicia: "a long line throughout the whole screen", "a grounding
+// point in the header … keep it out longer"). Each page keeps its own motif on the line, so the
+// heroes share a structure without becoming one template (Work with me: `align`; Bookshelf:
+// `books`). The line draws in once with its mark (MotionLine's own observer) and then stays;
+// reduced motion and no-JS readers see it drawn. It is flat: no glow underlay.
+// Spacing and measure live in CSS (the old inline max-widths moved here).
+import MotionLine from './MotionLine.astro';
+
+type Kind = 'momentum' | 'map' | 'align' | 'blocks' | 'blueprint' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
+interface Props {
+  title: string;
+  mark: Kind;
+  lead?: string;
+  class?: string;
+}
+const { title, mark, lead, class: extra } = Astro.props;
+// `align` is drawn as one stretched SVG across the whole line (its strands merge just past the
+// title's left edge and the centre line runs on to the arrowhead at the right edge). Every
+// other motif sits at the title's left edge on a full-width rule at its own baseline.
+const stretched = mark === 'align';
+---
+
+<header class:list={['page-header', 'page-hero', extra]} data-page-hero>
+  <h1 class="t-page-title">{title}</h1>
+  {lead && <p class="t-lead muted-g page-lead page-hero-lead">{lead}</p>}
+  <slot />
+  <div class:list={['hero-line', `hero-line--${mark}`]} aria-hidden="true">
+    {stretched
+      ? <MotionLine kind="align" stretch merge={108} />
+      : <><span class="hero-rule"></span><MotionLine kind={mark} /></>}
+  </div>
+</header>
+
+<style is:global>
+  /* The lead's measure, formerly inline on each page. */
+  .page-hero-lead { max-width: 720px; }
+  /* The line spans the window, not the 1440 frame: it bleeds past the gutter on both sides. */
+  .page-hero { --hero-bleed: calc(var(--gutter) + max(0px, (100vw - var(--content-max)) / 2)); }
+  .hero-line { position: relative; margin: 32px calc(-1 * var(--hero-bleed)) 0; height: 40px; color: var(--accent-on-ground); }
+  .hero-line .motion-line { margin-top: 0; }
+  /* A motif on the rule: placed at the title's left edge. */
+  .hero-line:not(.hero-line--align) .motion-line { position: relative; margin-left: var(--hero-bleed); }
+  /* The rule sits on the motif's own baseline (the shelf for books and build, the centre for
+     the line marks), drawn once from the left with the motif. */
+  .hero-line { --rule-y: 20px; }
+  .hero-line--books, .hero-line--build { --rule-y: 36px; }
+  .hero-rule { position: absolute; left: 0; right: 0; top: calc(var(--rule-y) - 0.75px); height: 1.5px; background: currentColor; opacity: 0.65; transform-origin: 0 50%; }
+  /* The motif's own short shelf would double the rule's tint where they overlap. */
+  .hero-line--books .motion-line > .ml-draw.ml-soft:first-child,
+  .hero-line--build .motion-line > .ml-draw.ml-soft:first-child { display: none; }
+  /* Flat: the stretched mark's soft glow underlay is dropped in the hero (designer review:
+     "very minimal", "a little bit flatter"). */
+  .hero-line .mls-glow { display: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-line:has(.motion-line[data-motion-armed]:not([data-motion-play])) .hero-rule { transform: scaleX(0); }
+    .hero-line:has(.motion-line[data-motion-play]) .hero-rule { animation: hero-rule-draw 1100ms cubic-bezier(0.33, 0, 0.2, 1) both; }
+  }
+  @keyframes hero-rule-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @media (max-width: 860px) {
+    .hero-line { margin-top: 24px; }
+  }
+</style>

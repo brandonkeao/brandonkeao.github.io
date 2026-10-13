@@ -1,0 +1,127 @@
+---
+// The scene band at the end of a page (ticket #34, designer review Phase 1): the orbital scene
+// that used to fill the Work with me hero, moved to a band above the closing call to action
+// (Brandon, 2026-10-13: the animations "removed from the Header hero and moved to the bottom of
+// the pages"). Decorative and quiet: no controls, no labels, not part of selection.
+//
+// Simple version (Phase 1): the overview system on its own clock. One WebGL context, created
+// lazily as the band nears the window (400px ahead), paused by the renderer itself offscreen
+// and in hidden tabs, disposed on page swap. Reduced motion, no WebGL, a failed load or a lost
+// context: the poster is the band. Phase 2 makes it time-driven (plays once on entry, then
+// holds) with landscape posters.
+//
+// Built from OrbitStage's fallback and lazy-load idiom, but its own markup and class names, so
+// OrbitStage's single-stage script never picks it up.
+import type { OrbitSet } from '../../lib/orbit/orbit-data';
+
+interface Props { set?: OrbitSet; speed?: number }
+const { set = 'work', speed = 1 } = Astro.props;
+---
+
+<div class="scene-band ground-pad" aria-hidden="true">
+  <div class="scene-band-stage" data-scene-band={set} data-speed={speed}>
+    <picture class="scene-band-poster">
+      <source media="(max-width: 860px)" srcset={`/images/orbit/${set}-mobile.jpg`} />
+      <img src={`/images/orbit/${set}-desktop.jpg`} alt="" width="906" height="580" loading="lazy" decoding="async" />
+    </picture>
+    <div class="scene-band-host"></div>
+  </div>
+</div>
+
+<script>
+  import { useSet, type OrbitSet } from '../../lib/orbit/orbit-data';
+  import type { MapController } from '../../lib/orbit/map-scene';
+
+  let teardown: (() => void) | undefined;
+
+  function hasWebGL() {
+    const probe = document.createElement('canvas');
+    const gl = probe.getContext('webgl2') || probe.getContext('webgl');
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    return !!gl;
+  }
+
+  function init() {
+    teardown?.();
+    teardown = undefined;
+    const stage = document.querySelector<HTMLElement>('[data-scene-band]');
+    if (!stage) return;
+    const host = stage.querySelector<HTMLElement>('.scene-band-host')!;
+    // Reduced motion: the poster is the still frame; no renderer, no context.
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { stage.classList.add('is-still'); return; }
+
+    let map: MapController | null = null;
+    let disposed = false;
+    const fallBack = () => {
+      stage.classList.add('is-fallback');
+      stage.classList.remove('is-ready');
+      map?.dispose();
+      map = null;
+    };
+
+    async function load() {
+      if (disposed) return;
+      if (!hasWebGL()) { fallBack(); return; }
+      try {
+        const { createMap } = await import('../../lib/orbit/map-scene');
+        if (disposed) return;
+        useSet((stage.dataset.sceneBand as OrbitSet) || 'work');
+        map = createMap(host, {
+          onCategoryRequest() {},
+          onItem() {},
+          onSettled() {},
+          onVisibility() {},
+          onReady() { if (!disposed) stage.classList.add('is-ready'); },
+          onFailure: fallBack,
+        }, undefined, Number(stage.dataset.speed) || 1);
+        map.pause(false);
+        map.reduceMotion(false);
+      } catch {
+        fallBack();
+      }
+    }
+
+    // Lazy: start building while the band is still 400px below the window, once the browser
+    // has a moment, so the scene is usually live by the time it scrolls in.
+    const idle = (f: () => void) =>
+      'requestIdleCallback' in window ? requestIdleCallback(f, { timeout: 1500 }) : setTimeout(f, 200);
+    const near = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { near.disconnect(); idle(load); }
+    }, { rootMargin: '400px 0px' });
+    near.observe(stage);
+
+    teardown = () => {
+      disposed = true;
+      near.disconnect();
+      map?.dispose();
+      map = null;
+    };
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => { teardown?.(); teardown = undefined; });
+</script>
+
+<style is:global>
+  .scene-band { padding-top: var(--space-band-sm); }
+  .scene-band-stage { position: relative; max-width: 906px; margin: 0 auto; aspect-ratio: 906 / 580; overflow: hidden; isolation: isolate; background: var(--ground); }
+  .scene-band-poster img, .scene-band-host { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .scene-band-poster img { object-fit: cover; transition: opacity 0.4s; }
+  .scene-band-host { z-index: 1; pointer-events: none; }
+  /* The renderer's moon labels and leaders are never shown on a decorative scene. */
+  .scene-band .scene-labels, .scene-band .label-leaders { display: none; }
+  .scene-band-host canvas { display: block; width: 100%; height: 100%; transition: opacity 0.6s ease; }
+  .scene-band-stage:not(.is-ready) .scene-band-host canvas { opacity: 0; }
+  .scene-band-stage.is-ready .scene-band-poster img { opacity: 0; }
+  /* The frame's edges fade into the page ground (a JPEG cannot hold the ground's exact value). */
+  .scene-band-poster img, .scene-band-host {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%), linear-gradient(180deg, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%), linear-gradient(180deg, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+    mask-composite: intersect;
+  }
+  @media (max-width: 860px) {
+    .scene-band { padding-top: 32px; }
+    .scene-band-stage { aspect-ratio: 390 / 400; max-width: 420px; }
+  }
+</style>
