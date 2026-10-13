@@ -16,7 +16,10 @@ export default defineConfig({
   },
   integrations: [
     sitemap({
-      filter: (page) => !['/writing', '/consulting'].some((p) => new URL(page).pathname.startsWith(p))
+      filter: (page) => {
+        const pathname = new URL(page).pathname.replace(/\/$/, '');
+        return pathname !== '/404' && !['/writing', '/consulting'].some((p) => pathname.startsWith(p));
+      }
     })
   ],
 });
