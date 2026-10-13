@@ -354,3 +354,52 @@ gl_FragColor=vec4(uCol*g*uG,1.);}`,
   return mesh;
 }
 
+/**
+ * Night-side city lights that read as cities (the F3 strengthening): lit blocks on a street grid,
+ * gathered in a few named districts (`centres`, unit directions with an angular radius), each with
+ * a bright core and ragged edges; a sparse scatter of towns between them. Additive, night side only,
+ * faded at the limb. The planet's own band emission is dimmed under them by the host.
+ */
+export function cityLights(C: THREE.Vector3, R: number, key: THREE.Vector3, centres: { dir: THREE.Vector3; r: number; gain: number }[], gain: number) {
+  const n = 6;
+  const dirs = Array.from({ length: n }, (_, i) => (centres[i] ? centres[i].dir.clone().normalize() : V(0, 0, 0)));
+  const rad = Array.from({ length: n }, (_, i) => (centres[i] ? new THREE.Vector2(centres[i].r, centres[i].gain) : new THREE.Vector2(0.001, 0)));
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uKey: { value: key.clone() }, uCol: { value: WARM.clone() }, uG: { value: gain }, uDir: { value: dirs }, uRad: { value: rad } },
+    vertexShader: `varying vec3 vP;varying vec3 vN;varying vec3 vW;void main(){vP=position;vN=normalize(mat3(modelMatrix)*normal);vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,
+    fragmentShader: `uniform vec3 uKey;uniform vec3 uCol;uniform float uG;uniform vec3 uDir[${n}];uniform vec2 uRad[${n}];varying vec3 vP;varying vec3 vN;varying vec3 vW;
+float hash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
+float noise3(vec3 x){vec3 i=floor(x),f=fract(x);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}
+void main(){vec3 p=normalize(vP);vec3 n=normalize(vN);
+float night=smoothstep(.06,-.16,dot(n,uKey));
+if(night<.002)discard;
+// districts: angular distance to each centre, ragged by noise
+float ed=noise3(p*9.)*.5+noise3(p*23.)*.25;
+float dist=0.,core=0.;
+for(int i=0;i<${n};i++){float a=acos(clamp(dot(p,uDir[i]),-1.,1.))/uRad[i].x;
+float m=(1.-smoothstep(.35,1.,a+(ed-.37)*1.5))*uRad[i].y;dist=max(dist,m);core=max(core,(1.-smoothstep(.0,.45,a))*uRad[i].y);}
+float towns=smoothstep(.72,.8,noise3(p*7.+vec3(3.,1.,7.)))*.35;
+float area=max(dist,towns);
+if(area<.002)discard;
+// lit blocks on a street grid (two scales: blocks and the lots inside them)
+vec3 g=p*240.;vec3 c=floor(g),f=fract(g);
+vec3 e=min(f,1.-f);float street=smoothstep(.0,.12,min(min(e.x,e.y),e.z)+.02);
+float h=hash(c);
+float on=step(h,.35+.55*core)*street;
+float lot=hash(floor(p*720.));
+float b=on*(.45+.55*lot)*(.55+.45*hash(c+3.1))*mix(.3,1.,core);
+// arterials: brighter lines through the cores
+float art=(1.-smoothstep(.0,.035,min(min(e.x,e.y),e.z)))*core*.55;
+float ndv=dot(n,normalize(cameraPosition-vW));
+float lim=smoothstep(.0,.22,ndv);
+vec3 col=uCol*(b*(.6+1.4*core)+art+core*.06)*area*night*lim*uG;
+gl_FragColor=vec4(col,1.);}`,
+    transparent: true,
+    depthWrite: false,
+    blending: ADD,
+  });
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(R * 1.0015, 192, 96), mat);
+  mesh.position.copy(C);
+  mesh.renderOrder = 1;
+  return mesh;
+}

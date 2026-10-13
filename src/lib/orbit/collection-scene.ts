@@ -9,7 +9,7 @@ import { createPlanet, type Planet as PlanetHandle } from './planet';
 import { STAGE_GROUND } from './moon-surfaces';
 import { addStarDust, EdgeFeather, setEdgeFade } from './star-dust';
 import { makeCraftKit, RED, IVORY, COPPER_DEEP, type CraftKit } from './formation-craft';
-import { Structures, buildingMaterial, cityCluster, riser, groundSphere, atmosphere, rng, S, type Bld, type Surface } from './structures';
+import { Structures, buildingMaterial, cityCluster, cityLights, riser, groundSphere, atmosphere, rng, S, WARM, type Bld, type Surface } from './structures';
 
 /**
  * Collection heroes (ticket #16): the decorative stages beside the Portfolio and Playbooks
@@ -23,6 +23,11 @@ import { Structures, buildingMaterial, cityCluster, riser, groundSphere, atmosph
  *   spire; a span with an arch between two towers). A wedge flies each route in turn and each
  *   arrival adds one element; when every site is finished the world holds, the new structures
  *   fade out, and the 72 s loop begins again.
+ * - `playbooks` — F3 Limb and lights: the site's own planet up close, its limb arcing across the
+ *   upper stage; three skylines stand on the limb and the terminator and the night face carries
+ *   city lights clustered into lit blocks; the formation (the chevron wedge with the copper craft)
+ *   flies its play low across the night face over them, a 7 s pass every 14 s. The planet's crust
+ *   is held so the cities stay put, and its own emission is dimmed under the lights.
  *
  * Both are decorative, not relational (D2): the sites' counts and shapes are unequal so nothing
  * maps one-to-one onto the stories or the methods; red #F16B65 appears only as motion or trace
@@ -262,85 +267,127 @@ const threeApproaches: Build = (s) => {
   };
 };
 
-/** K1 Maneuver (Playbooks). */
-const maneuver: Build = (s) => {
-  const PLANE = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.5, 0, 0.14));
-  const O = V(-0.3, -0.2, 0),
-    r1 = 1.75,
-    r2 = 3.45;
-  const inPlane = (th: number, r: number) => V(Math.cos(th) * r, 0, Math.sin(th) * r).applyQuaternion(PLANE).add(O);
-  const planet = s.planet(0.95, O);
-  s.look.fov = 35;
-  s.look.fog = 0.018;
-  s.look.pos.set(0.4, 2.2, 11.4);
-  s.look.target.set(-0.1, -0.35, 0);
-  const ring = (r: number) => Array.from({ length: 181 }, (_, j) => inPlane((j / 180) * TAU, r));
-  s.kit.staticLine(ring(r1), 0xefe6d2, 0.2, 1);
-  s.kit.staticLine(ring(r2), 0xefe6d2, 0.2, 1);
-  const a = (r1 + r2) / 2,
-    e = (r2 - r1) / (r2 + r1),
-    PERI = 2.55; // periapsis angle
-  const ell = (nu: number) => inPlane(PERI + nu, (a * (1 - e * e)) / (1 + e * Math.cos(nu)));
-  s.kit.staticLine(Array.from({ length: 91 }, (_, j) => ell((j / 90) * Math.PI)), 0xefe6d2, 0.42, 1.1, true);
-  // One craft's timeline (seconds into its cycle): inner approach → transfer → outer coast.
-  // The inner orbit's angular speed is the Home inner moon's 12 s lap (the matched-speeds rule).
-  const IN = 2.4,
-    TR = 4.2,
-    OUT = 4.6,
-    CYC = 16;
-  const w1 = TAU / 12,
-    w2 = w1 * Math.pow(r1 / r2, 1.5);
-  const tq = Math.sqrt((1 + e) / (1 - e));
-  function at(sx: number) {
-    if (sx < IN) return inPlane(PERI - (IN - sx) * w1, r1);
-    if (sx < IN + TR) {
-      const E = Math.PI * ((sx - IN) / TR);
-      const nu = 2 * Math.atan(tq * Math.tan(Math.min(E, Math.PI - 1e-4) / 2));
-      return ell(nu < 0 ? nu + TAU : nu);
-    }
-    return inPlane(PERI + Math.PI + (sx - IN - TR) * w2 * 1.6, r2);
+/** F3 Limb and lights (Playbooks). */
+const limbLights: Build = (s) => {
+  const R = 3;
+  const C = V(0, 0, 0);
+  const planet = s.planet(R, C);
+  // Under the city lights the planet's own emission (bands, fissures, filaments) is dimmed on the
+  // night side, so the lit blocks are the brightest thing there. This instance's shader only.
+  const body = planet.body.material as THREE.ShaderMaterial;
+  if (body.fragmentShader.includes('col+=emit*calm;')) {
+    body.fragmentShader = body.fragmentShader.replace('col+=emit*calm;', 'col+=emit*calm*mix(1.,.22,smoothstep(.1,-.2,ndl));');
+    body.needsUpdate = true;
   }
-  // The copper craft flies the route; half a cycle later the ivory craft repeats it.
-  const fliers = [COPPER_DEEP, IVORY].map((c, i) => ({
-    c: s.kit.craft(c, 0.24, i === 0 ? 1.9 : 1.8, true),
-    tr: s.kit.trail(i === 0 ? 1.9 : 1.6),
-    copper: i === 0,
-    burn: s.glow(RED.clone().multiplyScalar(1.6), 0.55),
-    off: i * (CYC / 2),
-  }));
-  const pts: THREE.Vector3[] = [];
+  s.scene.add(s.own(atmosphere(C, R, 0.07, 0.55, KEY_DIR, 1.15)));
+  // Camera: a waning phase (the lit crescent on the left, most of the visible face in night),
+  // close over the limb so it arcs across the upper stage.
+  const w = V(0.8, 0.28, 0.52).normalize();
+  const D = 5.6;
+  s.look.pos.copy(w).multiplyScalar(D);
+  const upish = V(0, 1, 0).addScaledVector(w, -w.y).normalize();
+  const right = upish.clone().cross(w).normalize(); // screen right (the camera looks along -w)
+  s.look.target.copy(C).addScaledVector(upish, R * 0.72).addScaledVector(right, R * 0.34);
+  s.look.fov = 35;
+  s.look.fog = 0.01;
+  // The silhouette circle: n(ph) are the surface normals on the visible limb.
+  const rl = R / D,
+    rs = Math.sqrt(1 - rl * rl);
+  const limb = (ph: number, inward = 0) =>
+    w.clone().multiplyScalar(rl).addScaledVector(upish, rs * Math.cos(ph)).addScaledVector(right, rs * Math.sin(ph)).addScaledVector(w, inward).normalize();
+  // The skyline phase: where the limb crosses the terminator (just into night).
+  let ph0 = 0,
+    best = 1e9;
+  for (let i = 0; i < 1440; i++) {
+    const ph = (i / 1440) * TAU;
+    const n = limb(ph);
+    if (n.dot(upish) < 0.3) continue;
+    const sc = Math.abs(n.dot(KEY_DIR) + 0.06);
+    if (sc < best) {
+      best = sc;
+      ph0 = ph;
+    }
+  }
+  // Which way along the limb is night.
+  const night = limb(ph0 + 0.05).dot(KEY_DIR) < limb(ph0 - 0.05).dot(KEY_DIR) ? 1 : -1;
+  const patch = (n: THREE.Vector3): Surface => {
+    const e1 = w.clone().cross(n).normalize();
+    return { C, R, n0: n, e1, e2: n.clone().cross(e1).normalize() };
+  };
+  // Screen-ish coordinates on the visible face: c right, b up (in R), the rest toward the eye.
+  const face = (c: number, b: number) =>
+    right.clone().multiplyScalar(c).addScaledVector(upish, b).addScaledVector(w, Math.sqrt(Math.max(0.02, 1 - c * c - b * b)));
+  const rnd = rng(5);
+  // Three distinct skylines (the strengthening: larger, more distinct, readable as cities):
+  // 1. the capital, standing on the limb at the terminator: tall core and landmarks in silhouette
+  //    against the atmosphere, the key light grazing its lit side;
+  // 2. a long low city further along the limb into night, a silhouette with lit windows;
+  // 3. a city on the night face just inside the terminator, seen from above, its towers catching
+  //    the last light.
+  const cityA = patch(limb(ph0, 0.08));
+  const cityB = patch(limb(ph0 + night * 0.28, 0.12));
+  const cityC = patch(face(0.3, 0.14).normalize());
+  const skyA = cityCluster(rnd, 0, 0, 0.42, 0.13, 0.3, 120, 0.034);
+  skyA.push(
+    { type: 'twist', x: 0.04, s: 0, w: 0.042, d: 0.042, h: 0.46, seed: 0.31 },
+    { type: 'needle', x: -0.1, s: 0.02, w: 0.028, d: 0.028, h: 0.52, seed: -1 },
+    { type: 'drum', x: 0.16, s: -0.01, w: 0.05, d: 0.05, h: 0.36, seed: 0.7 },
+    { type: 'setback', x: -0.2, s: 0.01, w: 0.06, d: 0.05, h: 0.3, seed: 0.12 },
+    { type: 'dome', x: -0.3, s: 0.0, w: 0.1, d: 0.1, h: 0.055, seed: -1 },
+  );
+  const skyB = cityCluster(rnd, 0, 0, 0.55, 0.1, 0.18, 90, 0.034);
+  skyB.push({ type: 'drum', x: 0.12, s: 0, w: 0.05, d: 0.05, h: 0.26, seed: 0.55 }, { type: 'dome', x: -0.18, s: 0.02, w: 0.12, d: 0.12, h: 0.06, seed: -1 });
+  const skyC = cityCluster(rnd, 0, 0, 0.3, 0.24, 0.28, 80, 0.042);
+  skyC.push({ type: 'twist', x: 0.02, s: 0.02, w: 0.045, d: 0.045, h: 0.34, seed: 0.44 });
+  const cityMat = buildingMaterial(0.32, 0.011);
+  const cities = s.keep(new Structures(s.scene, cityMat));
+  cities.add(cityA, skyA);
+  cities.add(cityB, skyB);
+  cities.add(cityC, skyC);
+  // Lights in blocks around the three skylines and two towns on the face.
+  s.scene.add(
+    s.own(
+      cityLights(
+        C,
+        R,
+        KEY_DIR,
+        [
+          { dir: cityA.n0, r: 0.2, gain: 1 },
+          { dir: cityB.n0, r: 0.22, gain: 0.9 },
+          { dir: cityC.n0, r: 0.17, gain: 1 },
+          { dir: limb(ph0 + night * 0.62, 0.55), r: 0.11, gain: 0.7 },
+          { dir: limb(ph0 + night * 0.3, 0.9), r: 0.09, gain: 0.6 },
+        ],
+        2.4,
+      ),
+    ),
+  );
+  const beacon = s.glow(WARM.clone().multiplyScalar(1.4), 0.08);
+  beacon.position.copy(S(cityA, -0.1, 0.02, 0.55));
+  // The formation's pass: low across the night face, over the face city and under the capital.
+  const curve = new THREE.CatmullRomCurve3(
+    [face(-0.98, 0.1), face(-0.5, 0.18), face(-0.05, 0.2), cityC.n0.clone(), face(0.62, 0.3), face(0.95, 0.42)].map((n, i, all) =>
+      n.normalize().multiplyScalar(R + (i === 0 || i === all.length - 1 ? 0.34 : 0.16)),
+    ),
+  );
+  const formation = wedge(s, 0.1, 0.04, 0.014);
+  const PERIOD = 14,
+    FLY = 7;
   return {
-    t0: 6.2,
-    poster: 10.2, // the copper craft coasting outside, the ivory craft at its first burn
-    // The route spans ~65% of a phone-width box at the study's framing; 1.2 keeps it inside.
-    narrowZoom: 1.2,
+    t0: 1.2,
+    poster: 4.0,
     tick(t) {
-      planet.update(t, 0, 0, 1, 1);
-      for (const f of fliers) {
-        const sx = (((t - f.off) % CYC) + CYC) % CYC;
-        const op = ss(0, 0.8, sx) * (1 - ss(IN + TR + OUT - 1.2, IN + TR + OUT, sx));
-        const p = at(sx);
-        s.kit.place(f.c, [p, at(Math.max(0, sx - 0.03))]);
-        f.c.setOpacity(op);
-        f.c.group.visible = op > 0.01;
-        pts.length = 0;
-        for (let q = 0; q <= 40; q++) {
-          const x = sx - q * 0.05;
-          if (x < 0) break;
-          pts.push(at(x));
-        }
-        const inTransfer = sx > IN - 0.3 && sx < IN + TR + 0.8;
-        s.kit.setTrail(f.tr, pts, f.copper ? COPPER_DEEP : RED, op * (inTransfer ? 0.95 : 0.55), 1.2);
-        const b = Math.max(Math.exp(-(((sx - IN) / 0.35) ** 2)), Math.exp(-(((sx - IN - TR) / 0.35) ** 2)));
-        f.burn.position.copy(p);
-        f.burn.material.opacity = b * op * 0.9;
-      }
+      planet.update(t, 0, 0, 0.34, 0.25);
+      body.uniforms.uSpin.value = 1.1; // the crust is held: the cities stay put
+      const k = ((t % PERIOD) + PERIOD) % PERIOD;
+      const u = k / FLY;
+      formation.set(curve, u, upish, 0.5, u < 1 ? 1 : 1 - ss(FLY, FLY + 3, k));
+      beacon.material.opacity = 0.3 + 0.3 * (0.5 + 0.5 * Math.sin(t * 2.6));
     },
   };
 };
 
-
-const BUILDS: Record<CollectionKind, Build> = { portfolio: threeApproaches, playbooks: maneuver };
+const BUILDS: Record<CollectionKind, Build> = { portfolio: threeApproaches, playbooks: limbLights };
 
 
 export function createCollectionScene(
