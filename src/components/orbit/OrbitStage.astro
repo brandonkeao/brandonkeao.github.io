@@ -60,7 +60,7 @@ const poster = scene
       )}
     </div>
   </div>
-  <div class="map-stage" data-orbit={set} data-collection={scene} data-sheet={sheet} data-still={still ? '' : undefined} data-static={controls === 'none' ? '' : undefined} data-speed={speed} data-closeup={closeup ? '' : undefined} data-mode="overview">
+  <div class="map-stage" data-orbit={set} data-stage-scene={scene} data-sheet={sheet} data-still={still ? '' : undefined} data-static={controls === 'none' ? '' : undefined} data-speed={speed} data-closeup={closeup ? '' : undefined} data-mode="overview">
     <picture class="stage-poster">
       <source media="(max-width: 860px)" srcset={poster.mobile} />
       <img src={poster.desktop} alt="" width="840" height="700" decoding="async" fetchpriority={size === 'small' ? 'auto' : 'high'} />
@@ -121,7 +121,7 @@ const poster = scene
   /** A collection hero scene (ticket #16): decorative, one context, no controls. */
   function initCollection(stage: HTMLElement) {
     const host = stage.querySelector<HTMLElement>('.scene-host')!;
-    const kind = stage.dataset.collection as CollectionKind;
+    const kind = stage.dataset.stageScene as CollectionKind;
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let handle: CollectionHandle | null = null;
     let disposed = false;
@@ -164,7 +164,7 @@ const poster = scene
     teardown = undefined;
     const stage = document.querySelector<HTMLElement>('.map-stage[data-orbit]');
     if (!stage) return;
-    if (stage.dataset.collection) { teardown = initCollection(stage); return; }
+    if (stage.dataset.stageScene) { teardown = initCollection(stage); return; }
 
     const set = (stage.dataset.orbit as OrbitSet) || 'home';
     const ways = SETS[set];
@@ -433,7 +433,7 @@ const poster = scene
   .map-stage.is-ready .stage-poster img { opacity: 0; }
   /* Collection posters (ticket #16): JPEG cannot hold the ground's exact value (it lands 1/255
      off), so the frame fades to the stage's own ground like the live scene's feather pass. */
-  .map-stage[data-collection] .stage-poster img {
+  .map-stage[data-stage-scene] .stage-poster img {
     -webkit-mask-image: linear-gradient(90deg, transparent 10px, #000 50px, #000 calc(100% - 50px), transparent calc(100% - 10px)), linear-gradient(180deg, transparent 10px, #000 50px, #000 calc(100% - 50px), transparent calc(100% - 10px));
     -webkit-mask-composite: source-in;
     mask-image: linear-gradient(90deg, transparent 10px, #000 50px, #000 calc(100% - 50px), transparent calc(100% - 10px)), linear-gradient(180deg, transparent 10px, #000 50px, #000 calc(100% - 50px), transparent calc(100% - 10px));
