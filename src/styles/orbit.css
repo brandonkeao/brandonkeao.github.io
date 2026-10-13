@@ -55,7 +55,10 @@
 }
 
 /* ---- base ---------------------------------------------------------------- */
-html { background: var(--ground); }
+/* overflow-x: clip on the root (ticket #21) stops body's clip from propagating to the viewport,
+   so body clips its own box and nothing (the Home meteor's splash at 1280-1440) can widen the
+   document: scrollWidth stays at the window width. Neither creates a scroll container. */
+html { background: var(--ground); overflow-x: clip; }
 body {
   background: var(--ground);
   color: var(--on-ground);
@@ -99,6 +102,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .t-title { font-size: clamp(24px, 2.2vw, 32px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.19; }
 .t-item { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; }
 .t-lead { font-size: clamp(17px, 1.4vw, 20px); line-height: 1.5; letter-spacing: -0.005em; }
+/* A statement lead: the one line under a collection title, set white and medium on a short
+   measure (T1 Statement, Brandon 2026-10-13); 23px on phones so it breaks evenly at 390. */
+.t-lead-strong { font-size: 26px; font-weight: 500; line-height: 1.3; letter-spacing: -0.018em; color: var(--on-ground); }
+@media (max-width: 860px) { .t-lead-strong { font-size: 23px; } }
 .t-body { font-size: 17px; line-height: 1.55; }
 .t-small { font-size: 15px; line-height: 1.53; }
 .t-caption { font-size: 13px; line-height: 1.4; }
