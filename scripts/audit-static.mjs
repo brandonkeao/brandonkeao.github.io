@@ -67,6 +67,10 @@ function cssUrls(source) {
   return urls;
 }
 
+function stripScriptBodies(html) {
+  return html.replace(/(<script\b[^>]*>)[\s\S]*?(<\/script>)/gi, '$1$2');
+}
+
 function srcsetUrls(source) {
   return source
     .split(',')
@@ -100,7 +104,7 @@ const idsByFile = new Map();
 
 for (const file of htmlFiles) {
   const html = await readFile(file, 'utf8');
-  const markup = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+  const markup = stripScriptBodies(html);
   const ids = new Set();
   for (const tagMatch of markup.matchAll(/<[a-z][\w:-]*\b([^>]*)>/gi)) {
     const id = readAttributes(tagMatch[1]).get('id');
@@ -151,7 +155,7 @@ function validateReference(sourceFile, pageUrl, rawValue, type) {
 for (const file of htmlFiles) {
   const html = await readFile(file, 'utf8');
   const pageUrl = pagePath(file);
-  const markup = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+  const markup = stripScriptBodies(html);
 
   for (const tagMatch of markup.matchAll(/<([a-z][\w:-]*)\b([^>]*)>/gi)) {
     const tag = tagMatch[1].toLowerCase();
@@ -177,13 +181,17 @@ for (const file of htmlFiles) {
     }
   }
 
-  for (const value of cssUrls(markup)) validateReference(file, pageUrl, value, 'asset');
+  for (const value of cssUrls(markup)) {
+    if (!value.trim().startsWith('#')) validateReference(file, pageUrl, value, 'asset');
+  }
 }
 
 for (const file of files.filter((candidate) => candidate.endsWith('.css'))) {
   const css = await readFile(file, 'utf8');
   const cssUrl = `/${relativeFile(file)}`;
-  for (const value of cssUrls(css)) validateReference(file, cssUrl, value, 'asset');
+  for (const value of cssUrls(css)) {
+    if (!value.trim().startsWith('#')) validateReference(file, cssUrl, value, 'asset');
+  }
 }
 
 if (htmlFiles.length === 0) errors.push('dist contains no HTML pages');

@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "astro dev",
     "check": "astro check",
+    "test:audit": "node --test scripts/audit-static.test.mjs",
     "build": "astro build",
     "audit": "node scripts/audit-static.mjs",
     "preview": "astro preview",
