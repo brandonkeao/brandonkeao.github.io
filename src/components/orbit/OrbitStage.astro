@@ -30,11 +30,16 @@ const ways = SETS[set];
 const closeup = size === 'closeup';
 const poster = scene
   ? { desktop: `/images/orbit/${scene}-desktop.jpg`, mobile: `/images/orbit/${scene}-mobile.jpg` }
-  : closeup
+  : closeup || set === 'home'
+  // The Home set only ever renders as the close-up (the wide home-* posters were unused; #21).
   ? { desktop: '/images/orbit/home-closeup-desktop.jpg', mobile: '/images/orbit/home-closeup-mobile.jpg' }
-  : set === 'home'
-    ? { desktop: '/images/orbit/home-desktop.jpg', mobile: '/images/orbit/home-mobile.jpg' }
-    : { desktop: '/images/orbit/work-desktop.jpg', mobile: '/images/orbit/work-mobile.jpg' };
+  : { desktop: '/images/orbit/work-desktop.jpg', mobile: '/images/orbit/work-mobile.jpg' };
+// One still frame per selected way (ticket #21): with reduced motion (or no WebGL) there is no
+// renderer to fly to a moon, so the stage shows the chosen moon's frame instead. Work with me
+// only, the one stage whose ways are chosen.
+const poses = !scene && set === 'work' && controls !== 'none'
+  ? ways.filter((w) => w.slug).map((w) => ({ id: w.id, desktop: `/images/orbit/work-${w.slug}-desktop.jpg`, mobile: `/images/orbit/work-${w.slug}-mobile.jpg` }))
+  : [];
 ---
 
 <section class:list={['orbit-hero', `orbit-hero--${size}`, closeup && 'orbit-hero--xl']}>
@@ -65,6 +70,12 @@ const poster = scene
       <source media="(max-width: 860px)" srcset={poster.mobile} />
       <img src={poster.desktop} alt="" width="840" height="700" decoding="async" fetchpriority={size === 'small' ? 'auto' : 'high'} />
     </picture>
+    {poses.map((p) => (
+      <picture class="stage-pose" data-pose={p.id} hidden>
+        <source media="(max-width: 860px)" srcset={p.mobile} />
+        <img src={p.desktop} alt="" width="840" height="700" decoding="async" loading="lazy" />
+      </picture>
+    ))}
     <div class="scene-host"></div>
     <!-- Page-supplied stage layers (e.g. the Work with me surface landings, ticket #10). -->
     <slot name="stage" />
@@ -178,6 +189,7 @@ const poster = scene
     const stepsEl = q('[data-steps]');
     const context = q('[data-context]');
     const chips = [...hero.querySelectorAll<HTMLButtonElement>('.engagement-chip[data-id]')];
+    const poses = [...stage.querySelectorAll<HTMLElement>('.stage-pose')];
     let stepsFor: CategoryId | null = null;
     const sheet = stage.dataset.sheet ? document.getElementById(stage.dataset.sheet) : null;
 
@@ -186,7 +198,6 @@ const poster = scene
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let mode: Mode = 'overview';
     let current: CategoryId | null = null;
-    let pending: CategoryId | null = null;
     let token = 0;
     const still = stage.hasAttribute('data-still');
     const decorative = stage.hasAttribute('data-static');
@@ -244,6 +255,8 @@ const poster = scene
       // no way back to the Overview (round 14), and steps/context never show.
       const copyDock = dock.classList.contains('engagement-dock--copy');
       stage.dataset.mode = mode;
+      // The still frame for the chosen way; CSS shows it only while no renderer runs.
+      poses.forEach((p) => { p.hidden = p.dataset.pose !== current; });
       title.textContent = w && mode === 'collection' ? w.name : 'Your outcome';
       chips.forEach((b) => { b.hidden = copyDock ? false : inWay; b.setAttribute('aria-pressed', String(b.dataset.id === current)); });
       if (back) back.hidden = !inWay;
@@ -297,10 +310,10 @@ const poster = scene
     }
 
     // The unused stage dock's Back button flies home; nothing on any page uses it today.
-    back?.addEventListener('click', () => { pending = null; goBack(); }, opts);
+    back?.addEventListener('click', () => goBack(), opts);
     // A host page's reset (Work with me's browser Back to the bare URL, D1): an instant cut to
     // the Overview, never the leave flight. Escape no longer leaves a model (round 14).
-    stage.addEventListener('orbit:reset', () => { pending = null; goBack(true); }, opts);
+    stage.addEventListener('orbit:reset', () => goBack(true), opts);
     chips.forEach((b) => b.addEventListener('click', () => select(b.dataset.id as CategoryId), opts));
     render();
 
@@ -343,7 +356,6 @@ const poster = scene
             if (mode === 'entering') mode = 'collection';
             else if (mode === 'leaving') {
               mode = 'overview'; current = null;
-              if (pending) { const p = pending; pending = null; render(); select(p); return; }
             }
             render();
           },
@@ -367,8 +379,11 @@ const poster = scene
       }
     }
 
-    // Load when the stage is on screen and the browser is idle.
-    const cancelLoad = whenSeen(stage, load);
+    // Load when the stage is on screen and the browser is idle. Reduced motion (ticket #21) never
+    // starts the renderer, as on the collection heroes: the poster, or the chosen way's still
+    // frame, is the stage; the chips and the page still select.
+    if (reduced) stage.classList.add('is-still');
+    const cancelLoad = reduced ? () => {} : whenSeen(stage, load);
 
     teardown = () => {
       disposed = true;
@@ -404,9 +419,9 @@ const poster = scene
      Desktop only: the phone block's plain .map-stage rule must keep winning there. */
   @media (min-width: 861px) {
     .orbit-hero--large { grid-template-columns: minmax(340px, var(--mark-max)) minmax(0, 1fr); gap: 32px; }
-    /* Capped at 660px (was 740) to meet the selected state's cap, so at tall windows entering
-       or leaving a model no longer changes the box (Brandon, 2026-10-13: the Overview's gap
-       before "Ways to work together"; services.astro holds the selected rule). */
+    /* Capped at 660px (was 740) to meet the selected state's cap (Brandon, 2026-10-13: the
+       Overview's gap before "Ways to work together"). Work with me's box itself now runs the
+       selected clamp in both states (services.astro); --stage-h still places its copy. */
     .orbit-hero--large { --stage-h: clamp(540px, calc(100svh - 270px), 660px); }
     /* Portfolio and Playbooks (size "small"): a shorter stage of their own and a 32px step into
        the sheet, so the collection heading and its first rows show above the fold (Brandon,
@@ -414,6 +429,10 @@ const poster = scene
        of the projects and portfolio sections"). Their copy still top-aligns by the same formula,
        so their h1 sits higher than Work with me's at a given window, the same on both pages. */
     .orbit-hero--small { --stage-h: clamp(440px, calc(100svh - 380px), 580px); padding-bottom: 32px; }
+    /* Layout only (ticket #21): the collection copy column never drops below 320px. Between 861
+       and ~1080px the stage gives up width instead (the scene re-fits its box; the poster covers),
+       where the fixed 760px stage used to squeeze the copy to 50-205px. */
+    .orbit-hero--small { grid-template-columns: minmax(320px, 1fr) minmax(0, 760px); }
     .orbit-hero--large .map-stage, .orbit-hero--small .map-stage { height: var(--stage-h); }
     /* The three copy-led stages put their h1 at one height for a given window (ticket #17, F-04):
        the copy is top-aligned where Work with me's centred copy sat (a 400px column centred in
@@ -440,8 +459,10 @@ const poster = scene
   .hero-rest > :first-child { margin-top: 26px; }
 
   .map-stage { position: relative; height: 700px; isolation: isolate; overflow: hidden; background: var(--ground); }
-  .stage-poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transition: opacity 0.4s; }
+  .stage-poster img, .stage-pose img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transition: opacity 0.4s; }
   .map-stage.is-ready .stage-poster img { opacity: 0; }
+  /* A chosen way's still frame shows only on a stage with no renderer (reduced motion, no WebGL). */
+  .map-stage:not(.is-still):not(.is-fallback) .stage-pose { display: none; }
   /* Collection posters (ticket #16): JPEG cannot hold the ground's exact value (it lands 1/255
      off), so the frame fades to the stage's own ground like the live scene's feather pass. */
   .map-stage[data-stage-scene] .stage-poster img {
@@ -490,7 +511,7 @@ const poster = scene
     /* On phones the scene keeps its own 400px and the control row sits below it, so chips never cover a moon. */
     .map-stage, .orbit-hero--small .map-stage, .orbit-hero--xl .map-stage { order: 2; height: auto; margin-top: 4px; }
     .scene-host { position: relative; inset: auto; height: 400px; }
-    .stage-poster img { bottom: auto; height: 400px; }
+    .stage-poster img, .stage-pose img { bottom: auto; height: 400px; }
     .hero-rest { order: 3; padding: 0 var(--gutter) 32px; }
     .hero-rest > :first-child { margin-top: 8px; }
     .orbit-hero--small .hero-rest { padding-bottom: var(--space-hero-step); }

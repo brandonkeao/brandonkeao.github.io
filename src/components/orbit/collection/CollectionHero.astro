@@ -1,12 +1,13 @@
 ---
 // Collection hero (Portfolio, Playbooks) on the system's own stage. The copy reads like the
 // other heroes (ticket #16, Brandon 2026-10-12 "looks sloppy"): the title with the page's own
-// red line (Brandon, 2026-10-13: Portfolio's `record`, Playbooks' `route`; Work with me keeps
-// `align`), one lead, then the rest of the copy as one muted body paragraph. Copy is verbatim;
-// only the styling and spacing changed. The stage beside it is decorative: no chips, no
+// mark (Brandon, 2026-10-13: Portfolio's `blocks`, Playbooks' `blueprint`; Work with me keeps
+// `align`), one lead set as a white statement, then the rest of the copy as one muted body
+// paragraph (T1 Statement, Brandon 2026-10-13). Copy is verbatim; only the styling and spacing
+// changed. The stage beside it is decorative: no chips, no
 // selection and no controls (the pause chip came off, Brandon 2026-10-13). Each page has its own scene
-// (collection-scene.ts): Portfolio's Flight record, Playbooks' Maneuver (Brandon's picks,
-// 2026-10-12); it no longer reuses the Home orbital set.
+// (collection-scene.ts): Portfolio's Three approaches, Playbooks' Limb and lights (Brandon's
+// built-world picks, 2026-10-13); it no longer reuses the Home orbital set.
 import OrbitStage from '../OrbitStage.astro';
 import MotionLine from '../MotionLine.astro';
 import type { CollectionKind } from '../../../lib/orbit/collection-scene';
@@ -19,8 +20,8 @@ const { title, lead, body, note, scene } = Astro.props;
 <OrbitStage scene={scene} size="small">
   <div slot="headline" style="width:fit-content;max-width:100%">
     <h1 id="cl-hero-title" class="t-page-title">{title}</h1>
-    <MotionLine kind={scene === 'portfolio' ? 'record' : 'route'} stretch />
+    <MotionLine kind={scene === 'portfolio' ? 'blocks' : 'blueprint'} />
   </div>
-  <p class="t-lead muted-g cl-hero-lead">{lead}</p>
+  <p class="t-lead-strong cl-hero-lead">{lead}</p>
   <p class="t-body muted-g cl-hero-body">{body} {note}</p>
 </OrbitStage>

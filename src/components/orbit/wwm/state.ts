@@ -17,6 +17,7 @@
 // stage for an instant reset with an `orbit:reset` event, and watches the chips' aria-pressed
 // and the stage's data-mode to follow selections the visitor makes on the orbit itself.
 import { SETS, type CategoryId, type EngagementSlug } from '../../../lib/orbit/orbit-data';
+import { MISSION_FADE, flightTimeAt } from '../../../lib/orbit/orbits';
 
 type Slug = EngagementSlug;
 type Origin = 'init' | 'rows' | 'tabs' | 'stage' | 'history';
@@ -25,6 +26,15 @@ const SLUGS = SETS.work.map((w) => w.slug!) as Slug[];
 const slugOf = (id: string | undefined): Slug | null => SETS.work.find((w) => w.id === id)?.slug ?? null;
 const idOf = (slug: Slug): CategoryId => SETS.work.find((w) => w.slug === slug)!.id;
 const parse = (v: string | null): Slug | null => (v && (SLUGS as string[]).includes(v) ? (v as Slug) : null);
+
+// The Overview → model gesture runs on the flight's clock (2026-10-13 enter-transition rework):
+// the rows and the Overview bands fade out while the system starts to recede (the first tenth
+// of the eased blend), the page swaps there — before the camera has really moved — and the
+// model's intro fades in exactly while its mission does (MISSION_FADE), so copy and orbit read
+// as one motion. Without a visible, ready stage the swap stays immediate.
+const OUT_MS = Math.round(flightTimeAt(0.1));
+const IN_FROM_MS = Math.round(flightTimeAt(MISSION_FADE[0]));
+const IN_TO_MS = Math.round(flightTimeAt(MISSION_FADE[1]));
 
 export function initWorkWithMe(): (() => void) | undefined {
   const found = document.querySelector<HTMLElement>('[data-wwm]');
@@ -104,16 +114,25 @@ export function initWorkWithMe(): (() => void) | undefined {
 
   /* ---- state ---------------------------------------------------------------------------- */
   let returning: ReturnType<typeof setTimeout> | undefined;
-  function apply(slug: Slug | null, origin: Origin) {
-    // Browser Back to the Overview fades its sections back in (round 12: the pop was jarring;
-    // kept by D1 as the softener of the stage's cut); the one-shot class keeps the first paint
-    // and deep links animation-free.
-    if (!slug && current && origin !== 'init') {
-      root.classList.add('wwm-returning');
-      clearTimeout(returning);
-      returning = setTimeout(() => root.classList.remove('wwm-returning'), 450);
-    }
-    current = slug;
+  let swapping: ReturnType<typeof setTimeout> | undefined;
+  let arriving: ReturnType<typeof setTimeout> | undefined;
+  // A row or step-chip choice moves focus to the model's title once that title is showing.
+  let focusAfter: Slug | null = null;
+  root.style.setProperty('--wwm-out', `${OUT_MS}ms`);
+  root.style.setProperty('--wwm-in-delay', `${IN_FROM_MS - OUT_MS}ms`);
+  root.style.setProperty('--wwm-in-dur', `${IN_TO_MS - IN_FROM_MS}ms`);
+
+  /** Is the orbit on screen and live, so the visitor watches the flight? */
+  function watching(): boolean {
+    if (!stage || reduced || !stage.classList.contains('is-ready')) return false;
+    const r = stage.getBoundingClientRect();
+    const seen = Math.min(r.bottom, innerHeight) - Math.max(r.top, 0);
+    return seen > r.height * 0.3;
+  }
+
+  /** The DOM half of a state change: what shows and what hides. */
+  function show(slug: Slug | null) {
+    root.classList.remove('wwm-leaving');
     root.dataset.state = slug ? 'selected' : 'overview';
     selector.hidden = !!slug;
     switcher.hidden = !slug;
@@ -124,6 +143,42 @@ export function initWorkWithMe(): (() => void) | undefined {
     const on = tabs.find((t) => t.dataset.wwmTab === slug);
     const row = on?.parentElement;
     if (on && row && row.scrollWidth > row.clientWidth) row.scrollLeft = Math.max(0, on.offsetLeft - row.offsetLeft - 8);
+    // Focus follows a choice to the model's title, at the swap (it cannot land on a hidden
+    // title earlier; until then the chosen row is still showing, fading out). Any other
+    // path that hides the focused element (a step chip, history) lands there too, so focus
+    // is never left on a hidden element; a deep link or Back with focus elsewhere keeps it.
+    const active = document.activeElement;
+    const lost = !!active && active !== document.body && !!active.closest('[hidden]');
+    if (slug && (focusAfter === slug || lost)) document.getElementById(`wwm-${slug}-title`)?.focus({ preventScroll: true });
+    focusAfter = null;
+  }
+
+  function apply(slug: Slug | null, origin: Origin) {
+    // Browser Back to the Overview fades its sections back in (round 12: the pop was jarring;
+    // kept by D1 as the softener of the stage's cut); the one-shot class keeps the first paint
+    // and deep links animation-free.
+    if (!slug && current && origin !== 'init') {
+      root.classList.add('wwm-returning');
+      clearTimeout(returning);
+      returning = setTimeout(() => root.classList.remove('wwm-returning'), 450);
+    }
+    const from = current;
+    current = slug;
+    clearTimeout(swapping);
+    // Overview → model with the flight in view: fade the Overview out, swap on the flight's
+    // clock (see OUT_MS), and let the model's intro arrive with its mission.
+    if (slug && !from && origin !== 'init' && watching()) {
+      root.classList.add('wwm-leaving');
+      swapping = setTimeout(() => {
+        root.classList.add('wwm-arriving');
+        show(slug);
+        clearTimeout(arriving);
+        arriving = setTimeout(() => root.classList.remove('wwm-arriving'), IN_TO_MS - OUT_MS + 100);
+      }, OUT_MS);
+    } else {
+      root.classList.remove('wwm-arriving');
+      show(slug);
+    }
 
     if (origin !== 'init' && origin !== 'history') {
       const url = new URL(location.href);
@@ -151,9 +206,9 @@ export function initWorkWithMe(): (() => void) | undefined {
 
   function choose(slug: Slug, origin: 'rows' | 'tabs') {
     if (slug === current) return;
+    if (origin === 'rows') focusAfter = slug;
     apply(slug, origin);
     settleScroll();
-    if (origin === 'rows') document.getElementById(`wwm-${slug}-title`)?.focus({ preventScroll: true });
   }
 
   /* ---- events --------------------------------------------------------------------------- */
@@ -175,7 +230,7 @@ export function initWorkWithMe(): (() => void) | undefined {
     const slug = parse(url.searchParams.get('engagement'));
     if (!slug) return;
     e.preventDefault();
-    if (slug !== current) apply(slug, 'rows');
+    if (slug !== current) { focusAfter = slug; apply(slug, 'rows'); }
     document.getElementById(url.hash.slice(1))?.scrollIntoView({ behavior, block: 'start' });
   }, opts);
 
@@ -233,5 +288,7 @@ export function initWorkWithMe(): (() => void) | undefined {
     switcherSize.disconnect();
     introSize.disconnect();
     clearTimeout(returning);
+    clearTimeout(swapping);
+    clearTimeout(arriving);
   };
 }

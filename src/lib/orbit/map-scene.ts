@@ -25,6 +25,9 @@ import {
   orbitPosition,
   depthScale,
   ease,
+  FLIGHT_MS,
+  SWAP_MS,
+  MISSION_FADE,
   type Orbit,
   type Pose,
 } from './orbits';
@@ -640,7 +643,7 @@ export function createMap(
         // moon-to-moon switch the old mission hands off to the new one (round 7).
         const focus =
           i === selectedIndex
-            ? THREE.MathUtils.smoothstep(blend, 0.45, 0.95) * swapT
+            ? THREE.MathUtils.smoothstep(blend, MISSION_FADE[0], MISSION_FADE[1]) * swapT
             : swap && i === prevSelected
               ? 1 - swapT
               : 0;
@@ -861,7 +864,7 @@ export function createMap(
       from: blend,
       to,
       started: performance.now(),
-      duration: o.instant || fallback ? 0 : 850,
+      duration: o.instant || fallback ? 0 : FLIGHT_MS,
     };
     // An instant transition settles now: a hidden tab runs no frames.
     if (transition.duration === 0) completeTransition();
@@ -888,7 +891,7 @@ export function createMap(
     selectedIndex = CATEGORIES.findIndex((c) => c.id === id);
     category = id;
     transitionToken = o.token;
-    swap = { started: performance.now(), duration: o.instant || fallback ? 0 : 700 };
+    swap = { started: performance.now(), duration: o.instant || fallback ? 0 : SWAP_MS };
     swapT = 0;
     if (swap.duration === 0) completeSwap();
     else wake();
@@ -905,6 +908,8 @@ export function createMap(
     hooks.onSettled(transitionToken);
   }
   function completeTransition() {
+    // A running moon-to-moon swap settles too (ticket #24), so "finish the flight" always lands.
+    if (swap) completeSwap();
     if (!transition) return;
     blend = transition.to;
     transition = null;
@@ -968,7 +973,18 @@ export function createMap(
     }
     leaderLayer.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
     measureLabels();
-    wake();
+    // Resizing the canvas clears it, and a ResizeObserver runs after this frame's draw: left
+    // to the next frame, the cleared canvas is what gets painted, so a live box resize (a
+    // window drag, or the old Work with me height ride) strobes blank. Redraw now instead.
+    if (started) redrawNow();
+    else wake();
+  }
+  let started = false;
+  function redrawNow() {
+    if (disposed) return;
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    update(performance.now());
   }
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(host);
@@ -1444,19 +1460,23 @@ export function createMap(
     const alive = !paused && !reduced;
     if ((alive || moving || modulating || transition) && !fallback && visible && !offscreen)
       frame = requestAnimationFrame(update);
-    else if (transition && visible) frame = requestAnimationFrame(update);
+    else if ((transition || swap) && visible) frame = requestAnimationFrame(update);
   }
   function wake() {
     if (disposed) return;
     last = performance.now();
     if (!frame) frame = requestAnimationFrame(update);
   }
-  // Visibility is reported to the host; its state machine answers with
-  // `completeTransition` when a flight is running, so navigation never waits
-  // on an unseen animation.
+  // Visibility is reported to the host. A flight running when the stage goes unseen
+  // completes here (the host's onVisibility was a no-op, so it used to stall), so
+  // navigation never waits on an unseen animation.
   let reportedVisible = true;
   function visibilityChanged() {
     const now = visible && !offscreen;
+    // A flight that leaves the screen mid-way (ticket #24: on phones a row choice scrolls the
+    // page to the model's detail) lands at once instead of stalling until it is seen again —
+    // the frame loop stops below, and nobody watches the rest of the ride.
+    if (!now && (transition || swap)) completeTransition();
     if (!now && frame) {
       cancelAnimationFrame(frame);
       frame = 0;
@@ -1480,7 +1500,22 @@ export function createMap(
   );
   intersection.observe(host);
   resize();
+  // Compile the missions' materials now, with the rest of the scene, while the canvas is
+  // still fading in over the poster. They are hidden in the wide view, so the first render
+  // skips them and their programs used to compile at the first selection, halfway through
+  // the flight where the mission fades in (2026-10-13 enter-transition rework).
+  if (micros.length) {
+    // One draw into the composer's buffer, as the RenderPass draws (the render target is part
+    // of a program's key): a bare compile() left three's first-use program checks to the
+    // flight. The next frame's RenderPass clears the buffer.
+    micros.forEach((m) => m.setFade(1));
+    renderer.setRenderTarget(composer.readBuffer);
+    renderer.render(scene, camera);
+    renderer.setRenderTarget(null);
+    micros.forEach((m) => m.setFade(0));
+  }
   wake();
+  started = true;
   hooks.onReady();
   return {
     enter,
