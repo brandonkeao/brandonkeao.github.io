@@ -1,4 +1,4 @@
-// Captures stage posters from the live scenes: `npm run build`, serve dist on 127.0.0.1:4217 (or BASE), then `node scripts/capture-collection-posters.mjs [collections|stages|stories|all]` (default collections: {portfolio,playbooks}-{desktop,mobile}.jpg; stages: home-closeup-* and work-*.jpg with page masks and copy hidden; stories: formation/{full-time,fractional,advisory}.webp at 1152×1224, mid-story) (Playwright from the repo or PLAYWRIGHT_FROM).
+// Captures stage posters from the live scenes: `npm run build`, serve dist on 127.0.0.1:4217 (or BASE), then `node scripts/capture-collection-posters.mjs [collections|stages|poses|stories|all]` (default collections: {portfolio,playbooks}-{desktop,mobile}.jpg; stages: home-closeup-* and work-*.jpg with page masks and copy hidden; stories: formation/{full-time,fractional,advisory}.webp at 1152×1224, mid-story; poses: work-{full-time,fractional,advisory}-*.jpg, each way's settled moon) (Playwright from the repo or PLAYWRIGHT_FROM).
 import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -48,6 +48,24 @@ for (const [file, path] of want('stages') ? [['home-closeup', '/'], ['work', '/s
     const clip = { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
     await page.screenshot({ path: `${out}${file}-${name}.jpg`, type: 'jpeg', quality: 90, clip, fullPage: true });
     console.log(`${file}-${name}.jpg`, clip.width, clip.height);
+    await page.close();
+  }
+}
+
+// Work with me's selected stills (ticket #21): each way's moon after the stage settles on it,
+// shown in place of the live stage under reduced motion or without WebGL.
+for (const id of want('poses') ? ['full-time', 'fractional', 'advisory'] : []) {
+  for (const [name, [width, height]] of Object.entries(sizes)) {
+    const page = await browser.newPage({ viewport: { width, height } });
+    await page.goto(`${base}/services/?engagement=${id}`);
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.waitForFunction(() => { const s = document.querySelector('.map-stage'); return s?.classList.contains('is-ready') && s.dataset.mode === 'collection'; }, null, { timeout: 30000 });
+    await page.addStyleTag({ content: lift });
+    await page.waitForTimeout(3000);
+    const r = await page.locator('.scene-host canvas').evaluate((c) => { const b = c.getBoundingClientRect(); return { x: b.x, y: b.y + scrollY, width: b.width, height: b.height }; });
+    const clip = { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
+    await page.screenshot({ path: `${out}work-${id}-${name}.jpg`, type: 'jpeg', quality: 90, clip, fullPage: true });
+    console.log(`work-${id}-${name}.jpg`, clip.width, clip.height);
     await page.close();
   }
 }
