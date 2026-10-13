@@ -21,8 +21,18 @@ const resolvedOgImage = ogImage ? new URL(ogImage, Astro.site).toString() : unde
 ---
 
 <meta charset="utf-8" />
-<!-- Lets CSS hold animated marks until their script runs; without JS they show as drawn. -->
-<script is:inline>document.documentElement.classList.add('js');</script>
+<!-- Lets CSS hold animated marks until their script runs; without JS they show as drawn.
+     Also installs, once, a popstate hook ahead of Astro's router (its listener is registered
+     first, so a page's own listener runs too late to stop it): a page that owns some history
+     entries (Work with me's ?engagement=, ticket #15) sets window.__samePagePop, which returns
+     true when it handled the Back/Forward in place. -->
+<script is:inline>
+  document.documentElement.classList.add('js');
+  if (!window.__samePagePopHook) {
+    window.__samePagePopHook = true;
+    addEventListener('popstate', function (e) { var h = window.__samePagePop; if (h && h(e)) e.stopImmediatePropagation(); }, true);
+  }
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#2b2d29" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

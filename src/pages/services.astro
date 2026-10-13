@@ -9,6 +9,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import OrbitStage from '../components/orbit/OrbitStage.astro';
 import Sheet from '../components/orbit/Sheet.astro';
+import ClosingSheet from '../components/orbit/ClosingSheet.astro';
 import MotionLine from '../components/orbit/MotionLine.astro';
 import EngagementDetail from '../components/orbit/wwm/EngagementDetail.astro';
 import { ENGAGEMENTS } from '../components/orbit/wwm/content';
@@ -22,10 +23,11 @@ const lead = 'Bring me into your team full time, work with me on a product outco
         (Brandon, 2026-10-09); per-moon variety comes from Kepler periods in orbits.ts. */}
     {/* Selecting a model flies the stage to that moon (Brandon, 2026-10-12): it centres and
         grows with its mission formation around it, on desktop and phones alike; the overview
-        system recedes away. Controls live in the copy column (round 6): the three ways plus
-        Overview — no caption, no stage dock — and the chosen model's intro shows beside the
-        moon so desktop reads it without scrolling (phones scroll to the detail as before).
-        The rows stay the canonical path. */}
+        system recedes away. Controls live in the copy column (round 6): the three ways only
+        (the pause chip came off, Brandon 2026-10-13) — no caption, no stage dock, and no way back to the Overview (round 14:
+        visitors switch directly; browser Back still cuts to it). The chosen model's intro
+        shows beside the moon so desktop reads it without scrolling (phones scroll to the
+        detail as before). The rows stay the canonical path. */}
     <OrbitStage set="work" size="large" controls="copy" speed={2}>
       <div slot="headline" style="width:fit-content;max-width:100%">
         <h1 class="t-page-title">Work with me</h1>
@@ -63,7 +65,6 @@ const lead = 'Bring me into your team full time, work with me on a product outco
             </button>
           ))}
         </div>
-        <a class="link-ground wwm-restore" href="/services/" data-wwm-restore>↑ All ways to work together</a>
       </nav>
 
       {ENGAGEMENTS.map((e) => <EngagementDetail e={e} />)}
@@ -84,11 +85,7 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     </section>
 
     <div data-wwm-overview>
-      <Sheet class="wwm-close" label="Let's talk">
-        <p class="t-caption wwm-close-eyebrow">Let's talk</p>
-        <h2 class="t-title wwm-close-title">Not sure where your work fits? Tell me what you're trying to do.</h2>
-        <a href="/contact/" class="btn btn-brand wwm-close-btn">Let's talk</a>
-      </Sheet>
+      <ClosingSheet class="wwm-close" eyebrow="Let's talk" title="Not sure where your work fits? Tell me what you're trying to do." button="Let's talk" />
     </div>
   </div>
   <script is:inline data-astro-rerun>
@@ -133,7 +130,9 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm h2[tabindex='-1']:focus-visible { outline: 2px solid var(--accent-on-ground); }
 
   /* ---- overview rows: full width, each one link ----------------------------------------- */
-  .wwm-select { padding-bottom: var(--space-band); }
+  /* The first band meets the hero at the shared hero step (64 / 40), not the 112px band step
+     (Brandon, 2026-10-13: the Overview's empty ground before "Ways to work together"). */
+  .wwm-select { padding-top: var(--space-hero-step); padding-bottom: var(--space-band); }
   /* Overview with JS (no detail showing): the rows' bottom step is the seam, so the shared
      band adds none (was 112 + 112). Without JS the stacked details sit between and keep it. */
   .wwm:not(:has(.wwm-detail:not([hidden]))) .wwm-shared { padding-top: 0; }
@@ -149,14 +148,13 @@ const lead = 'Bring me into your team full time, work with me on a product outco
 
   /* ---- sticky switcher ------------------------------------------------------------------ */
   .wwm-switcher { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; padding-top: 14px; padding-bottom: 14px; background: var(--ground); border-bottom: 1px solid var(--line-on-ground); }
-  /* Desktop's switcher is the hero's chip row + Overview (round 6); the sticky tabs stay
-     a phone affordance. Unmeasured, --wwm-switcher-h falls back to 46px in the story CSS. */
+  /* Desktop's switcher is the hero's chip row (round 6); the sticky tabs stay a phone
+     affordance, three tabs only (round 14: no way back to the Overview). Unmeasured, --wwm-switcher-h falls back to 46px in the story CSS. */
   @media (min-width: 861px) { .wwm-switcher { display: none; } }
   .wwm-tabs { display: flex; gap: 8px; min-width: 0; }
   .wwm-tab { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 10px 16px; border-radius: var(--r-pill); border: 1px solid var(--control-line-on-ground); font-size: 15px; color: var(--on-ground-muted); white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
   .wwm-tab:hover { color: var(--on-ground); }
   .wwm-tab[aria-pressed='true'] { color: var(--on-ground); border-color: var(--accent-on-ground); }
-  .wwm-restore { white-space: nowrap; }
 
   /* While a model is selected, the wide-overview poster never shows (round 9, Brandon:
      "make the refresh and loading states feel very natural and clean") — a deep-linked or
@@ -188,22 +186,20 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     }
     .wwm-evidence { scroll-margin-top: calc(var(--wwm-intro-h, 0px) + 16px); }
   }
-  /* Selected on desktop: the stage gives up height so that intro — tag, name and summary —
-     shows above the fold beside the moon (Brandon, 2026-10-12 round 10: the details were
-     "Not above the fold"; round 11: the lower section "a little higher up vertically", so
-     tall windows cap at 720px instead of riding 100svh). The renderer re-fits the camera
-     whenever the box resizes, so the reframe rides the selection flight; Overview restores
-     the tall wide view. */
+  /* One stage height for both states on desktop (2026-10-13, the enter-transition rework): the
+     box holds the selected state's clamp in the Overview too, so choosing a model never resizes
+     it. The selected rule it came from (round 10: tag, name and summary above the fold beside
+     the moon; round 11: tall windows cap) still sets the value; the 660 cap is the Oct 13 one.
+     A box that changed height while the camera flew re-fitted the renderer on every frame of
+     the 0.85s ride — each re-fit cleared the canvas after it had drawn, so the stage strobed
+     blank through most of the flight at windows under ~980px tall, and the flow below shifted
+     by the height difference. The hero copy keeps its own --stage-h padding, so nothing in the
+     hero moves between states. */
   @media (min-width: 861px) {
-    .wwm[data-state='selected'] .orbit-hero--large .map-stage { height: clamp(480px, calc(100svh - 320px), 720px); }
+    .wwm .orbit-hero--large .map-stage { height: clamp(480px, calc(100svh - 320px), 660px); }
   }
-  /* The box's height ride matches the camera flight (850ms, smootherstep in orbits.ts), so
-     the resize and the flight read as one motion instead of two (round 12: the Overview
-     transitions were "very jarring"; moon-to-moon felt smooth — it never resizes the box). */
-  @media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
-    .wwm .orbit-hero--large .map-stage { transition: height 0.85s cubic-bezier(0.45, 0, 0.55, 1); }
-  }
-  /* Returning to the Overview: the rows and shared sections fade back in instead of popping. */
+  /* Browser Back to the Overview (D1): the stage cuts with no flight, and the rows and shared
+     sections fade back in instead of popping. */
   @media (prefers-reduced-motion: no-preference) {
     .wwm.wwm-returning .wwm-select:not([hidden]),
     .wwm.wwm-returning [data-wwm-overview]:not([hidden]) { animation: wwm-in 0.35s ease-out; }
@@ -223,11 +219,8 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm-origin { margin: 0; font-size: 13px; padding: 4px 10px; }
   .wwm-group-link { margin-top: 4px; }
 
-  /* ---- closing sheets: one brand-red button per field ----------------------------------- */
-  .sheet.wwm-close { margin-top: var(--space-band-sm); padding-top: var(--space-sheet-band); padding-bottom: 104px; }
-  .wwm-close-eyebrow { font-weight: 500; color: var(--on-sheet-muted); margin-bottom: 16px; }
-  .wwm-close-title { color: var(--on-sheet); max-width: 24em; text-wrap: balance; }
-  .wwm-close-btn { margin-top: 40px; font-size: 18px; padding: 18px 32px; min-height: 60px; }
+  /* ---- closing sheets (ClosingSheet): one seam above them on this page --------------------- */
+  .sheet.wwm-close { margin-top: var(--space-band-sm); }
 
   /* ---- shared body ---------------------------------------------------------------------- */
   .wwm-links { display: flex; flex-wrap: wrap; gap: 16px 32px; margin-top: 28px; }
@@ -236,6 +229,12 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   @media (prefers-reduced-motion: no-preference) {
     .wwm[data-state='selected'] .wwm-detail:not([hidden]) { animation: wwm-in 0.28s ease-out; }
     @keyframes wwm-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    /* Overview → model on the flight's clock (state.ts sets the three times from orbits.ts):
+       the Overview fades out as the system starts to recede, the page swaps, and the model
+       arrives while its mission fades in. */
+    .wwm.wwm-leaving .wwm-select,
+    .wwm.wwm-leaving [data-wwm-overview] { opacity: 0; transition: opacity var(--wwm-out, 200ms) ease-in; pointer-events: none; }
+    .wwm.wwm-arriving .wwm-detail:not([hidden]) { animation: wwm-in var(--wwm-in-dur, 280ms) ease-out var(--wwm-in-delay, 0ms) both; }
   }
 
   /* Leaving the story: one and a half band steps, so the next band arrives as the media lets go
@@ -252,7 +251,7 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   @media (max-width: 860px) {
     .wwm-band { grid-template-columns: minmax(0, 1fr); row-gap: 24px; padding-top: var(--space-band-sm); padding-bottom: 0; }
     .wwm-head, .wwm-body { grid-column: 1 / -1; }
-    .wwm-select { padding-bottom: var(--space-band-sm); }
+    .wwm-select { padding-top: var(--space-hero-step); padding-bottom: var(--space-band-sm); }
     .wwm-row { padding: 18px 0; }
     .wwm-band .t-item { font-size: 19px; }
     .wwm-band .t-body { font-size: 16px; }
@@ -261,8 +260,5 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     .wwm-tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; padding: 2px var(--gutter) 4px 2px; scroll-snap-type: x proximity; }
     .wwm-tabs::-webkit-scrollbar { display: none; }
     .wwm-tab { scroll-snap-align: start; font-size: 14px; padding: 8px 14px; }
-    .wwm-restore { align-self: flex-start; font-size: 14px; }
-    .sheet.wwm-close { padding-top: 64px; padding-bottom: 72px; }
-    .wwm-close-btn { margin-top: 28px; display: flex; width: 100%; }
   }
 </style>

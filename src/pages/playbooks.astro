@@ -58,6 +58,7 @@ const riceSteps = [
 
 <BaseLayout title="Playbooks" description="Methods for clearer product decisions. Three practical ways to connect evidence, choices, and learning.">
   <CollectionHero
+    scene="playbooks"
     title="Playbooks"
     lead="Methods for clearer product decisions."
     body="Three practical ways to connect evidence, choices, and learning."
@@ -96,7 +97,7 @@ const riceSteps = [
 
       <section class="cl-detail" id="playbook-rice" data-cl-detail="rice" aria-label={rice.title}>
         <DetailHead eyebrow="02 · Product strategy" title={rice.title} />
-        <p class="cl-formula">( R × I × C ) ÷ E — define units and the time horizon before comparing anything.</p>
+        <p class="t-lead" style="max-width:62ch">( R × I × C ) ÷ E — define units and the time horizon before comparing anything.</p>
         <div style="margin-top:32px">
           <DetailBlock label="How I approach it"><StepList steps={riceSteps} /></DetailBlock>
           <DetailBlock label="When to use">
