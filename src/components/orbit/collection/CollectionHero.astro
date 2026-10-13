@@ -1,7 +1,8 @@
 ---
 // Collection hero (Portfolio, Playbooks) on the system's own stage. The copy reads like the
-// other heroes (ticket #16, Brandon 2026-10-12 "looks sloppy"): the title with the red align
-// line, one lead, then the rest of the copy as one muted body paragraph. Copy is verbatim;
+// other heroes (ticket #16, Brandon 2026-10-12 "looks sloppy"): the title with the page's own
+// red line (Brandon, 2026-10-13: Portfolio's `record`, Playbooks' `route`; Work with me keeps
+// `align`), one lead, then the rest of the copy as one muted body paragraph. Copy is verbatim;
 // only the styling and spacing changed. The stage beside it is decorative: no chips, no
 // selection, one quiet pause chip in the copy column. Each page has its own scene
 // (collection-scene.ts): Portfolio's Flight record, Playbooks' Maneuver (Brandon's picks,
@@ -18,7 +19,7 @@ const { title, lead, body, note, scene } = Astro.props;
 <OrbitStage scene={scene} size="small">
   <div slot="headline" style="width:fit-content;max-width:100%">
     <h1 id="cl-hero-title" class="t-page-title">{title}</h1>
-    <MotionLine kind="align" stretch />
+    <MotionLine kind={scene === 'portfolio' ? 'record' : 'route'} stretch />
   </div>
   <p class="t-lead muted-g cl-hero-lead">{lead}</p>
   <p class="t-body muted-g cl-hero-body">{body} {note}</p>

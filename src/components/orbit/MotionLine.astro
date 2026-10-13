@@ -2,12 +2,23 @@
 // Red line marks under page titles, brought back from the earlier site at Brandon's
 // request (2026-10-06). Each draws once when it comes into view; it never replays.
 // The final drawing is plain SVG, so reduced motion and no-JS readers see it still.
+//
+// `record` (Portfolio) and `route` (Playbooks) exist only stretched (Brandon, 2026-10-13: "We need
+// different animations here for Playbook and Portfolio"). record: three shallow arcs land one
+// after another as stacked lines of a record, the newest brightest with a small head — the
+// Flight record's missions flown. route: a dashed planned route, then a solid line flies it,
+// with a bright tick at each bend as the head passes — the Maneuver's burns.
+import { recordGeometry, routeGeometry } from '../../lib/orbit/motion-line-geometry';
+
 interface Props {
-  kind: 'momentum' | 'map' | 'align' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
-  /** align only: size the mark to its container; the fork is half, the single line the other half (Brandon, 2026-10-06). */
+  kind: 'momentum' | 'map' | 'align' | 'record' | 'route' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
+  /** align, record, route: size the mark to its container (Brandon, 2026-10-06 / 2026-10-13). */
   stretch?: boolean;
 }
 const { kind, stretch = false } = Astro.props;
+// The no-JS default geometry (720 wide, stretched mildly); the script rebuilds it to the container.
+const rec = recordGeometry(720);
+const rte = routeGeometry(720);
 ---
 
 {stretch && kind === 'align' ? (
@@ -36,6 +47,35 @@ const { kind, stretch = false } = Astro.props;
         <path class="mls-path mls-soft" data-ml="top" pathLength="1" d="M 1 6 H 296 C 327 6 327 20 360 20" />
         <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717 M 711 14 l 6 6 -6 6" />
         <path class="mls-path mls-soft" data-ml="bottom" pathLength="1" d="M 1 34 H 296 C 327 34 327 20 360 20" />
+      </g>
+    </svg>
+  </div>
+) : stretch && kind === 'record' ? (
+  <div class="motion-line motion-line-record motion-line-stretch" data-motion data-ml-stretch="record" aria-hidden="true">
+    <svg width="100%" height="40" viewBox="0 0 720 40" preserveAspectRatio="none" fill="none" focusable="false">
+      <defs>
+        <filter id="mlr-glow-f" x="-10%" y="-200%" width="120%" height="500%"><feGaussianBlur stdDeviation="2.4" /></filter>
+      </defs>
+      <g class="mls-glow" filter="url(#mlr-glow-f)">
+        {['r0', 'r1', 'r2'].map((k) => <path class:list={['mls-path', k !== 'r2' && 'ml-soft']} data-ml={k} pathLength="1" d={rec.d[k]} />)}
+      </g>
+      <g class="mls-sharp">
+        {['r0', 'r1', 'r2'].map((k) => <path class:list={['mls-path', k !== 'r2' && 'ml-soft']} data-ml={k} pathLength="1" d={rec.d[k]} />)}
+        <circle class="ml-head" cx={rec.head.cx} cy={rec.head.cy} r="3" />
+      </g>
+    </svg>
+  </div>
+) : stretch && kind === 'route' ? (
+  <div class="motion-line motion-line-route motion-line-stretch" data-motion data-ml-stretch="route" aria-hidden="true">
+    <svg width="100%" height="40" viewBox="0 0 720 40" preserveAspectRatio="none" fill="none" focusable="false">
+      <defs>
+        <filter id="mlt-glow-f" x="-10%" y="-200%" width="120%" height="500%"><feGaussianBlur stdDeviation="2.4" /></filter>
+      </defs>
+      <g class="mlt-plan"><path class="mlt-plan-path" data-ml="plan" d={rte.d} /></g>
+      <g class="mls-glow" filter="url(#mlt-glow-f)"><path class="mls-path" data-ml="route" pathLength="1" d={rte.d} /></g>
+      <g class="mls-sharp">
+        <path class="mls-path" data-ml="route" pathLength="1" d={rte.d} />
+        {rte.ticks.map((t, i) => <path class="ml-tick" data-ml={`tick${i}`} d={t} />)}
       </g>
     </svg>
   </div>
@@ -94,6 +134,7 @@ const { kind, stretch = false } = Astro.props;
 )}
 
 <script>
+  import { recordGeometry, routeGeometry } from '../../lib/orbit/motion-line-geometry';
   const played = new WeakSet<Element>();
   let observer: IntersectionObserver | undefined;
   let resizer: ResizeObserver | undefined;
@@ -106,6 +147,9 @@ const { kind, stretch = false } = Astro.props;
   function buildStretch(root: HTMLElement) {
     const svg = root.querySelector('svg');
     if (!svg) return;
+    const kind = root.dataset.mlStretch;
+    if (kind === 'record') return buildRecord(root, svg);
+    if (kind === 'route') return buildRoute(root, svg);
     const W = Math.max(220, Math.round(root.clientWidth));
     svg.setAttribute('viewBox', `0 0 ${W} 40`);
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
@@ -125,6 +169,66 @@ const { kind, stretch = false } = Astro.props;
     const lenC = center?.getTotalLength() || W;
     svg.querySelectorAll<SVGPathElement>('.mls-path').forEach((p) => {
       p.style.setProperty('--mls-dur', `${Math.round(950 * (p.getTotalLength() / lenC))}ms`);
+    });
+  }
+
+  const fit = (root: HTMLElement, svg: SVGSVGElement) => {
+    const W = Math.max(220, Math.round(root.clientWidth));
+    svg.setAttribute('viewBox', `0 0 ${W} 40`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    return W;
+  };
+
+  /**
+   * record (Portfolio): three arcs, oldest first, 130ms apart, all at one drawing speed set by
+   * the newest (it ends at 1.1s). The head rides the newest line's straight run from touchdown.
+   */
+  function buildRecord(root: HTMLElement, svg: SVGSVGElement) {
+    const g = recordGeometry(fit(root, svg));
+    svg.querySelectorAll<SVGPathElement>('.mls-path').forEach((p) => p.setAttribute('d', g.d[p.dataset.ml ?? 'r2']));
+    const head = svg.querySelector<SVGCircleElement>('.ml-head');
+    head?.setAttribute('cx', String(g.head.cx));
+    head?.setAttribute('cy', String(g.head.cy));
+    const newest = svg.querySelector<SVGPathElement>('.mls-sharp [data-ml="r2"]');
+    const lenN = newest?.getTotalLength() || 1;
+    const STAGGER = 130, END = 1100;
+    const durN = END - 2 * STAGGER;
+    svg.querySelectorAll<SVGPathElement>('.mls-path').forEach((p) => {
+      const i = Number((p.dataset.ml ?? 'r2').slice(1));
+      p.style.setProperty('--mls-dur', `${Math.round(durN * (p.getTotalLength() / lenN))}ms`);
+      p.style.setProperty('--mls-delay', `${i * STAGGER}ms`);
+    });
+    if (head) {
+      const arc = lenN - g.straight;
+      head.style.setProperty('--ml-head-delay', `${Math.round(2 * STAGGER + durN * (arc / lenN))}ms`);
+      head.style.setProperty('--ml-head-dur', `${Math.round(durN * (g.straight / lenN))}ms`);
+      head.style.setProperty('--ml-head-from', `${-g.straight}px`);
+    }
+  }
+
+  /**
+   * route (Playbooks): the dashed plan wipes in left to right (0–420ms), then the solid line
+   * flies it (380–1200ms, linear); each bend's tick flares as the solid head reaches it.
+   */
+  function buildRoute(root: HTMLElement, svg: SVGSVGElement) {
+    const g = routeGeometry(fit(root, svg));
+    svg.querySelectorAll<SVGPathElement>('[data-ml="plan"], [data-ml="route"]').forEach((p) => p.setAttribute('d', g.d));
+    const route = svg.querySelector<SVGPathElement>('.mls-sharp [data-ml="route"]');
+    const len = route?.getTotalLength() || 1;
+    const START = 380, DUR = 820;
+    svg.querySelectorAll<SVGPathElement>('[data-ml="route"]').forEach((p) => {
+      p.style.setProperty('--mls-dur', `${DUR}ms`);
+      p.style.setProperty('--mls-delay', `${START}ms`);
+    });
+    svg.querySelectorAll<SVGPathElement>('.ml-tick').forEach((t, i) => {
+      t.setAttribute('d', g.ticks[i]);
+      // The length at which the path reaches the bend's x (the route runs left to right).
+      let lo = 0, hi = len;
+      for (let k = 0; k < 18 && route; k++) {
+        const mid = (lo + hi) / 2;
+        if (route.getPointAtLength(mid).x < g.bendX[i]) lo = mid; else hi = mid;
+      }
+      t.style.setProperty('--ml-delay', `${Math.round(START + DUR * (lo / len))}ms`);
     });
   }
 
@@ -172,6 +276,11 @@ const { kind, stretch = false } = Astro.props;
   .mls-sharp .mls-soft { opacity: 0.65; stroke: url(#mls-fade-g); }
   .mls-glow { opacity: 0.42; stroke-width: 4; }
   .mls-glow .mls-path[data-ml='top'], .mls-glow .mls-path[data-ml='bottom'] { opacity: 0.6; stroke: url(#mls-fade-g); }
+  /* record (Portfolio): the earlier two lines soft, the newest full with its head. */
+  .ml-head { fill: currentColor; stroke: none; }
+  /* route (Playbooks): the plan dashed and soft under the flown line; the burns brighter. */
+  .mlt-plan-path { stroke-dasharray: 4 5; opacity: 0.55; }
+  .ml-tick { stroke-width: 2; }
   .ml-dot { fill: currentColor; stroke: none; }
   .ml-soft { opacity: 0.65; }
   .ml-track { opacity: 0.25; }
@@ -186,7 +295,13 @@ const { kind, stretch = false } = Astro.props;
     /* Stretched mark: every path draws at the same speed (durations set per length by the
        script), so the strands land on the merge as the centre head passes — one gesture. */
     .motion-line[data-motion-armed]:not([data-motion-play]) .mls-path { stroke-dashoffset: 1; }
-    .motion-line[data-motion-play] .mls-path { animation: ml-draw var(--mls-dur, 950ms) linear both; }
+    .motion-line[data-motion-play] .mls-path { animation: ml-draw var(--mls-dur, 950ms) linear var(--mls-delay, 0ms) both; }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-head,
+    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-tick { opacity: 0; }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlt-plan { clip-path: inset(0 100% 0 0); }
+    .motion-line[data-motion-play] .ml-head { opacity: 0; animation: ml-head var(--ml-head-dur, 400ms) linear var(--ml-head-delay, 700ms) forwards; }
+    .motion-line[data-motion-play] .ml-tick { animation: ml-burn 420ms ease-out var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-play] .mlt-plan { animation: ml-wipe 420ms linear both; }
     .motion-line[data-motion-play] .ml-arrive { animation: ml-arrive 650ms ease-out var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-place { animation: ml-place 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-meet { animation: ml-meet 950ms ease-out both; }
@@ -196,6 +311,9 @@ const { kind, stretch = false } = Astro.props;
   }
 
   @keyframes ml-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes ml-head { from { opacity: 1; transform: translateX(var(--ml-head-from, 0px)); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes ml-burn { 0% { opacity: 0; stroke-width: 3.5; } 30% { opacity: 1; stroke-width: 3.5; } 100% { opacity: 1; stroke-width: 2; } }
+  @keyframes ml-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
   @keyframes ml-arrive { from { opacity: 0.45; } to { opacity: 1; } }
   @keyframes ml-place { from { transform: translateY(-4px); } to { transform: translateY(0); } }
   @keyframes ml-meet { from { transform: scale(0.6); opacity: 0.45; } to { transform: scale(1); opacity: 1; } }
