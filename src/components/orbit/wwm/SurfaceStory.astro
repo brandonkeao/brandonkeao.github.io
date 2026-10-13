@@ -169,7 +169,10 @@ const steps = [
           afterFlight(signal)
             .then(() => import('../../../lib/orbit/formation-scene'))
             .then(({ createFormation }) => {
-              if (!ctl || ctl.signal.aborted || scenes.has(host)) return;
+              // This init's own signal, not the module's `ctl`: a same-page navigation during
+              // the import replaces `ctl` with a live controller, and building here would put a
+              // context on the old, detached host that nothing would dispose.
+              if (signal.aborted || !host.isConnected || scenes.has(host)) return;
               const scene = createFormation(host, slug);
               scenes.set(host, scene);
               scene.setProgress(progressOf(story));
