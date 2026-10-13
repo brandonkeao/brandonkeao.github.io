@@ -136,6 +136,27 @@ export function ease(t: number) {
   return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
+/* ---- One clock for Work with me's enter gesture (2026-10-13 rework) ----
+   The camera flight, the mission's fade-in and the page copy that changes with them all read
+   these, so they move on one 850ms smootherstep curve instead of three separate timings. */
+/** The overview ⇄ model flight. */
+export const FLIGHT_MS = 850;
+/** A direct moon-to-moon switch. */
+export const SWAP_MS = 700;
+/** The flight's blend range over which the chosen moon's mission fades in (round 5). */
+export const MISSION_FADE: readonly [number, number] = [0.45, 0.95];
+/** Milliseconds into the flight at which its eased blend reaches `b` (inverts `ease`). */
+export function flightTimeAt(b: number, duration = FLIGHT_MS) {
+  let lo = 0,
+    hi = 1;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    if (ease(mid) < b) lo = mid;
+    else hi = mid;
+  }
+  return ((lo + hi) / 2) * duration;
+}
+
 /**
  * Child phases are chosen so the three items start spread around the centre
  * (right, upper left, lower right) rather than bunching in the top half, and

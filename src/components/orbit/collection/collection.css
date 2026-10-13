@@ -3,9 +3,14 @@
    hero's red is the align line and the stage's motion (ticket #16). AI-made layout choices,
    reversible. */
 
-/* ---- hero copy: title and align line, one lead, one body (the other heroes' rhythm) ----- */
-.cl-hero-lead { max-width: 560px; }
-.cl-hero-body { margin-top: 16px; max-width: 560px; }
+/* ---- hero copy: title and mark, a statement lead, one body (T1 Statement, Brandon 2026-10-13):
+   the lead white 26/500 on a 20ch measure 28px under the mark, the body 17/1.6 muted at 44ch,
+   14px below it. On phones the stage sits between the mark and the lead, so the lead keeps its
+   8px step under the stage and only its size changes (23px, .t-lead-strong). */
+.cl-hero-lead { max-width: 20ch; }
+.orbit-hero .hero-rest > p.cl-hero-lead { margin-top: 28px; }
+@media (max-width: 860px) { .orbit-hero .hero-rest > p.cl-hero-lead { margin-top: 8px; } }
+.cl-hero-body { margin-top: 14px; max-width: 44ch; line-height: 1.6; }
 
 /* ---- the collection sheet ----------------------------------------------------------------- */
 .sheet.cl-sheet { padding-top: var(--space-sheet); padding-bottom: 64px; }
@@ -129,3 +134,7 @@
   .cl-note { padding: var(--space-band-sm) var(--gutter); grid-template-columns: minmax(0, 1fr); row-gap: 12px; }
   .cl-note h2, .cl-note p { grid-column: 1 / -1; }
 }
+
+/* The collection title marks stop where Work with me's does (--mark-max, OrbitStage); the title
+   and copy keep the column's width (Brandon, 2026-10-13). */
+.orbit-hero--small .motion-line-stretch { max-width: min(var(--mark-max), 100%); }
