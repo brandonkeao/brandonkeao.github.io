@@ -3,6 +3,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CATEGORIES, type CategoryId, type ContentItem } from './orbit-data';
@@ -24,6 +25,9 @@ import {
   orbitPosition,
   depthScale,
   ease,
+  FLIGHT_MS,
+  SWAP_MS,
+  MISSION_FADE,
   type Orbit,
   type Pose,
 } from './orbits';
@@ -32,6 +36,7 @@ import { createPlanet } from './planet';
 import { resolveMoonStyle, SPHERE_RADII, SPHERE_CENTER_RADII } from './moon-style';
 import { surfaceMaterial, valueNoise, dataTexture, rustTexture, STAGE_GROUND, type SurfaceUniforms } from './moon-surfaces';
 import { attachMicroFormation, type MicroFormation } from './formation-craft';
+import { addStarDust, EdgeFeather, setEdgeFade } from './star-dust';
 
 /**
  * The renderer no longer decides navigation. The host owns a `lib/map-state`
@@ -174,8 +179,10 @@ function brushedTexture() {
 /** Close-up framing on top of the fitted pose: `zoom` divides the camera distance; `offsetX`/`offsetY`
  * shift the image in NDC without changing perspective (Home's "Quiet orbit" close-up, 2026-10-06).
  * `moonScale` multiplies the moons' overview size for this stage only (Home: smaller moons, Brandon
- * 2026-10-07 "decrease the moon sizes"); a chosen moon still grows to its usual centred size. */
-export type Framing = { zoom: number; offsetX: number; offsetY: number; maxPixelRatio: number; moonScale?: number };
+ * 2026-10-07 "decrease the moon sizes"); a chosen moon still grows to its usual centred size.
+ * `edgeFade: false` skips the stage-box edge fade (Home's full-bleed stage, whose page masks
+ * already fade it into the ground and whose right edge is the window's). */
+export type Framing = { zoom: number; offsetX: number; offsetY: number; maxPixelRatio: number; moonScale?: number; edgeFade?: boolean };
 
 /** `speed` scales the ambient motion (orbits, steps, planet surface); flights keep their timing. */
 export function createMap(
@@ -224,6 +231,14 @@ export function createMap(
   const bloom = new UnrealBloomPass(new THREE.Vector2(800, 600), 0.34, 0.45, 0.93);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
+  // Stars in the background (Brandon, 2026-10-13): the collections' dust, centred on the camera
+  // each frame so it sits at infinity behind every body through the flights; the frame edge
+  // fades to the ground (10px + 40px) so the dust never reaches the stage box's edge.
+  // 1500 points rather than the collections' 900: the moons, orbits and wider frame cover
+  // more of this stage, and 1500 lands the visible density on the collections' (AI-made, reversible).
+  const stars = addStarDust(scene, { count: 1500 });
+  const feather = framing.edgeFade === false ? null : new ShaderPass(EdgeFeather);
+  if (feather) composer.addPass(feather);
 
   const key = new THREE.DirectionalLight(0xffe2bd, 2.7);
   key.position.copy(KEY_DIR).multiplyScalar(10);
@@ -628,7 +643,7 @@ export function createMap(
         // moon-to-moon switch the old mission hands off to the new one (round 7).
         const focus =
           i === selectedIndex
-            ? THREE.MathUtils.smoothstep(blend, 0.45, 0.95) * swapT
+            ? THREE.MathUtils.smoothstep(blend, MISSION_FADE[0], MISSION_FADE[1]) * swapT
             : swap && i === prevSelected
               ? 1 - swapT
               : 0;
@@ -849,7 +864,7 @@ export function createMap(
       from: blend,
       to,
       started: performance.now(),
-      duration: o.instant || fallback ? 0 : 850,
+      duration: o.instant || fallback ? 0 : FLIGHT_MS,
     };
     // An instant transition settles now: a hidden tab runs no frames.
     if (transition.duration === 0) completeTransition();
@@ -876,7 +891,7 @@ export function createMap(
     selectedIndex = CATEGORIES.findIndex((c) => c.id === id);
     category = id;
     transitionToken = o.token;
-    swap = { started: performance.now(), duration: o.instant || fallback ? 0 : 700 };
+    swap = { started: performance.now(), duration: o.instant || fallback ? 0 : SWAP_MS };
     swapT = 0;
     if (swap.duration === 0) completeSwap();
     else wake();
@@ -893,6 +908,8 @@ export function createMap(
     hooks.onSettled(transitionToken);
   }
   function completeTransition() {
+    // A running moon-to-moon swap settles too (ticket #24), so "finish the flight" always lands.
+    if (swap) completeSwap();
     if (!transition) return;
     blend = transition.to;
     transition = null;
@@ -952,10 +969,22 @@ export function createMap(
       // Line2 trails need the drawing-buffer size or they render at the 1×1 default.
       const pr = renderer.getPixelRatio();
       micros.forEach((mf) => mf.setResolution(r.width * pr, r.height * pr));
+      if (feather) setEdgeFade(feather, r.width, r.height, pr);
     }
     leaderLayer.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
     measureLabels();
-    wake();
+    // Resizing the canvas clears it, and a ResizeObserver runs after this frame's draw: left
+    // to the next frame, the cleared canvas is what gets painted, so a live box resize (a
+    // window drag, or the old Work with me height ride) strobes blank. Redraw now instead.
+    if (started) redrawNow();
+    else wake();
+  }
+  let started = false;
+  function redrawNow() {
+    if (disposed) return;
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    update(performance.now());
   }
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(host);
@@ -1403,12 +1432,14 @@ export function createMap(
     }
 
     if (!fallback && visible && !offscreen) {
+      stars.points.position.copy(camera.position);
       composer.render();
       totalFrames++;
       if (now - diagnosticAt > 1000 || paused || reduced) {
         const times = [...frameTimes].sort((a, b) => a - b);
         const count = times.length;
         host.dataset.frameCount = String(totalFrames);
+        host.dataset.starCount = String(stars.count);
         host.dataset.frameP50 = String(times[Math.floor(count * 0.5)] || 0);
         host.dataset.frameP95 = String(times[Math.floor(count * 0.95)] || 0);
         host.dataset.frameSamples = String(count);
@@ -1429,19 +1460,23 @@ export function createMap(
     const alive = !paused && !reduced;
     if ((alive || moving || modulating || transition) && !fallback && visible && !offscreen)
       frame = requestAnimationFrame(update);
-    else if (transition && visible) frame = requestAnimationFrame(update);
+    else if ((transition || swap) && visible) frame = requestAnimationFrame(update);
   }
   function wake() {
     if (disposed) return;
     last = performance.now();
     if (!frame) frame = requestAnimationFrame(update);
   }
-  // Visibility is reported to the host; its state machine answers with
-  // `completeTransition` when a flight is running, so navigation never waits
-  // on an unseen animation.
+  // Visibility is reported to the host. A flight running when the stage goes unseen
+  // completes here (the host's onVisibility was a no-op, so it used to stall), so
+  // navigation never waits on an unseen animation.
   let reportedVisible = true;
   function visibilityChanged() {
     const now = visible && !offscreen;
+    // A flight that leaves the screen mid-way (ticket #24: on phones a row choice scrolls the
+    // page to the model's detail) lands at once instead of stalling until it is seen again —
+    // the frame loop stops below, and nobody watches the rest of the ride.
+    if (!now && (transition || swap)) completeTransition();
     if (!now && frame) {
       cancelAnimationFrame(frame);
       frame = 0;
@@ -1465,7 +1500,22 @@ export function createMap(
   );
   intersection.observe(host);
   resize();
+  // Compile the missions' materials now, with the rest of the scene, while the canvas is
+  // still fading in over the poster. They are hidden in the wide view, so the first render
+  // skips them and their programs used to compile at the first selection, halfway through
+  // the flight where the mission fades in (2026-10-13 enter-transition rework).
+  if (micros.length) {
+    // One draw into the composer's buffer, as the RenderPass draws (the render target is part
+    // of a program's key): a bare compile() left three's first-use program checks to the
+    // flight. The next frame's RenderPass clears the buffer.
+    micros.forEach((m) => m.setFade(1));
+    renderer.setRenderTarget(composer.readBuffer);
+    renderer.render(scene, camera);
+    renderer.setRenderTarget(null);
+    micros.forEach((m) => m.setFade(0));
+  }
   wake();
+  started = true;
   hooks.onReady();
   return {
     enter,
@@ -1544,6 +1594,8 @@ export function createMap(
       brushed.dispose();
       rust.dispose();
       environment.dispose();
+      stars.dispose();
+      feather?.dispose();
       bloom.dispose();
       composer.dispose();
       renderer.dispose();
