@@ -61,7 +61,9 @@ const lead = 'Bring me into your team full time, work with me on a product outco
       </div>
     </div>
 
-    <SceneBand set="work" speed={2} />
+    {/* The band follows the selection (ticket #37): each model's own Formation story; the
+        Overview keeps the general scene. */}
+    <SceneBand set="work" speed={2} models={ENGAGEMENTS.map((e) => e.slug)} />
 
     <div data-wwm-overview>
       <ClosingSheet class="wwm-close" eyebrow="Let's talk" title="Not sure where your work fits? Tell me what you're trying to do." button="Let's talk" />
@@ -91,6 +93,13 @@ const lead = 'Bring me into your team full time, work with me on a product outco
       /* The Overview hides the stacked no-JS details here too, before paint: left to the module
          script, the shared band jumped up into view after load (a 0.29 layout shift at 1440). */
       ds.forEach(function (d) { d.hidden = d.getAttribute('data-wwm-detail') !== v; });
+      /* The end band shows the chosen model's poster from the first paint (ticket #37; mirrors
+         showPoster() in SceneBand.astro). */
+      var b = r.querySelector('[data-scene-band]');
+      if (b) {
+        b.setAttribute('data-scene-model', v || '');
+        b.querySelectorAll('[data-scene-poster]').forEach(function (p) { p.hidden = p.getAttribute('data-scene-poster') !== (v || ''); });
+      }
       if (!v) return;
       r.setAttribute('data-state', 'selected');
       r.querySelectorAll('[data-wwm-closing]').forEach(function (c) { c.hidden = c.getAttribute('data-wwm-closing') !== v; });

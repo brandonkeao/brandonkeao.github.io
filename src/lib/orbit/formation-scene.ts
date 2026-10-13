@@ -95,7 +95,15 @@ interface Story {
   update(p: number, t: number): { K: CamKey[]; up: THREE.Vector3 };
 }
 
-export function createFormation(container: HTMLElement, model: EngagementSlug): FormationHandle {
+/** A reframing on top of the story's own camera (ticket #37: the end band's short, wide
+ * landscape frame). `fovScale` multiplies the vertical field of view (below 1 moves in);
+ * `shiftY` moves the image in NDC without changing perspective (positive raises the moon, so its
+ * curve sits along the frame's lower edge as a horizon). */
+export interface FormationView { fovScale?: number; shiftY?: number }
+
+export function createFormation(container: HTMLElement, model: EngagementSlug, view: FormationView = {}): FormationHandle {
+  const fovScale = view.fovScale ?? 1;
+  const shiftY = view.shiftY ?? 0;
   // Clear color calibrated to tone-map onto the page's --ground (see STAGE_GROUND);
   // a transparent canvas is not viable — the bloom pass writes black halos over it.
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -594,8 +602,12 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
     camera.position.copy(camPos);
     camera.up.copy(up);
     camera.lookAt(camLook);
-    camera.fov = fov;
+    camera.fov = fov * fovScale;
     camera.updateProjectionMatrix();
+    if (shiftY) {
+      camera.projectionMatrix.elements[9] = -shiftY;
+      camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+    }
     orientCrafts();
     dust.points.position.copy(camera.position);
     composer.render();

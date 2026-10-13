@@ -18,7 +18,8 @@
 //
 // The orbital stage left the hero (designer review, Oct 13): there is no stage coupling here any
 // more — no chip following, no flight-timed swap. The scene now sits in its own band at the end
-// of the page (SceneBand.astro) and does not take part in selection.
+// of the page (SceneBand.astro). The one coupling left (ticket #37): show() writes the chosen
+// model into the band's `data-scene-model`, and the band swaps to that model's own scene.
 import { SETS, type EngagementSlug } from '../../../lib/orbit/orbit-data';
 
 type Slug = EngagementSlug;
@@ -44,6 +45,7 @@ export function initWorkWithMe(): (() => void) | undefined {
   const details = [...root.querySelectorAll<HTMLElement>('[data-wwm-detail]')];
   const closings = [...root.querySelectorAll<HTMLElement>('[data-wwm-closing]')];
   const overviewOnly = [...root.querySelectorAll<HTMLElement>('[data-wwm-overview]')];
+  const band = root.querySelector<HTMLElement>('[data-scene-band]');
 
   // The cards become toggle buttons (the first-paint script in services.astro already did this
   // before paint; repeated here so a page swap that skipped it still works).
@@ -67,6 +69,8 @@ export function initWorkWithMe(): (() => void) | undefined {
     closings.forEach((c) => { c.hidden = c.dataset.wwmClosing !== slug; });
     overviewOnly.forEach((el) => { el.hidden = !!slug; });
     cards.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.wwmChoose === slug)));
+    // The end band follows the selection (the Overview: the general scene).
+    if (band && (band.dataset.sceneModel ?? '') !== (slug ?? '')) band.dataset.sceneModel = slug ?? '';
     // Focus follows a choice to the model's title. Any other path that hides the focused
     // element (history) lands there too, so focus is never left on a hidden element; a deep
     // link or Back with focus elsewhere keeps it.
