@@ -116,7 +116,7 @@ export function initWorkWithMe(): (() => void) | undefined {
   let returning: ReturnType<typeof setTimeout> | undefined;
   let swapping: ReturnType<typeof setTimeout> | undefined;
   let arriving: ReturnType<typeof setTimeout> | undefined;
-  // A row choice moves focus to the model's title once that title is showing.
+  // A row or step-chip choice moves focus to the model's title once that title is showing.
   let focusAfter: Slug | null = null;
   root.style.setProperty('--wwm-out', `${OUT_MS}ms`);
   root.style.setProperty('--wwm-in-delay', `${IN_FROM_MS - OUT_MS}ms`);
@@ -143,7 +143,13 @@ export function initWorkWithMe(): (() => void) | undefined {
     const on = tabs.find((t) => t.dataset.wwmTab === slug);
     const row = on?.parentElement;
     if (on && row && row.scrollWidth > row.clientWidth) row.scrollLeft = Math.max(0, on.offsetLeft - row.offsetLeft - 8);
-    if (slug && focusAfter === slug) document.getElementById(`wwm-${slug}-title`)?.focus({ preventScroll: true });
+    // Focus follows a choice to the model's title, at the swap (it cannot land on a hidden
+    // title earlier; until then the chosen row is still showing, fading out). Any other
+    // path that hides the focused element (a step chip, history) lands there too, so focus
+    // is never left on a hidden element; a deep link or Back with focus elsewhere keeps it.
+    const active = document.activeElement;
+    const lost = !!active && active !== document.body && !!active.closest('[hidden]');
+    if (slug && (focusAfter === slug || lost)) document.getElementById(`wwm-${slug}-title`)?.focus({ preventScroll: true });
     focusAfter = null;
   }
 
@@ -224,7 +230,7 @@ export function initWorkWithMe(): (() => void) | undefined {
     const slug = parse(url.searchParams.get('engagement'));
     if (!slug) return;
     e.preventDefault();
-    if (slug !== current) apply(slug, 'rows');
+    if (slug !== current) { focusAfter = slug; apply(slug, 'rows'); }
     document.getElementById(url.hash.slice(1))?.scrollIntoView({ behavior, block: 'start' });
   }, opts);
 
