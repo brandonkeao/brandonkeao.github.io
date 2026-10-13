@@ -3,13 +3,13 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CATEGORIES, type CategoryId, type ContentItem } from './orbit-data';
 import {
   overviewOrbits,
   layoutFor,
-  cornerScale,
   CHILD_ORBITS,
   CENTER_SCALES,
   BODY_RADII,
@@ -19,18 +19,24 @@ import {
   FOV_Y,
   overviewPose,
   collectionPose,
+  CENTER_ZOOM,
   cameraPosition,
   stageReserve,
   orbitPosition,
   depthScale,
   ease,
+  FLIGHT_MS,
+  SWAP_MS,
+  MISSION_FADE,
   type Orbit,
   type Pose,
 } from './orbits';
 import { labelBounds, placeLabel, type Rect } from './label-layout';
 import { createPlanet } from './planet';
 import { resolveMoonStyle, SPHERE_RADII, SPHERE_CENTER_RADII } from './moon-style';
-import { surfaceMaterial, type SurfaceUniforms } from './moon-surfaces';
+import { surfaceMaterial, valueNoise, dataTexture, rustTexture, STAGE_GROUND, type SurfaceUniforms } from './moon-surfaces';
+import { attachMicroFormation, type MicroFormation } from './formation-craft';
+import { addStarDust, EdgeFeather, setEdgeFade } from './star-dust';
 
 /**
  * The renderer no longer decides navigation. The host owns a `lib/map-state`
@@ -54,6 +60,9 @@ export type MapController = {
   enter(id: CategoryId, o: TransitionOptions & { phase: number }): void;
   /** Fly back to the overview from the current blend. */
   leave(o: TransitionOptions): void;
+  /** Switch straight to another moon at full zoom — no out-and-back flight
+   *  (Brandon, 2026-10-12 round 7). Only valid while a collection is open. */
+  switchTo(id: CategoryId, o: TransitionOptions): void;
   showChildren(): void;
   hideChildren(): void;
   /** Set the overview clock (simulation time) to a snapshotted phase. */
@@ -157,48 +166,7 @@ function pathMaterial() {
   });
 }
 
-// ---- Procedural textures (no external assets) -----------------------------
-function valueNoise(seed: number) {
-  const h = (x: number, y: number, z: number) => {
-    let n = (x * 374761393 + y * 668265263 + z * 2147483647 + seed) | 0;
-    n = (n ^ (n >>> 13)) * 1274126177;
-    return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
-  };
-  const s = (t: number) => t * t * (3 - 2 * t);
-  return (x: number, y: number, z: number) => {
-    const xi = Math.floor(x),
-      yi = Math.floor(y),
-      zi = Math.floor(z);
-    const fx = s(x - xi),
-      fy = s(y - yi),
-      fz = s(z - zi);
-    const l = (a: number, b: number, t: number) => a + (b - a) * t;
-    const c = (dx: number, dy: number, dz: number) =>
-      h(xi + dx, yi + dy, zi + dz);
-    return l(
-      l(l(c(0, 0, 0), c(1, 0, 0), fx), l(c(0, 1, 0), c(1, 1, 0), fx), fy),
-      l(l(c(0, 0, 1), c(1, 0, 1), fx), l(c(0, 1, 1), c(1, 1, 1), fx), fy),
-      fz,
-    );
-  };
-}
-function dataTexture(w: number, h: number, fn: (u: number, v: number) => number) {
-  const data = new Uint8Array(w * h * 4);
-  for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++) {
-      const k = Math.max(0, Math.min(255, Math.round(fn(x / w, y / h) * 255)));
-      const i = (y * w + x) * 4;
-      data[i] = data[i + 1] = data[i + 2] = k;
-      data[i + 3] = 255;
-    }
-  const tex = new THREE.DataTexture(data, w, h);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.magFilter = THREE.LinearFilter;
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
-  tex.generateMipmaps = true;
-  tex.needsUpdate = true;
-  return tex;
-}
+// ---- Procedural textures (shared helpers live in moon-surfaces.ts) --------
 /** Brushed graphite: fine streaks along one axis, used as roughness. */
 function brushedTexture() {
   const n = valueNoise(17);
@@ -207,38 +175,20 @@ function brushedTexture() {
     return 0.34 + streak * 0.3;
   });
 }
-/** Rust: seamless spherical fbm sampled on the unit sphere (equirect UVs). */
-function rustTexture() {
-  const n = valueNoise(91);
-  return dataTexture(512, 256, (u, v) => {
-    const th = u * Math.PI * 2,
-      ph = v * Math.PI;
-    const x = Math.sin(ph) * Math.cos(th),
-      y = Math.cos(ph),
-      z = Math.sin(ph) * Math.sin(th);
-    let a = 0.5,
-      f = 4,
-      s = 0;
-    for (let i = 0; i < 5; i++) {
-      s += a * n(x * f + 11, y * f + 3, z * f + 7);
-      f *= 2.1;
-      a *= 0.5;
-    }
-    return Math.min(1, Math.max(0, (s - 0.5) * 1.8 + 0.5));
-  });
-}
 
 /** Close-up framing on top of the fitted pose: `zoom` divides the camera distance; `offsetX`/`offsetY`
  * shift the image in NDC without changing perspective (Home's "Quiet orbit" close-up, 2026-10-06).
  * `moonScale` multiplies the moons' overview size for this stage only (Home: smaller moons, Brandon
- * 2026-10-07 "decrease the moon sizes"); a chosen moon still grows to its usual centred size. */
-export type Framing = { zoom: number; offsetX: number; offsetY: number; maxPixelRatio: number; moonScale?: number };
+ * 2026-10-07 "decrease the moon sizes"); a chosen moon still grows to its usual centred size.
+ * `edgeFade: false` skips the stage-box edge fade (Home's full-bleed stage, whose page masks
+ * already fade it into the ground and whose right edge is the window's). */
+export type Framing = { zoom: number; offsetX: number; offsetY: number; maxPixelRatio: number; moonScale?: number; edgeFade?: boolean };
 
 /** `speed` scales the ambient motion (orbits, steps, planet surface); flights keep their timing. */
 export function createMap(
   host: HTMLElement,
   hooks: Hooks,
-  clearColor = 0x0a0b0a,
+  clearColor = STAGE_GROUND,
   speed = 1,
   framing: Framing = { zoom: 1, offsetX: 0, offsetY: 0, maxPixelRatio: 1.8 },
 ): MapController {
@@ -247,6 +197,8 @@ export function createMap(
     alpha: false,
     powerPreference: 'high-performance',
   });
+  // Calibrated so the tone-mapped output matches the page ground (see STAGE_GROUND); a
+  // transparent canvas is not viable — the bloom pass writes black halos over it.
   renderer.setClearColor(clearColor);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, framing.maxPixelRatio));
   const moonScale = framing.moonScale ?? 1;
@@ -254,7 +206,8 @@ export function createMap(
   renderer.toneMappingExposure = 1.05;
   host.appendChild(renderer.domElement);
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x0d110c, 0.018);
+  // Fog settles toward the stage ground so distance fades into the page, not into black.
+  scene.fog = new THREE.FogExp2(STAGE_GROUND, 0.018);
   const environmentRoom = new RoomEnvironment();
   const pmrem = new THREE.PMREMGenerator(renderer);
   const environment = pmrem.fromScene(environmentRoom, 0.045);
@@ -278,6 +231,14 @@ export function createMap(
   const bloom = new UnrealBloomPass(new THREE.Vector2(800, 600), 0.34, 0.45, 0.93);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
+  // Stars in the background (Brandon, 2026-10-13): the collections' dust, centred on the camera
+  // each frame so it sits at infinity behind every body through the flights; the frame edge
+  // fades to the ground (10px + 40px) so the dust never reaches the stage box's edge.
+  // 1500 points rather than the collections' 900: the moons, orbits and wider frame cover
+  // more of this stage, and 1500 lands the visible density on the collections' (AI-made, reversible).
+  const stars = addStarDust(scene, { count: 1500 });
+  const feather = framing.edgeFade === false ? null : new ShaderPass(EdgeFeather);
+  if (feather) composer.addPass(feather);
 
   const key = new THREE.DirectionalLight(0xffe2bd, 2.7);
   key.position.copy(KEY_DIR).multiplyScalar(10);
@@ -312,7 +273,6 @@ export function createMap(
   // (lib/orbits.ts layouts); the camera fit follows the same layout.
   const layout = layoutFor(moonStyle);
   const ORBITS = overviewOrbits(layout);
-  const CORNER = cornerScale(layout);
   const RADII =
     moonStyle === 'spheres'
       ? BODY_RADII.map((r, i) => (i === 1 ? r : SPHERE_RADII[i] * MOON_SCALE))
@@ -321,6 +281,8 @@ export function createMap(
     moonStyle === 'spheres'
       ? CENTER_SCALES.map((c, i) => (i === 1 ? c : SPHERE_CENTER_RADII[i] / RADII[i]))
       : CENTER_SCALES;
+  // CENTER_ZOOM (the round-7 "increase the zoom on the moons") lives in orbits.ts now,
+  // shared with the collection fit so the mission's flight envelope stays in frame.
   const edgeMaterials: THREE.LineBasicMaterial[] = [];
   function edges(geometry: THREE.BufferGeometry, opacity: number) {
     const material = new THREE.LineBasicMaterial({
@@ -399,7 +361,82 @@ export function createMap(
     mesh.userData.edgeLit = 0.62;
     return mesh;
   }
+  /**
+   * All three bucket anchors are moons (Brandon, 2026-10-12: "the different moons are the
+   * different work buckets and each formation around each moon is different because each
+   * moon is a different mission"); Fractional returns to the rust moon and the rocket idiom
+   * lives on as the copper guide in its formation. `?body=vessel` restores the rocket
+   * (Brandon's Oct 9 pick, superseded for the stages) for comparison.
+   */
+  const vesselMode = typeof location !== 'undefined' && new URLSearchParams(location.search).get('body') === 'vessel';
+  /**
+   * Each engagement moon carries its mission as a live micro-formation flying around it
+   * (ticket #13, Brandon's Oct 12 direction): the row sweeping its circuit, the wedge
+   * climbing its spiral with the guide off its wing, the loops under the high observer.
+   * The wide planet-and-moons view stays clean — the mission fades into view as the
+   * selection flight focuses its moon (round 5), so a static stage (Home) never builds
+   * one. `?buckets=plain` restores the plain bodies with their old hints.
+   */
+  const plainBuckets = typeof location !== 'undefined' && new URLSearchParams(location.search).get('buckets') === 'plain';
+  const microFormations = !plainBuckets && !host.closest('.map-stage')?.hasAttribute('data-static');
+  function vesselBody(): THREE.Mesh {
+    const s = MOON_SCALE;
+    const hullGeo = new THREE.CapsuleGeometry(0.115 * s, 0.3 * s, 6, 20);
+    hullGeo.rotateX(Math.PI / 2); // nose along +Z for lookAt
+    const hull = new THREE.Mesh(
+      hullGeo,
+      new THREE.MeshPhysicalMaterial({
+        color: 0x9a5f43, metalness: 0.45, roughness: 0.55, roughnessMap: rust, bumpMap: rust,
+        bumpScale: 1.2, clearcoat: 0.2, clearcoatRoughness: 0.5, emissive: 0x8b3512, emissiveIntensity: 0,
+      }),
+    );
+    const ivory = new THREE.MeshPhysicalMaterial({ color: 0xd8d2c4, metalness: 0.2, roughness: 0.5, emissive: 0x8b3512, emissiveIntensity: 0 });
+    const dark = new THREE.MeshPhysicalMaterial({ color: 0x2e2a26, metalness: 0.7, roughness: 0.4, emissive: 0x8b3512, emissiveIntensity: 0 });
+    const noseGeo = new THREE.ConeGeometry(0.1 * s, 0.16 * s, 20);
+    noseGeo.rotateX(Math.PI / 2);
+    const nose = new THREE.Mesh(noseGeo, ivory);
+    nose.position.z = 0.31 * s;
+    hull.add(nose);
+    const bellGeo = new THREE.ConeGeometry(0.085 * s, 0.12 * s, 16);
+    bellGeo.rotateX(-Math.PI / 2);
+    const bell = new THREE.Mesh(bellGeo, dark);
+    bell.position.z = -0.29 * s;
+    hull.add(bell);
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2 + Math.PI / 6;
+      const fin = new THREE.Mesh(new THREE.BoxGeometry(0.018 * s, 0.11 * s, 0.16 * s), dark);
+      fin.position.set(Math.cos(a) * 0.13 * s, Math.sin(a) * 0.13 * s, -0.18 * s);
+      fin.rotation.z = a + Math.PI / 2;
+      hull.add(fin);
+    }
+    const porthole = new THREE.Mesh(new THREE.SphereGeometry(0.024 * s, 12, 8), ivory);
+    porthole.position.set(0, 0.1 * s, 0.12 * s);
+    hull.add(porthole);
+    // Engine ember + short trail: the meteor's language at the nozzle.
+    const emberGeo = new THREE.BufferGeometry();
+    emberGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, -0.34 * s], 3));
+    const ember = new THREE.Points(emberGeo, new THREE.PointsMaterial({
+      color: 0xffe1de, size: 3.5, sizeAttenuation: false, transparent: true, opacity: 0.95,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+    ember.renderOrder = 5;
+    hull.add(ember);
+    const trail = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, -0.34 * s), new THREE.Vector3(0, 0, -0.62 * s)]),
+      new THREE.LineBasicMaterial({ color: ORBIT_RED, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }),
+    );
+    trail.renderOrder = 5;
+    hull.add(trail);
+    hull.userData.vessel = true;
+    return hull;
+  }
   function body(index: number, scale = 1) {
+    if (index === 1 && scale === 1 && vesselMode) {
+      const mesh = vesselBody();
+      (mesh.material as THREE.MeshPhysicalMaterial).envMapIntensity = 0.7;
+      mesh.userData.envBase = 0.7;
+      return mesh;
+    }
     let mesh: THREE.Mesh;
     const s = MOON_SCALE;
     const styled = styledBody(index, s);
@@ -483,9 +520,144 @@ export function createMap(
     scene.add(r);
     return r;
   });
+  /**
+   * B2 orbital hints (Brandon, 2026-10-09): each overview moon shows its human presence from
+   * orbit — settlement lights on the basalt moon, a vessel descending a red approach at the
+   * rust moon, an instrument ring around the ivory moon. Each has its own motion driven by
+   * the shared sim clock (so Pause and reduced motion stop them too): the lights breathe, the
+   * vessel flies its approach on a loop, the ring turns against the moon's own spin. Additive,
+   * depth-tested against the body so the far side hides them. Children carry none.
+   */
+  const hintTickers: ((t: number) => void)[] = [];
+  const vesselAhead = new THREE.Vector3();
+  function attachHints(mesh: THREE.Mesh, index: number) {
+    // Bounding radii per style: sphere radii, or the boxed bodies' (cube half-diagonal,
+    // sphere, octahedron) so the hints sit just off the surface in every moon style.
+    const r = (moonStyle === 'spheres' ? SPHERE_RADII[index] : [0.451, 0.29, 0.37][index]) * MOON_SCALE;
+    const pts = (parent: THREE.Object3D, positions: number[], color: number, size: number, opacity: number) => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      const p = new THREE.Points(g, new THREE.PointsMaterial({
+        color, size, sizeAttenuation: false, transparent: true, opacity,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      }));
+      p.renderOrder = 5;
+      parent.add(p);
+      return p;
+    };
+    if (index === 0) {
+      // Settlement lights: a loose cluster of warm pinpricks that breathe like a lived-in base.
+      const d = new THREE.Vector3(0.55, -0.2, 0.8).normalize();
+      const up = new THREE.Vector3(0, 1, 0);
+      const t1 = new THREE.Vector3().crossVectors(d, up).normalize();
+      const t2 = new THREE.Vector3().crossVectors(d, t1).normalize();
+      const positions: number[] = [];
+      const spread = [[0, 0], [0.3, 0.12], [-0.22, 0.26], [0.14, -0.3], [-0.3, -0.14], [0.42, -0.08], [0.06, 0.34], [-0.4, 0.06]];
+      for (const [a, b2] of spread) {
+        const v = new THREE.Vector3().copy(d).addScaledVector(t1, a).addScaledVector(t2, b2).normalize().multiplyScalar(r * 1.01);
+        positions.push(v.x, v.y, v.z);
+      }
+      const lights = pts(mesh, positions, 0xffd9a8, 3.2, 1);
+      const mat = lights.material as THREE.PointsMaterial;
+      hintTickers.push((t) => { mat.opacity = 0.82 + 0.18 * Math.sin(t * 1.7); });
+    } else if (index === 1) {
+      // Descending vessel: the ember flies the approach line down to the surface and loops,
+      // reusing the meteor's language (a glint on a red trajectory).
+      const from = new THREE.Vector3(0.9, 0.75, 0.5).normalize();
+      const a = from.clone().multiplyScalar(r * 2.0);
+      const b2 = from.clone().multiplyScalar(r * 1.08);
+      const line = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([a, b2]),
+        new THREE.LineBasicMaterial({ color: ORBIT_RED, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }),
+      );
+      line.renderOrder = 5;
+      mesh.add(line);
+      const ember = pts(mesh, [a.x, a.y, a.z], 0xffe1de, 4, 1);
+      const pos = ember.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const mat = ember.material as THREE.PointsMaterial;
+      const v = new THREE.Vector3();
+      hintTickers.push((t) => {
+        // 6s approach, brief blackout, repeat. Ease-in: gravity gathers it up.
+        const k = (t % 7.5) / 6;
+        if (k >= 1) { mat.opacity = 0; return; }
+        const e = k * k * (3 - 2 * k);
+        v.lerpVectors(a, b2, e);
+        pos.setXYZ(0, v.x, v.y, v.z);
+        pos.needsUpdate = true;
+        mat.opacity = k > 0.88 ? (1 - k) / 0.12 : Math.min(1, k / 0.08);
+      });
+    } else {
+      // Instrument ring: a visible band of satellites that turns against the moon's own spin.
+      const ring = new THREE.Group();
+      mesh.add(ring);
+      const incline = 0.5;
+      const axis = new THREE.Vector3(1, 0, 0);
+      const positions: number[] = [];
+      for (let k = 0; k < 16; k++) {
+        const a = (k / 16) * Math.PI * 2;
+        const v = new THREE.Vector3(Math.cos(a), 0, Math.sin(a)).multiplyScalar(r * 1.55);
+        v.applyAxisAngle(axis, incline);
+        positions.push(v.x, v.y, v.z);
+      }
+      pts(ring, positions, 0xe8e2d4, 2.4, 0.9);
+      // The band itself, faint, so the ring reads as a structure and not stray dust.
+      const bandPts = Array.from({ length: 65 }, (_, k) => {
+        const a = (k / 64) * Math.PI * 2;
+        return new THREE.Vector3(Math.cos(a), 0, Math.sin(a)).multiplyScalar(r * 1.55).applyAxisAngle(axis, incline);
+      });
+      const band = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(bandPts),
+        new THREE.LineBasicMaterial({ color: 0xe8e2d4, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false }),
+      );
+      band.renderOrder = 5;
+      ring.add(band);
+      hintTickers.push((t) => { ring.rotation.y = -t * 0.55; });
+    }
+  }
+
+  const micros: MicroFormation[] = [];
+  const microAnchors: THREE.Group[] = [];
+  // The formations fly on their own clock: simT freezes while a model is selected (childT
+  // runs instead), but the selected moon's mission must keep flying in the zoomed view.
+  // microT only advances when the stage is moving, so Pause and reduced motion freeze it.
+  let microT = 0;
   const moons = CATEGORIES.map((c, i) => {
     const b = body(i);
     b.userData.category = c.id;
+    if (microFormations) {
+      // The mission flies around the visible moon. The craft kit needs an identity-rotation,
+      // uniform-scale parent and the bodies tumble (or bank, in vessel mode), so each
+      // formation rides its own anchor, synced to the moon's position and scale every frame
+      // after the moon transforms settle — including the selection flight to the centre.
+      const anchor = new THREE.Group();
+      scene.add(anchor);
+      microAnchors.push(anchor);
+      const micro = attachMicroFormation(anchor, camera, i as 0 | 1 | 2, RADII[i]);
+      micros.push(micro);
+      const dir = new THREE.Vector3(0, 0, 1);
+      const a0 = new THREE.Vector3(),
+        a1 = new THREE.Vector3();
+      hintTickers.push((t) => {
+        // The mission belongs to the focused moon: absent in the wide view, fading in
+        // through the back half of the selection flight (round 5). During a direct
+        // moon-to-moon switch the old mission hands off to the new one (round 7).
+        const focus =
+          i === selectedIndex
+            ? THREE.MathUtils.smoothstep(blend, MISSION_FADE[0], MISSION_FADE[1]) * swapT
+            : swap && i === prevSelected
+              ? 1 - swapT
+              : 0;
+        micro.setFade(focus);
+        if (focus <= 0.001) return;
+        anchor.position.copy(b.position);
+        anchor.scale.setScalar(b.scale.x);
+        a0.set(...orbitPosition(ORBITS[i], t));
+        a1.set(...orbitPosition(ORBITS[i], t + 0.4));
+        a1.sub(a0);
+        if (a1.lengthSq() > 1e-9) dir.copy(a1.normalize());
+        micro.tick(microT, dir);
+      });
+    } else if (plainBuckets && !(i === 1 && vesselMode)) attachHints(b, i);
     scene.add(b);
     return b;
   });
@@ -608,6 +780,10 @@ export function createMap(
     disposed = false,
     frame = 0;
   let selectedIndex = 0;
+  // A direct moon-to-moon switch (round 7): the moon being left, and the swap's own clock.
+  let prevSelected = -1;
+  let swap: { started: number; duration: number } | null = null;
+  let swapT = 1;
   const snapshotPositions = moons.map(() => new THREE.Vector3());
   let fatal = false,
     meshHeld = false;
@@ -688,7 +864,7 @@ export function createMap(
       from: blend,
       to,
       started: performance.now(),
-      duration: o.instant || fallback ? 0 : 850,
+      duration: o.instant || fallback ? 0 : FLIGHT_MS,
     };
     // An instant transition settles now: a hidden tab runs no frames.
     if (transition.duration === 0) completeTransition();
@@ -705,11 +881,35 @@ export function createMap(
     category = null;
     startTransition(0, o);
   }
+  // Direct switch between moons at full zoom (round 7): the camera never moves; the old
+  // moon recedes at the centre while the new one and its mission arrive in its place.
+  function switchTo(id: CategoryId, o: TransitionOptions) {
+    if (transition) completeTransition();
+    held = false;
+    meshHeld = false;
+    prevSelected = selectedIndex;
+    selectedIndex = CATEGORIES.findIndex((c) => c.id === id);
+    category = id;
+    transitionToken = o.token;
+    swap = { started: performance.now(), duration: o.instant || fallback ? 0 : SWAP_MS };
+    swapT = 0;
+    if (swap.duration === 0) completeSwap();
+    else wake();
+  }
+  function completeSwap() {
+    swap = null;
+    swapT = 1;
+    prevSelected = -1;
+    settle();
+    wake();
+  }
   function settle() {
     updateLabelsText();
     hooks.onSettled(transitionToken);
   }
   function completeTransition() {
+    // A running moon-to-moon swap settles too (ticket #24), so "finish the flight" always lands.
+    if (swap) completeSwap();
     if (!transition) return;
     blend = transition.to;
     transition = null;
@@ -765,9 +965,26 @@ export function createMap(
     placeFormerCenter();
     renderer.setSize(r.width, r.height, false);
     composer.setSize(r.width, r.height);
+    {
+      // Line2 trails need the drawing-buffer size or they render at the 1×1 default.
+      const pr = renderer.getPixelRatio();
+      micros.forEach((mf) => mf.setResolution(r.width * pr, r.height * pr));
+      if (feather) setEdgeFade(feather, r.width, r.height, pr);
+    }
     leaderLayer.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
     measureLabels();
-    wake();
+    // Resizing the canvas clears it, and a ResizeObserver runs after this frame's draw: left
+    // to the next frame, the cleared canvas is what gets painted, so a live box resize (a
+    // window drag, or the old Work with me height ride) strobes blank. Redraw now instead.
+    if (started) redrawNow();
+    else wake();
+  }
+  let started = false;
+  function redrawNow() {
+    if (disposed) return;
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    update(performance.now());
   }
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(host);
@@ -894,7 +1111,9 @@ export function createMap(
     });
     labelButtons.forEach((l) => {
       const { el, index } = l;
-      if (transition || fallback || (category && empty)) return hideLabel(l);
+      // No labels in the selected view: the child moons are retired (Brandon, 2026-10-12)
+      // and the moon's name is carried by the page, not the stage.
+      if (transition || fallback || category) return hideLabel(l);
       const { mesh, world, s, radiusPx } = bodies[index];
       if (!l.full.w) measureLabels();
       const result = placeLabel({
@@ -933,7 +1152,7 @@ export function createMap(
     });
   }
   function pointerHit(e: MouseEvent) {
-    if (category && empty) return -1;
+    if (category) return -1; // the selected view has no child targets (retired 2026-10-12)
     const rect = host.getBoundingClientRect();
     pointer.set(
       ((e.clientX - rect.left) / rect.width) * 2 - 1,
@@ -1061,6 +1280,8 @@ export function createMap(
       if (category) childT += dt * speed;
       else simT += dt * speed;
     }
+    // Missions keep flying through the selection flight and in the zoomed view.
+    if (moving) microT += dt * speed;
     if (transition) {
       const t =
         transition.duration === 0
@@ -1072,14 +1293,24 @@ export function createMap(
         settle();
       }
     }
+    if (swap) {
+      const t = swap.duration === 0 ? 1 : Math.min(1, (now - swap.started) / swap.duration);
+      swapT = ease(t);
+      if (t >= 1) completeSwap();
+    }
     // Camera follows the level fit.
     pose.distance = THREE.MathUtils.lerp(poses.overview.distance, poses.collection.distance, blend);
     pose.elevation = THREE.MathUtils.lerp(poses.overview.elevation, poses.collection.elevation, blend);
     pose.shift = THREE.MathUtils.lerp(poses.overview.shift, poses.collection.shift, blend);
     applyPose(pose);
 
-    // The whole overview system shrinks into the former-centre position together.
-    const systemScale = 1 - blend * (1 - CORNER);
+    // The overview system recedes and vanishes with the selection flight: the zoomed view
+    // keeps only the chosen moon and its mission (Brandon, 2026-10-12 round 6 — the corner
+    // cluster is gone).
+    const systemScale = 1 - blend;
+    const systemShown = systemScale > 0.02;
+    planet.visible = systemShown;
+    atmosphere.visible = systemShown;
     planet.position.lerpVectors(origin, formerCenter, blend);
     // The planet swells with speech inside planetBody.update; scale here is layout only.
     planet.scale.setScalar(systemScale);
@@ -1099,18 +1330,39 @@ export function createMap(
       else m.position.set(...orbitPosition(ORBITS[i], simT));
       if (blend > 0) {
         if (i === selectedIndex) m.position.lerp(origin, blend);
+        else if (swap && i === prevSelected) m.position.copy(origin);
         else m.position.multiplyScalar(systemScale).add(planet.position);
       }
-      m.visible = true;
+      m.visible = i === selectedIndex || systemShown || (!!swap && i === prevSelected);
       const cue = depthCue(m.position, ORBITS[i].a * 1.05);
       const cueScale = THREE.MathUtils.lerp(cue.scale, 1, blend);
-      m.scale.setScalar(
+      // During a direct switch both moons hold the centre: the old one recedes as the new
+      // one arrives, under the unmoving collection camera.
+      let bodyScale =
         i === selectedIndex
-          ? cueScale * THREE.MathUtils.lerp(moonScale, 1, blend) + blend * (CENTER[i] - 1)
-          : systemScale * cueScale * moonScale,
-      );
-      m.rotation.x = 0.3 + simT * 0.045;
-      m.rotation.y = 0.5 + simT * 0.1;
+          ? cueScale * THREE.MathUtils.lerp(moonScale, 1, blend) + blend * (CENTER[i] * CENTER_ZOOM - 1)
+          : systemScale * cueScale * moonScale;
+      if (swap) {
+        if (i === selectedIndex) bodyScale *= swapT;
+        else if (i === prevSelected) bodyScale = CENTER[i] * CENTER_ZOOM * (1 - swapT);
+      }
+      m.scale.setScalar(bodyScale);
+      if (m.userData.vessel) {
+        // Flight attitude: nose along the orbit's velocity, with a slight bank. Frozen while
+        // a zoom transition holds the body (position is lerped then, so headings would lie).
+        if (!transition && blend === 0) {
+          vesselAhead.set(...orbitPosition(ORBITS[i], simT + 0.6));
+          m.lookAt(vesselAhead);
+          m.rotateZ(0.35);
+        }
+      } else {
+        // Axial spin rides microT, not simT: simT freezes while a model is selected, which
+        // froze the chosen moon mid-turn (Brandon, 2026-10-12 round 12: "the moons themselves
+        // also have to have their own rotation"). The clocks tick together until the first
+        // selection, so the swap is seamless; Pause and reduced motion still freeze both.
+        m.rotation.x = 0.3 + microT * 0.045;
+        m.rotation.y = 0.5 + microT * 0.1;
+      }
       const lit = emphasized === id;
       setGlow(
         m,
@@ -1127,15 +1379,17 @@ export function createMap(
       ring.scale.setScalar(systemScale);
       const ringOpacity =
         traceOpacity[i] * (i === selectedIndex ? 1 - blend : 1 - blend * 0.55);
-      ring.visible = ringOpacity > 0.01;
+      ring.visible = ringOpacity > 0.01 && systemShown;
       setTrace(ring, ORBITS[i].a, ringOpacity, lit ? 1.1 : 0);
     });
+    // Hint motion runs on the sim clock, so Pause and reduced motion freeze it with the orbits.
+    hintTickers.forEach((f) => f(simT));
 
     childGroup.visible = childrenShown && !empty;
     host.dataset.childrenVisible = String(childGroup.visible);
     host.dataset.speaking = String(envelopeIn > 0.002);
     host.dataset.speechEnvelope = String(speechEnvelope);
-    children.forEach((m, i) => {
+    if (childGroup.visible) children.forEach((m, i) => {
       m.position.set(...orbitPosition(CHILD_ORBITS[i], childT));
       m.scale.setScalar(CHILD_SCALE * depthCue(m.position, CHILD_ORBITS[i].a * 1.05).scale);
       m.rotation.y = childT * 0.1 + i;
@@ -1178,12 +1432,14 @@ export function createMap(
     }
 
     if (!fallback && visible && !offscreen) {
+      stars.points.position.copy(camera.position);
       composer.render();
       totalFrames++;
       if (now - diagnosticAt > 1000 || paused || reduced) {
         const times = [...frameTimes].sort((a, b) => a - b);
         const count = times.length;
         host.dataset.frameCount = String(totalFrames);
+        host.dataset.starCount = String(stars.count);
         host.dataset.frameP50 = String(times[Math.floor(count * 0.5)] || 0);
         host.dataset.frameP95 = String(times[Math.floor(count * 0.95)] || 0);
         host.dataset.frameSamples = String(count);
@@ -1204,19 +1460,23 @@ export function createMap(
     const alive = !paused && !reduced;
     if ((alive || moving || modulating || transition) && !fallback && visible && !offscreen)
       frame = requestAnimationFrame(update);
-    else if (transition && visible) frame = requestAnimationFrame(update);
+    else if ((transition || swap) && visible) frame = requestAnimationFrame(update);
   }
   function wake() {
     if (disposed) return;
     last = performance.now();
     if (!frame) frame = requestAnimationFrame(update);
   }
-  // Visibility is reported to the host; its state machine answers with
-  // `completeTransition` when a flight is running, so navigation never waits
-  // on an unseen animation.
+  // Visibility is reported to the host. A flight running when the stage goes unseen
+  // completes here (the host's onVisibility was a no-op, so it used to stall), so
+  // navigation never waits on an unseen animation.
   let reportedVisible = true;
   function visibilityChanged() {
     const now = visible && !offscreen;
+    // A flight that leaves the screen mid-way (ticket #24: on phones a row choice scrolls the
+    // page to the model's detail) lands at once instead of stalling until it is seen again —
+    // the frame loop stops below, and nobody watches the rest of the ride.
+    if (!now && (transition || swap)) completeTransition();
     if (!now && frame) {
       cancelAnimationFrame(frame);
       frame = 0;
@@ -1240,11 +1500,27 @@ export function createMap(
   );
   intersection.observe(host);
   resize();
+  // Compile the missions' materials now, with the rest of the scene, while the canvas is
+  // still fading in over the poster. They are hidden in the wide view, so the first render
+  // skips them and their programs used to compile at the first selection, halfway through
+  // the flight where the mission fades in (2026-10-13 enter-transition rework).
+  if (micros.length) {
+    // One draw into the composer's buffer, as the RenderPass draws (the render target is part
+    // of a program's key): a bare compile() left three's first-use program checks to the
+    // flight. The next frame's RenderPass clears the buffer.
+    micros.forEach((m) => m.setFade(1));
+    renderer.setRenderTarget(composer.readBuffer);
+    renderer.render(scene, camera);
+    renderer.setRenderTarget(null);
+    micros.forEach((m) => m.setFade(0));
+  }
   wake();
+  started = true;
   hooks.onReady();
   return {
     enter,
     leave,
+    switchTo,
     showChildren() {
       childrenShown = true;
       wake();
@@ -1307,6 +1583,8 @@ export function createMap(
       renderer.domElement.removeEventListener('pointermove', pointerMove);
       renderer.domElement.removeEventListener('click', pointerClick);
       renderer.domElement.removeEventListener('webglcontextlost', contextLost);
+      micros.forEach((mf) => mf.dispose());
+      microAnchors.forEach((a) => a.removeFromParent());
       scene.traverse((obj) => {
         const m = obj as THREE.Mesh;
         m.geometry?.dispose();
@@ -1316,9 +1594,12 @@ export function createMap(
       brushed.dispose();
       rust.dispose();
       environment.dispose();
+      stars.dispose();
+      feather?.dispose();
       bloom.dispose();
       composer.dispose();
       renderer.dispose();
+      try { renderer.forceContextLoss(); } catch { /* already lost */ }
       host.replaceChildren();
     },
   };

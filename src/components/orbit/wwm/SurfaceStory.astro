@@ -1,0 +1,311 @@
+---
+// Scrolly story for one engagement model (ticket #10, Brandon's Oct 9 direction; imagery
+// reset ticket #13): no buttons that jump — the scroll tells the story. The media panel
+// rides sticky beside the steps and plays the live Formation scene (lib/orbit/formation-
+// scene.ts): the team as chevron craft over the hero planet, scrubbed by reading progress,
+// holding one column while the copy holds the other; a red thread draws with the scroll
+// (Brandon, Oct 11: no side-swapping — it was too distracting to follow). Copy is
+// verbatim from ./content.ts (honesty rules); without JavaScript, WebGL or with reduced
+// motion everything reads as a plain stacked document over a static poster.
+import type { Engagement } from './content';
+
+interface Props { e: Engagement }
+const { e } = Astro.props;
+const id = `wwm-${e.slug}`;
+
+const steps = [
+  { key: 'fits', id: `${id}-fits`, kicker: e.tag, title: 'When this fits' },
+  { key: 'work', id: `${id}-work`, kicker: 'The work', title: 'What I would take on' },
+  { key: 'together', id: `${id}-together`, kicker: 'Working together', title: 'How we would work together' },
+] as const;
+---
+
+<section class="wwm-story" data-story={e.slug} data-active="overview">
+  <figure class="story-media" aria-hidden="true">
+    <div class="story-viewport">
+      <img class="story-poster" src={`/images/orbit/formation/${e.slug}.webp`} alt="" width="1152" height="1224" loading="lazy" decoding="async" />
+      <div class="story-scene" data-story-scene></div>
+    </div>
+  </figure>
+  <div class="story-steps">
+    <span class="story-thread" aria-hidden="true" data-story-thread></span>
+    {steps.map((st) => (
+      <section class="story-step" id={st.id} data-story-step={st.key}>
+        <div class="step-copy">
+          <p class="t-caption wwm-eyebrow"><i class={`dot dot-${e.dot}`} aria-hidden="true"></i>{st.kicker}</p>
+          <h3 class="t-title">{st.title}</h3>
+          {st.key === 'fits' && (
+            <ul class="wwm-fits">
+              {e.fits.map((f) => <li class="t-body">{f}</li>)}
+            </ul>
+          )}
+          {st.key === 'work' && <p class="t-body muted-g wwm-measure">{e.takeOn}</p>}
+          {st.key === 'together' && <p class="t-body muted-g wwm-measure">{e.together}</p>}
+        </div>
+      </section>
+    ))}
+  </div>
+</section>
+
+<script>
+  import type { FormationHandle } from '../../../lib/orbit/formation-scene';
+  import type { EngagementSlug } from '../../../lib/orbit/orbit-data';
+
+  // One controller drives every story on the page (only the selected detail is visible, and
+  // hidden ones are skipped). Reduced motion: never enhanced — the static stacked document
+  // stands on its poster. The scene module loads lazily the first time a story's media is
+  // actually on screen, so the overview pays nothing for it.
+  let ctl: AbortController | undefined;
+  let observers: IntersectionObserver[] = [];
+  const scenes = new Map<HTMLElement, FormationHandle>();
+
+  /** Scroll progress is read where the eye reads (60% down the viewport); a beat turns
+      current a little earlier (58%) so its copy is lit by the time it reaches that line. */
+  const READING_LINE = 0.6;
+  const BEAT_LINE = 0.58;
+
+  const clamp01 = (x: number) => Math.min(Math.max(x, 0), 1);
+
+  /** Reading progress 0..1 through a story, piecewise per beat: the 60% reading line maps
+      copy block i onto [i/3, (i+1)/3], so each block's centre lands exactly on the
+      choreography's beat centres (the lab tuned them at ~0.17 / 0.5 / 0.83) and holds at
+      the boundary while the line crosses the gap between blocks. */
+  function progressOf(story: HTMLElement): number {
+    const copies = story.querySelectorAll<HTMLElement>('[data-story-step] .step-copy');
+    if (copies.length < 3) return 0;
+    const line = innerHeight * READING_LINE;
+    let p = 0;
+    copies.forEach((c, i) => {
+      const r = c.getBoundingClientRect();
+      if (line < r.top) return;
+      p = (i + Math.min((line - r.top) / Math.max(r.height, 1), 1)) / copies.length;
+    });
+    return clamp01(p);
+  }
+
+  /** The active beat, from geometry on every frame (never from stale observer events, so a
+      mid-story model switch can't leave the new story on the old beat): the last copy block
+      whose top sits above the 58% line; none means overview. */
+  function beatPass(story: HTMLElement, steps: HTMLElement[]) {
+    const line = innerHeight * BEAT_LINE;
+    let active: HTMLElement | null = null;
+    for (const st of steps) {
+      const copy = st.querySelector<HTMLElement>('.step-copy') ?? st;
+      if (copy.getBoundingClientRect().top <= line) active = st;
+    }
+    const key = active?.dataset.storyStep ?? 'overview';
+    if (story.dataset.active !== key) story.dataset.active = key;
+    for (const st of steps) {
+      const cur = st === active;
+      st.classList.toggle('is-current', cur);
+      if (cur) {
+        st.classList.add('is-in');
+        st.setAttribute('aria-current', 'step');
+      } else st.removeAttribute('aria-current');
+    }
+  }
+
+  /** Resolves once the orbit stage is not flying (no stage, or not entering or leaving)
+      and the browser has a moment to spare; the poster holds the frame meanwhile. */
+  function afterFlight(signal: AbortSignal): Promise<void> {
+    const stage = document.querySelector<HTMLElement>('.map-stage[data-orbit]');
+    const flying = () => !!stage && (stage.dataset.mode === 'entering' || stage.dataset.mode === 'leaving');
+    const idle = (done: () => void) =>
+      'requestIdleCallback' in window ? requestIdleCallback(() => done(), { timeout: 300 }) : setTimeout(done, 50);
+    return new Promise((resolve) => {
+      const go = () => idle(() => { if (!signal.aborted && !flying()) resolve(); else if (!signal.aborted) wait(); });
+      const wait = () => {
+        if (!flying()) { go(); return; }
+        const mo = new MutationObserver(() => { if (!flying()) { mo.disconnect(); go(); } });
+        mo.observe(stage!, { attributes: true, attributeFilter: ['data-mode'] });
+        signal.addEventListener('abort', () => mo.disconnect(), { once: true });
+      };
+      wait();
+    });
+  }
+
+  function init() {
+    ctl?.abort();
+    observers.forEach((o) => o.disconnect());
+    observers = [];
+    ctl = undefined;
+    const stories = [...document.querySelectorAll<HTMLElement>('.wwm-story')];
+    if (!stories.length) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    ctl = new AbortController();
+    const { signal } = ctl;
+
+    // WebGL probe (the stage's idiom): without it the poster stands; steps still enhance.
+    // The probe's own context is released immediately — it was only ever a question.
+    const probe = document.createElement('canvas');
+    const probeGl = probe.getContext('webgl2') || probe.getContext('webgl');
+    const webgl = !!probeGl;
+    probeGl?.getExtension('WEBGL_lose_context')?.loseContext();
+
+    interface Wired {
+      story: HTMLElement;
+      steps: HTMLElement[];
+      thread: HTMLElement | null;
+      host: HTMLElement | null;
+    }
+    const wired: Wired[] = [];
+    for (const story of stories) {
+      story.classList.add('is-enhanced');
+      const slug = story.dataset.story as EngagementSlug;
+      const steps = [...story.querySelectorAll<HTMLElement>('[data-story-step]')];
+      const host = story.querySelector<HTMLElement>('[data-story-scene]');
+      wired.push({ story, steps, thread: story.querySelector<HTMLElement>('[data-story-thread]'), host });
+
+      // The scene: created the first time this story's media is on screen; it pauses
+      // itself offscreen (detail hidden, scrolled away, background tab) and is kept
+      // across model switches so a return does not recompile shaders.
+      if (webgl && host) {
+        // Half the media in view, not its first pixel: at landing the media peeks in under the
+        // model's intro (≈10% at 1440×900, ≈43% at 2000×1240), and building there costs a
+        // ≈100ms hitch while the visitor watches the moon. Built on the way down instead, the
+        // same cost lands during a compositor scroll; the poster holds the frame until then.
+        const lazy = new IntersectionObserver((entries) => {
+          if (!entries.some((en) => en.isIntersecting && en.intersectionRatio >= 0.5) || scenes.has(host)) return;
+          lazy.disconnect();
+          // Built once the orbit's flight has landed, never during it (2026-10-13 rework):
+          // choosing a model reveals this story under the stage in the same frame, and
+          // building the scene there (a new context, the environment map, the first shader
+          // compile: 70–260ms warm, over 1.5s on a cold shader cache) froze the flight.
+          afterFlight(signal)
+            .then(() => import('../../../lib/orbit/formation-scene'))
+            .then(({ createFormation }) => {
+              // This init's own signal, not the module's `ctl`: a same-page navigation during
+              // the import replaces `ctl` with a live controller, and building here would put a
+              // context on the old, detached host that nothing would dispose.
+              if (signal.aborted || !host.isConnected || scenes.has(host)) return;
+              const scene = createFormation(host, slug);
+              scenes.set(host, scene);
+              scene.setProgress(progressOf(story));
+              story.classList.add('is-live');
+              // A lost context means the canvas is dead: back to the poster, for good.
+              host.querySelector('canvas')?.addEventListener('webglcontextlost', () => {
+                story.classList.remove('is-live');
+                scenes.get(host)?.dispose();
+                scenes.delete(host);
+              }, { once: true });
+            })
+            .catch(() => { /* the poster stands */ });
+        }, { threshold: [0, 0.5] });
+        lazy.observe(host);
+        observers.push(lazy);
+      }
+    }
+
+    // One rAF loop does all the scroll-coupled work from geometry — the active beat, the
+    // red thread and the scene scrub share one progress measure, and a model switch is
+    // corrected on the next frame rather than waiting for a scroll event. It runs only
+    // while a story is on screen in a visible tab: a hidden detail never intersects, so
+    // showing a model starts it and scrolling to the evidence band or footer stops it.
+    const onScreen = new Set<HTMLElement>();
+    let raf = 0;
+    const pass = () => {
+      for (const w of wired) {
+        if (!onScreen.has(w.story) || w.story.offsetParent === null) continue; // hidden detail
+        beatPass(w.story, w.steps);
+        const p = progressOf(w.story);
+        if (w.thread) w.thread.style.transform = `scaleY(${p.toFixed(3)})`;
+        const scene = w.host && scenes.get(w.host);
+        if (scene) scene.setProgress(p);
+      }
+    };
+    const loop = () => {
+      if (document.hidden || !onScreen.size) { raf = 0; return; }
+      raf = requestAnimationFrame(loop);
+      pass();
+    };
+    const start = () => { if (!raf && onScreen.size && !document.hidden) raf = requestAnimationFrame(loop); };
+    const seen = new IntersectionObserver((entries) => {
+      for (const en of entries) {
+        if (en.isIntersecting) onScreen.add(en.target as HTMLElement);
+        else if (onScreen.delete(en.target as HTMLElement)) {
+          // Leaving: settle its last frame (a fast fling can skip the end of the story).
+          const w = wired.find((x) => x.story === en.target);
+          if (w && w.story.offsetParent !== null) {
+            onScreen.add(w.story); pass(); onScreen.delete(w.story);
+          }
+        }
+      }
+      start();
+    });
+    for (const w of wired) seen.observe(w.story);
+    observers.push(seen);
+    document.addEventListener('visibilitychange', start, { signal });
+    signal.addEventListener('abort', () => { cancelAnimationFrame(raf); raf = 0; });
+  }
+
+  function teardown() {
+    ctl?.abort();
+    ctl = undefined;
+    observers.forEach((o) => o.disconnect());
+    observers = [];
+    scenes.forEach((s) => s.dispose());
+    scenes.clear();
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', teardown);
+</script>
+
+<style is:global>
+  .wwm-story { position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; padding-top: var(--space-band-sm); }
+  /* The media box itself is opaque ground: the viewport's soft masks fade into it, never
+     into the copy scrolling beneath (the page ground is the same colour, so the box edge
+     is invisible). */
+  /* Desktop: the media rides below the model's sticky identity band (round 13; state.ts
+     publishes --wwm-intro-h). Without the variable — no JS, or the stacked no-JS page —
+     the 70px fallback restores the old 86px offset. */
+  .story-media { grid-column: 1 / span 6; grid-row: 1; margin: 0; position: sticky; top: calc(var(--wwm-intro-h, 70px) + 16px); height: min(calc(100svh - var(--wwm-intro-h, 70px) - 48px), 620px); align-self: start; z-index: 1; background: var(--ground); }
+  .story-viewport { position: absolute; inset: 0; overflow: hidden; border-radius: 10px; background: var(--ground);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%), linear-gradient(180deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%), linear-gradient(180deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+    mask-composite: intersect;
+  }
+  .story-viewport::after { content: ''; position: absolute; inset: -2px; pointer-events: none; box-shadow: inset 0 0 90px 24px var(--ground); }
+  /* The poster holds the frame; the live scene fades in over it once it exists. */
+  .story-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .story-scene { position: absolute; inset: 0; opacity: 0; transition: opacity 0.7s ease; }
+  .wwm-story.is-live .story-scene { opacity: 1; }
+  .story-scene canvas { display: block; width: 100%; height: 100%; }
+  .story-steps { grid-column: 1 / -1; grid-row: 1; position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; }
+  .story-step { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; min-height: 84svh; align-items: center; }
+  .story-step .step-copy { grid-column: 8 / -1; min-width: 0; }
+  .story-step .t-title { margin-top: 10px; }
+  .story-step .wwm-fits, .story-step .wwm-measure { margin-top: 18px; }
+  /* The entrance rise plays once (is-in), but full brightness belongs to the current beat
+     only: during hand-offs an adjacent copy can sit under the sticky media's column, and at
+     0.25 it reads as the receding/upcoming ghost rather than covered text. */
+  .wwm-story.is-enhanced .story-step .step-copy { opacity: 0.25; transform: translateY(14px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .wwm-story.is-enhanced .story-step.is-in .step-copy { transform: none; }
+  .wwm-story.is-enhanced .story-step.is-current .step-copy { opacity: 1; }
+
+  /* The scroll thread: motion-line language, drawn by progress. */
+  .story-thread { position: absolute; top: 4svh; bottom: 4svh; left: calc(50% + 16px); width: 2px; border-radius: 1px; background: var(--accent-on-ground); opacity: 0; transform: scaleY(0); transform-origin: 50% 0; z-index: 0; transition: opacity 0.3s ease; }
+  .wwm-story.is-enhanced .story-thread { opacity: 0.5; }
+  /* Before the first beat there is no story progress — no stub beside empty ground. */
+  .wwm-story.is-enhanced[data-active='overview'] .story-thread { opacity: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .story-scene { transition: none; }
+    .story-thread { display: none; }
+  }
+  @media (max-width: 860px) {
+    .wwm-story { display: block; padding-top: 24px; }
+    /* The sticky media sits below the sticky switcher's measured height (state.ts sets
+       --wwm-switcher-h; the 46px fallback matches the unenhanced page, where the switcher
+       is hidden), trimmed to 32svh so a beat's copy keeps the reading majority. */
+    .story-media { position: sticky; top: calc(var(--wwm-switcher-h, 46px) + 8px); height: 32svh; z-index: 5; }
+    /* Soften the hard line where copy slides under the opaque media box. */
+    .story-media::after { content: ''; position: absolute; top: 100%; left: 0; right: 0; height: 24px; background: linear-gradient(180deg, var(--ground), transparent); pointer-events: none; }
+    .story-viewport { border-radius: 8px; }
+    .story-steps { display: block; }
+    /* Hash jumps must land headings below the sticky media. */
+    .story-step { display: block; min-height: 0; padding: 40px 0 8px; scroll-margin-top: calc(var(--wwm-switcher-h, 46px) + 8px + 32svh + 16px); }
+    .story-thread { display: none; }
+  }
+</style>

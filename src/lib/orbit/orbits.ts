@@ -136,6 +136,27 @@ export function ease(t: number) {
   return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
+/* ---- One clock for Work with me's enter gesture (2026-10-13 rework) ----
+   The camera flight, the mission's fade-in and the page copy that changes with them all read
+   these, so they move on one 850ms smootherstep curve instead of three separate timings. */
+/** The overview ⇄ model flight. */
+export const FLIGHT_MS = 850;
+/** A direct moon-to-moon switch. */
+export const SWAP_MS = 700;
+/** The flight's blend range over which the chosen moon's mission fades in (round 5). */
+export const MISSION_FADE: readonly [number, number] = [0.45, 0.95];
+/** Milliseconds into the flight at which its eased blend reaches `b` (inverts `ease`). */
+export function flightTimeAt(b: number, duration = FLIGHT_MS) {
+  let lo = 0,
+    hi = 1;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    if (ease(mid) < b) lo = mid;
+    else hi = mid;
+  }
+  return ((lo + hi) / 2) * duration;
+}
+
 /**
  * Child phases are chosen so the three items start spread around the centre
  * (right, upper left, lower right) rather than bunching in the top half, and
@@ -292,17 +313,32 @@ export function overviewSamples(layout: Layout = DEFAULT_LAYOUT) {
     ...sampleOrbits(overviewOrbits(layout), bodyRadii(layout)),
   ]);
 }
+/** The chosen moon fills a little more of the frame when selected (Brandon, 2026-10-12
+    round 7: "increase the zoom on the moons"). Scales the body, so the mission scales
+    with it — which is why the collection fit below must grow by the same factor. */
+export const CENTER_ZOOM = 1.25;
 export function collectionSamples() {
-  return (collectionCache ??= [
-    {
-      p: [0, 0, 0],
-      r: Math.max(...CENTER_SCALES.map((s, i) => s * BODY_RADII[i])) * 1.03,
-    },
-    ...sampleOrbits(
-      CHILD_ORBITS,
-      BODY_RADII.map((r) => r * CHILD_SCALE),
-    ),
-  ]);
+  if (!collectionCache) {
+    // The selected view holds the zoomed body plus its mission's whole flight envelope
+    // (Brandon, 2026-10-12 round 11: "The annimation is out of frame"): the loops reach
+    // ~1.7r out plus craft size, the observer holds station 1.7r straight up, and the
+    // row circuit dips 1.45r below (formation-craft.ts). The travel frame rotates with
+    // the orbit, so the side reach applies in every horizontal direction. One sample per
+    // extreme keeps the fit tight — a single bounding sphere cost ~a fifth of the moon's
+    // size (Brandon, round 12: "the plannets are too small … zoom in more but keep it
+    // cented so the whole annimation is in frame").
+    const R = Math.max(...CENTER_SCALES.map((s, i) => s * BODY_RADII[i])) * CENTER_ZOOM;
+    collectionCache = [
+      { p: [0, 0, 0], r: R * 1.03 },
+      { p: [0, R * 1.7, 0], r: R * 0.28 },
+      { p: [0, -R * 1.45, 0], r: R * 0.2 },
+      { p: [R * 1.7, 0, 0], r: R * 0.18 },
+      { p: [-R * 1.7, 0, 0], r: R * 0.18 },
+      { p: [0, 0, R * 1.7], r: R * 0.18 },
+      { p: [0, 0, -R * 1.7], r: R * 0.18 },
+    ];
+  }
+  return collectionCache;
 }
 function extent(samples: Sample[], pose: Pose, aspect: number) {
   let top = -Infinity,
@@ -362,10 +398,13 @@ export function overviewPose(width: number, height: number, layout: Layout = DEF
   return fitPose(overviewSamples(layout), width / height, stageFrame(width, height));
 }
 export function collectionPose(width: number, height: number) {
+  // The selected stage carries no toolbar or dock overlay (the controls moved to the
+  // copy column, round 6), so it keeps only a slim breathing edge instead of the
+  // overview's reserves — the moon reads bigger in the same box.
   return fitPose(
     collectionSamples(),
     width / height,
-    stageFrame(width, height),
+    stageFrame(width, height, { top: 20, bottom: 24 }),
   );
 }
 /** Kept for callers of the first proof: overview distance for an aspect. */
