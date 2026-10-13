@@ -2,8 +2,8 @@
 // About (ticket #39, designer review Phase 1): the shared PageHero with the `map` mark run out as
 // the content-width red line and the portrait kept beside the title (Brandon, 2026-10-13: "Keep
 // my profile image"); How I work leaves the dark band for the top of the first white sheet, in
-// the readable section pattern from Work with me (heading column 1-4, one reading column in the
-// sheet's ink, no 01-04 numbers). Copy verbatim; layout choices are AI-made and reversible.
+// the readable section pattern from Work with me (on the About sections' heading/reading grid, one
+// reading column in the sheet's ink, no 01-04 numbers). Copy verbatim; layout choices are AI-made and reversible.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import Clause from '../components/orbit/Clause.astro';
@@ -94,12 +94,15 @@ const principles = [
      title's height (three lines), which keeps the font swap from shifting the page. */
   .about-portrait { width: 160px; height: 160px; }
 
-  /* How I work: the first section of the white sheet, in Work with me's readable pattern — the
-     heading in columns 1-4, one reading column (about 630px, 18px, the sheet's ink) from column 6,
-     a hairline between principles. */
-  .about-band { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; padding-bottom: 56px; }
-  .about-band-head { grid-column: 1 / span 4; }
-  .about-band-body { grid-column: 6 / -1; min-width: 0; }
+  /* How I work: the first section of the white sheet, on the About sections' own grid below it
+     (the .clause grid: a 280px heading column, the reading column from 320px), so every body
+     text in the sheet shares one left edge. Readable pattern from Work with me: one reading
+     column (about 630px, 18px, the sheet's ink), a hairline between principles, no numbers.
+     The h2 is sized to sit in the heading column. */
+  .about-band { display: grid; grid-template-columns: 280px minmax(0, 1fr); column-gap: 40px; padding-bottom: 56px; }
+  .about-band-head .section-head { max-width: none; }
+  @media (min-width: 861px) { .about-band-head .t-section { font-size: 28px; line-height: 1.2; } }
+  .about-band-body { min-width: 0; }
   .about-steps { list-style: none; margin: 0; padding: 0; max-width: 630px; }
   .about-steps li { padding: 20px 0; border-top: 1px solid var(--line-on-sheet); }
   .about-steps li:first-child { border-top: 0; padding-top: 0; }
@@ -108,14 +111,9 @@ const principles = [
   .about-read { margin-top: 6px; font-size: 18px; line-height: 1.6; color: var(--on-sheet); }
 
   .about-link { margin-top: 24px; padding-left: 320px; }
-  @media (max-width: 1100px) {
-    .about-band-head { grid-column: 1 / span 5; }
-    .about-band-body { grid-column: 7 / -1; }
-  }
   @media (max-width: 860px) {
     .about-portrait { width: 112px; height: 112px; }
     .about-band { grid-template-columns: minmax(0, 1fr); row-gap: 20px; padding-bottom: 40px; }
-    .about-band-head, .about-band-body { grid-column: 1 / -1; }
     .about-steps li { padding: 16px 0; }
     .about-read { font-size: 17px; }
     .about-step-title { font-size: 19px; }
