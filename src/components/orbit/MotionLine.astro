@@ -157,8 +157,7 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
     const W = Math.max(220, Math.round(root.clientWidth));
     svg.setAttribute('viewBox', `0 0 ${W} 40`);
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    // A merge offset anchors the strands' meeting point to the title's left edge (the hero line
-    // bleeds to the window edges, so the title is not at the line's own x = 0).
+    // A merge offset anchors the strands' meeting point this far past the title's left edge.
     const merge = Number(root.dataset.mlMerge);
     const anchor = merge ? root.closest('header')?.querySelector('h1') : null;
     const mx = anchor
