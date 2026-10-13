@@ -1,10 +1,16 @@
 ---
+// About (ticket #39, designer review Phase 1): the shared PageHero with the `map` mark run out as
+// the content-width red line and the portrait kept beside the title (Brandon, 2026-10-13: "Keep
+// my profile image"); How I work leaves the dark band for the top of the first white sheet, in
+// the readable section pattern from Work with me (on the About sections' heading/reading grid, one
+// reading column in the sheet's ink, no 01-04 numbers). Copy verbatim; layout choices are AI-made and reversible.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import Clause from '../components/orbit/Clause.astro';
 import Closing from '../components/orbit/Closing.astro';
 import TextLink from '../components/orbit/TextLink.astro';
 import SectionHead from '../components/orbit/SectionHead.astro';
+import PageHero from '../components/orbit/PageHero.astro';
 
 const about = [
   {
@@ -46,35 +52,29 @@ const principles = [
   { title: 'Own', body: 'Leadership comes from everywhere. Own the problems in your world and make it easier for other people to lead.' },
   { title: 'Improve', body: 'Give honest, timely feedback and keep fixing small things. The small fixes add up.' },
 ];
-import MotionLine from '../components/orbit/MotionLine.astro';
 ---
 
 <BaseLayout title="About" description="Brandon Keao is a product leader and builder with 18+ years in technology across consulting, product, design, research, and strategy.">
-  <header class="page-header about-head">
-    <img class="portrait" src="/images/brandon-keao-headshot.jpg" alt="Brandon Keao" width="260" height="260" />
-    <div>
-      <h1 class="t-page-title">Product leader and builder</h1>
-      <MotionLine kind="map" />
-      <p class="t-lead muted-g page-lead" style="max-width:640px">I've spent 18+ years building products, leading teams, and designing systems in complex organizations.</p>
-    </div>
-  </header>
-
-  <section class="about-process ground-pad" aria-labelledby="about-process">
-    <div class="about-process-head">
-      <SectionHead id="about-process" eyebrow="How I work" title="The minimum process needed to be effective." />
-    </div>
-    <ol class="about-steps">
-      {principles.map((p, i) => (
-        <li>
-          <h3 class="t-item"><span class="about-num">{String(i + 1).padStart(2, '0')}</span>{p.title}</h3>
-          <p class="t-body muted-g">{p.body}</p>
-        </li>
-      ))}
-    </ol>
-  </section>
+  <PageHero title="Product leader and builder" mark="map" lead="I've spent 18+ years building products, leading teams, and designing systems in complex organizations." class="about-hero">
+    <img slot="aside" class="portrait about-portrait" src="/images/brandon-keao-headshot.jpg" alt="Brandon Keao" width="260" height="260" />
+  </PageHero>
 
   <Sheet label="About" class="about-sheet">
-    <div class="divider-list">
+    <section class="about-band about-process" aria-labelledby="about-process">
+      <div class="about-band-head">
+        <SectionHead id="about-process" eyebrow="How I work" title="The minimum process needed to be effective." />
+      </div>
+      <ul class="about-band-body about-steps">
+        {principles.map((p) => (
+          <li>
+            <h3 class="about-step-title">{p.title}</h3>
+            <p class="about-read">{p.body}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <div class="divider-list about-clauses">
       {about.map((a) => (
         <Clause title={a.title} as="h2">
           <p class="t-lead">{a.lead}</p>
@@ -89,33 +89,34 @@ import MotionLine from '../components/orbit/MotionLine.astro';
 </BaseLayout>
 
 <style is:global>
-  /* How I work: a ground band right after the header, before the first sheet. The header's own
-     --space-hero-step is the seam above it (ticket #17, F-03: one hero-to-content step on every
-     page); one band step sits below it before the sheet. */
-  .about-process { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; padding-top: 0; padding-bottom: var(--space-band); }
-  .about-process-head { grid-column: 1 / span 4; }
-  .about-steps { grid-column: 6 / -1; min-width: 0; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; row-gap: 40px; }
-  .about-steps .t-item + p { margin-top: 8px; max-width: 60ch; }
-  .about-num { display: inline-block; min-width: 40px; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--on-ground-faint); vertical-align: 4px; }
-  @media (max-width: 1100px) {
-    .about-process-head { grid-column: 1 / span 5; }
-    .about-steps { grid-template-columns: minmax(0, 1fr); }
-  }
+  /* The portrait beside the title and lead, top-aligned with the title (PageHero's aside); about
+     the height of the title and lead, so the hero stays near Bookshelf's. On phones it is the
+     title's height (three lines), which keeps the font swap from shifting the page. */
+  .about-portrait { width: 160px; height: 160px; }
 
-  .about-head { display: flex; gap: 56px; align-items: center; }
-  .about-head .portrait { width: 260px; height: 260px; flex: none; }
+  /* How I work: the first section of the white sheet, on the About sections' own grid below it
+     (the .clause grid: a 280px heading column, the reading column from 320px), so every body
+     text in the sheet shares one left edge. Readable pattern from Work with me: one reading
+     column (about 630px, 18px, the sheet's ink), a hairline between principles, no numbers.
+     The h2 is sized to sit in the heading column. */
+  .about-band { display: grid; grid-template-columns: 280px minmax(0, 1fr); column-gap: 40px; padding-bottom: 56px; }
+  .about-band-head .section-head { max-width: none; }
+  @media (min-width: 861px) { .about-band-head .t-section { font-size: 28px; line-height: 1.2; } }
+  .about-band-body { min-width: 0; }
+  .about-steps { list-style: none; margin: 0; padding: 0; max-width: 630px; }
+  .about-steps li { padding: 20px 0; border-top: 1px solid var(--line-on-sheet); }
+  .about-steps li:first-child { border-top: 0; padding-top: 0; }
+  .about-steps li:last-child { padding-bottom: 0; }
+  .about-step-title { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; color: var(--on-sheet); }
+  .about-read { margin-top: 6px; font-size: 18px; line-height: 1.6; color: var(--on-sheet); }
+
   .about-link { margin-top: 24px; padding-left: 320px; }
-  .about-sheet .divider-list > :first-child { border-top: 0; padding-top: 0; }
   @media (max-width: 860px) {
-    /* Phones: the portrait floats right of the title as Home's About band does, so the h1 starts
-       where every other page's does (ticket #17, F-09). */
-    .about-head { display: flow-root; }
-    .about-head .portrait { float: right; width: 104px; height: 104px; margin: 4px 0 12px 16px; }
+    .about-portrait { width: 112px; height: 112px; }
+    .about-band { grid-template-columns: minmax(0, 1fr); row-gap: 20px; padding-bottom: 40px; }
+    .about-steps li { padding: 16px 0; }
+    .about-read { font-size: 17px; }
+    .about-step-title { font-size: 19px; }
     .about-link { padding-left: 0; }
-    .about-process { grid-template-columns: minmax(0, 1fr); row-gap: 24px; padding-top: 0; padding-bottom: var(--space-band-sm); }
-    .about-process-head, .about-steps { grid-column: 1 / -1; }
-    .about-steps { row-gap: 28px; }
-    .about-steps .t-body { font-size: 15px; line-height: 22px; }
-    .about-num { min-width: 36px; vertical-align: 3px; }
   }
 </style>

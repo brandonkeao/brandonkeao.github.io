@@ -18,19 +18,37 @@ interface Props {
   class?: string;
 }
 const { title, mark, lead, class: extra } = Astro.props;
-// `align` is drawn as one stretched SVG across the whole line (its strands merge just past the
-// title's left edge and the centre line runs on to the arrowhead at the right edge). Every
+// `align` is drawn as one stretched SVG across the whole line: its three strands run across the
+// first ~28% of the line before merging (Brandon, #41), and the centre line runs on to the
+// arrowhead at the right edge. Every
 // other motif sits at the title's left edge on a full-width rule at its own baseline.
 const stretched = mark === 'align';
+// An optional `aside` slot (About's portrait, ticket #39) sits beside the title and lead, above
+// the line. Without it the markup is unchanged. The aside comes first in the source so phones
+// can float it right of the title; on desktop it is ordered after the text.
+const hasAside = Astro.slots.has('aside');
 ---
 
 <header class:list={['page-header', 'page-hero', extra]} data-page-hero>
-  <h1 class="t-page-title">{title}</h1>
-  {lead && <p class="t-lead muted-g page-lead page-hero-lead">{lead}</p>}
-  <slot />
+  {hasAside ? (
+    <div class="page-hero-top">
+      <div class="page-hero-aside"><slot name="aside" /></div>
+      <div class="page-hero-main">
+        <h1 class="t-page-title">{title}</h1>
+        {lead && <p class="t-lead muted-g page-lead page-hero-lead">{lead}</p>}
+        <slot />
+      </div>
+    </div>
+  ) : (
+    <>
+      <h1 class="t-page-title">{title}</h1>
+      {lead && <p class="t-lead muted-g page-lead page-hero-lead">{lead}</p>}
+      <slot />
+    </>
+  )}
   <div class:list={['hero-line', `hero-line--${mark}`]} aria-hidden="true">
     {stretched
-      ? <MotionLine kind="align" stretch merge={108} />
+      ? <MotionLine kind="align" stretch mergeAt={0.28} />
       : <><span class="hero-rule"></span><MotionLine kind={mark} /></>}
   </div>
 </header>
@@ -38,6 +56,10 @@ const stretched = mark === 'align';
 <style is:global>
   /* The lead's measure, formerly inline on each page. */
   .page-hero-lead { max-width: 720px; }
+  /* With an aside: text left, aside right, top-aligned; the line still runs beneath both. */
+  .page-hero-top { display: flex; align-items: flex-start; gap: 56px; }
+  .page-hero-main { flex: 1; min-width: 0; }
+  .page-hero-aside { flex: none; order: 2; }
   /* The line spans the content column — from the title's left edge to the right edge of the
      nav's "Let's talk" button — not the window (Brandon, 2026-10-13, #36: "wayyy to long"). */
   .hero-line { position: relative; margin: 32px 0 0; height: 40px; color: var(--accent-on-ground); }
@@ -68,5 +90,13 @@ const stretched = mark === 'align';
   @keyframes hero-rule-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @media (max-width: 860px) {
     .hero-line { margin-top: 24px; }
+    /* Phones: the aside sits right of the title, which starts where every other page's does; the
+       lead runs full width below both. A grid row, not a float: the row is at least the aside's
+       height, so the title rewrapping when the web font swaps in does not move what follows. */
+    .page-hero-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 16px; }
+    .page-hero-main { display: contents; }
+    .page-hero-main > * { grid-column: 1 / -1; }
+    .page-hero-main > h1 { grid-column: 1; grid-row: 1; }
+    .page-hero-aside { grid-column: 2; grid-row: 1; padding-top: 4px; }
   }
 </style>
