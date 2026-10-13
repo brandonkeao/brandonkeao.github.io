@@ -3,10 +3,9 @@
 // sticky switcher. Server-rendered and visible by default, so with JavaScript off all three
 // details read stacked; the page script hides the ones not selected.
 // Order (Brandon, Oct 9): intro → the scrolly surface story (When this fits / take on /
-// together, told over the landed plate) → Relevant work and methods → one closing sheet
-// with the one brand-red button. DRAFT COPY under Brandon's review; it lives in ./content.ts.
-import Sheet from '../Sheet.astro';
-import ClosingSheet from '../ClosingSheet.astro';
+// together, told over the landed plate) → Relevant work and methods. The model's closing
+// sheet now follows the page's scene band, after the white sheet this detail sits in (ticket
+// #34); services.astro renders it. DRAFT COPY under Brandon's review; it lives in ./content.ts.
 import SectionHead from '../SectionHead.astro';
 import SurfaceStory from './SurfaceStory.astro';
 import type { Engagement } from './content';
@@ -71,6 +70,4 @@ const id = `wwm-${e.slug}`;
       </div>
     </div>
   </div>
-
-  <ClosingSheet class="wwm-close" level="h3" label={`Let's talk about ${e.name}`} eyebrow="Let's talk" title={e.cta.title} button={e.cta.button} href={e.cta.href} />
 </section>
