@@ -432,6 +432,10 @@ const poses = !scene && set === 'work' && controls !== 'none'
        of the projects and portfolio sections"). Their copy still top-aligns by the same formula,
        so their h1 sits higher than Work with me's at a given window, the same on both pages. */
     .orbit-hero--small { --stage-h: clamp(440px, calc(100svh - 380px), 580px); padding-bottom: 32px; }
+    /* Layout only (ticket #21): the collection copy column never drops below 320px. Between 861
+       and ~1080px the stage gives up width instead (the scene re-fits its box; the poster covers),
+       where the fixed 760px stage used to squeeze the copy to 50-205px. */
+    .orbit-hero--small { grid-template-columns: minmax(320px, 1fr) minmax(0, 760px); }
     .orbit-hero--large .map-stage, .orbit-hero--small .map-stage { height: var(--stage-h); }
     /* The three copy-led stages put their h1 at one height for a given window (ticket #17, F-04):
        the copy is top-aligned where Work with me's centred copy sat (a 400px column centred in
