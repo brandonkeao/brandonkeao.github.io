@@ -3,13 +3,12 @@
    hero's red is the align line and the stage's motion (ticket #16). AI-made layout choices,
    reversible. */
 
-/* ---- hero copy: title and mark, a statement lead, one body (T1 Statement, Brandon 2026-10-13):
-   the lead white 26/500 on a 20ch measure 28px under the mark, the body 17/1.6 muted at 44ch,
-   14px below it. On phones the stage sits between the mark and the lead, so the lead keeps its
-   8px step under the stage and only its size changes (23px, .t-lead-strong). */
+/* ---- hero copy (in PageHero, ticket #38): a statement lead, one body (T1 Statement, Brandon
+   2026-10-13): the lead white 26/500 (23px on phones, .t-lead-strong) on a 20ch measure at the
+   page lead's 20px step under the title, the body 17/1.6 muted at 44ch, 14px below it; the
+   hero's red line follows. */
 .cl-hero-lead { max-width: 20ch; }
-.orbit-hero .hero-rest > p.cl-hero-lead { margin-top: 28px; }
-@media (max-width: 860px) { .orbit-hero .hero-rest > p.cl-hero-lead { margin-top: 8px; } }
+.page-hero.cl-hero > p.cl-hero-lead { margin-top: 20px; }
 .cl-hero-body { margin-top: 14px; max-width: 44ch; line-height: 1.6; }
 
 /* ---- the collection sheet ----------------------------------------------------------------- */

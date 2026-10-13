@@ -49,9 +49,15 @@ const stretched = mark === 'align';
   .hero-line { --rule-y: 20px; }
   .hero-line--books, .hero-line--build { --rule-y: 36px; }
   .hero-rule { position: absolute; left: 0; right: 0; top: calc(var(--rule-y) - 0.75px); height: 1.5px; background: currentColor; opacity: 0.65; transform-origin: 0 50%; }
-  /* The motif's own short shelf would double the rule's tint where they overlap. */
+  /* blocks and blueprint (Portfolio, Playbooks; ticket #38) are 430 × 60 scenes, taller than
+     the 40px line: the line takes the scene's height and the rule sits on its ground (y 56 of
+     60). */
+  .hero-line--blocks, .hero-line--blueprint { height: auto; }
+  .hero-line--blocks .hero-rule, .hero-line--blueprint .hero-rule { top: calc(100% * 56 / 60 - 0.75px); }
+  /* The motif's own short shelf or ground would double the rule's tint where they overlap. */
   .hero-line--books .motion-line > .ml-draw.ml-soft:first-child,
-  .hero-line--build .motion-line > .ml-draw.ml-soft:first-child { display: none; }
+  .hero-line--build .motion-line > .ml-draw.ml-soft:first-child,
+  .hero-line--blocks .mlx-ground, .hero-line--blueprint .mlx-ground { display: none; }
   /* Flat: the stretched mark's soft glow underlay is dropped in the hero (designer review:
      "very minimal", "a little bit flatter"). */
   .hero-line .mls-glow { display: none; }
