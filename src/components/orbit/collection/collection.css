@@ -129,3 +129,7 @@
   .cl-note { padding: var(--space-band-sm) var(--gutter); grid-template-columns: minmax(0, 1fr); row-gap: 12px; }
   .cl-note h2, .cl-note p { grid-column: 1 / -1; }
 }
+
+/* The collection title marks stop where Work with me's does (--mark-max, OrbitStage); the title
+   and copy keep the column's width (Brandon, 2026-10-13). */
+.orbit-hero--small .motion-line-stretch { max-width: var(--mark-max); }

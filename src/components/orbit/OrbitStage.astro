@@ -384,6 +384,10 @@ const poster = scene
 </script>
 
 <style is:global>
+  /* --mark-max: Work with me's copy column at its widest, which is also the length of its title
+     mark; the collection heroes cap their marks there so the three copy-led lines match
+     (Brandon, 2026-10-13: "Length should be shorter like in the work with me section"). */
+  .orbit-hero { --mark-max: 430px; }
   .orbit-hero { display: grid; grid-template-columns: minmax(360px, 520px) minmax(0, 1fr); gap: 8px; align-items: center; padding: 8px 0 0 var(--gutter); }
   .orbit-hero--small { grid-template-columns: minmax(0, 1fr) minmax(0, 760px); padding-bottom: var(--space-hero-step); }
   /* Home: a compact copy column so the orbit takes more of the hero. */
@@ -399,7 +403,7 @@ const poster = scene
      state's height, so entering and leaving a model barely moves the layout.
      Desktop only: the phone block's plain .map-stage rule must keep winning there. */
   @media (min-width: 861px) {
-    .orbit-hero--large { grid-template-columns: minmax(340px, 430px) minmax(0, 1fr); gap: 32px; }
+    .orbit-hero--large { grid-template-columns: minmax(340px, var(--mark-max)) minmax(0, 1fr); gap: 32px; }
     /* Capped at 660px (was 740) to meet the selected state's cap, so at tall windows entering
        or leaving a model no longer changes the box (Brandon, 2026-10-13: the Overview's gap
        before "Ways to work together"; services.astro holds the selected rule). */
