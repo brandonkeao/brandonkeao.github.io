@@ -9,32 +9,29 @@ import { createPlanet, type Planet as PlanetHandle } from './planet';
 import { STAGE_GROUND } from './moon-surfaces';
 import { addStarDust, EdgeFeather, setEdgeFade } from './star-dust';
 import { makeCraftKit, RED, IVORY, COPPER_DEEP, type CraftKit } from './formation-craft';
+import { Structures, buildingMaterial, cityCluster, riser, groundSphere, atmosphere, rng, S, type Bld, type Surface } from './structures';
 
 /**
  * Collection heroes (ticket #16): the decorative stages beside the Portfolio and Playbooks
- * titles. Brandon picked them from the six concept studies (Brandon OS
- * `analysis/2026-10-12-collection-hero-concepts/`, DECISIONS "October 12 (late, 2)"):
+ * titles, a built world on the site's planet (Brandon's picks of October 13 from the built-world
+ * studies, Brandon OS `analysis/2026-10-13-portfolio-built-world/`; the structure kit is shared in
+ * structures.ts):
  *
- * - `portfolio` — P1 Flight record: red trails of missions already flown sweep in over the
- *   planet; one four-craft wedge (copper inside ivory) dives into the atmosphere each cycle,
- *   and its trail stays as a fading record (the latest three show).
- * - `playbooks` — K1 Maneuver: a small planet, two faint ivory orbits and a dashed planned
- *   route; a copper craft flies the route, then an ivory craft repeats it. Red only as the
- *   burns at the two route changes and the ivory craft's trail.
+ * - `portfolio` — K2 Three approaches: the planet's curve fills the lower stage with settlements
+ *   on the horizon; three dashed routes of different shapes (a straight descent, a descending
+ *   spiral, a coast with two burns) come down to three unequal sites (a few low blocks; a lone
+ *   spire; a span with an arch between two towers). A wedge flies each route in turn and each
+ *   arrival adds one element; when every site is finished the world holds, the new structures
+ *   fade out, and the 72 s loop begins again.
  *
- * Both are decorative, not relational (D2): nothing links a case to a method or either to a
- * model; red #F16B65 appears only as motion or trace; no text. Ported from the lab's
- * `concepts.ts` with two settled points (AI-made, reversible):
- * - Edges: a final feather pass blends the outer frame to the exact page ground (43,45,41),
- *   so bloom, the planet corona and the star dust never tint the stage box's edge.
- * - Speeds ("varied but matched", DECISIONS line 125): the Playbooks craft circle the inner
- *   orbit in 12 s, the Home/Work with me inner moon's lap at the site's 2x; the Portfolio
- *   wedge dives once per 12 s (the study's 9.5 s left 1.5 s between dives and read busy).
+ * Both are decorative, not relational (D2): the sites' counts and shapes are unequal so nothing
+ * maps one-to-one onto the stories or the methods; red #F16B65 appears only as motion or trace
+ * (trails and burns); no text. AI-made choices, reversible.
  *
  * Conventions follow formation-scene.ts / map-scene.ts: one WebGLRenderer, the shared render
- * profile, STAGE_GROUND clear colour, a loop that runs only on screen in a visible tab and
- * unpaused, a context-loss guard (the host swaps to its poster), dispose(), and frame
- * diagnostics on the host's dataset.
+ * profile, STAGE_GROUND clear colour, a final feather pass that blends the outer frame to the
+ * exact page ground (43,45,41), a loop that runs only on screen in a visible tab, a context-loss
+ * guard (the host swaps to its poster), dispose(), and frame diagnostics on the host's dataset.
  */
 
 export type CollectionKind = 'portfolio' | 'playbooks';
@@ -45,7 +42,7 @@ export interface CollectionHooks {
 }
 
 export interface CollectionHandle {
-  /** Host-driven hold (the stage's pause chip); offscreen pausing is automatic. */
+  /** Host-driven hold; offscreen pausing is automatic. */
   pause(v: boolean): void;
   resize(): void;
   dispose(): void;
@@ -58,7 +55,6 @@ const RIM_DIR = new THREE.Vector3(2.6, 1.8, -6).normalize();
 const ADD = THREE.AdditiveBlending;
 /** The studies were framed for a 760×520 stage; narrower boxes keep that horizontal extent. */
 const DESIGN_ASPECT = 760 / 520;
-const BASE_FOV = 35;
 
 /* ---- maths ---- */
 const TAU = Math.PI * 2;
@@ -69,88 +65,198 @@ const ss = (a: number, b: number, x: number) => {
   return t * t * (3 - 2 * t);
 };
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
-/** Great-circle slerp between two unit directions. */
-function slerpDir(a: THREE.Vector3, b: THREE.Vector3, u: number) {
-  const om = Math.acos(clamp(a.dot(b), -1, 1));
-  if (om < 1e-5) return a.clone();
-  const s = Math.sin(om);
-  return a.clone().multiplyScalar(Math.sin((1 - u) * om) / s).addScaledVector(b, Math.sin(u * om) / s).normalize();
-}
 
 interface Stage {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   kit: CraftKit;
+  /** The shared structure set (one material, low window share). */
+  structures: Structures;
   planet(r: number, pos: THREE.Vector3): PlanetHandle;
   glow(color: THREE.Color, size: number): THREE.Sprite;
-  /** Camera position and target, as framed in the study. */
-  look: { pos: THREE.Vector3; target: THREE.Vector3 };
+  /** Add a mesh the stage owns (its geometry and material are disposed with the stage). */
+  own<T extends THREE.Mesh>(mesh: T): T;
+  /** Register anything else with a dispose(). */
+  keep<T extends { dispose(): void }>(d: T): T;
+  /** Camera position, target, lens and fog density, as framed in the study. */
+  look: { pos: THREE.Vector3; target: THREE.Vector3; fov: number; fog: number };
 }
-/** `t0`: the clock at load (records already laid); `poster`: the settled frame's clock;
- *  `narrowZoom`: extra zoom on phone-shaped boxes where the figure has room to spare. */
+/** `t0`: the clock at load; `poster`: the settled frame's clock; `narrowZoom`: extra zoom on
+ *  phone-shaped boxes where the figure has room to spare. */
 type Build = (s: Stage) => { tick(t: number): void; t0: number; poster: number; narrowZoom?: number };
 
-/** A formation: lead + wingmen, offsets (along, side) in units of the craft spacing. */
+/** A formation: lead + wingmen, offsets (along, side) in units of the craft spacing; the copper
+ *  craft (index 3) flies inside the ivory wedge. */
 const WEDGE: [number, number][] = [[0, 0], [-1, -1], [-1, 1], [-2, 0]];
 
-/** P1 Flight record (Portfolio). */
-const flightRecord: Build = (s) => {
-  const R = 1.9,
-    C = V(2.0, -1.05, -1.2);
-  const planet = s.planet(R, C);
-  s.look.pos.set(-0.4, 1.0, 10.5);
-  s.look.target.set(0.3, -0.15, 0);
-  // Mission templates: start/end directions (from C), altitudes. Each ends low, in the atmosphere.
-  const T = [
-    { a: V(-1, 0.3, 0.1), b: V(0.15, 0.7, 0.7), h0: 3.4, h1: 0.08 },
-    { a: V(-0.7, 0.75, -0.1), b: V(0.6, 0.5, 0.62), h0: 2.6, h1: 0.07 },
-    { a: V(-1, -0.05, 0.4), b: V(-0.2, 0.45, 0.87), h0: 3.8, h1: 0.08 },
-    { a: V(-0.9, 0.5, 0.35), b: V(0.55, 0.75, 0.35), h0: 2.9, h1: 0.08 },
-  ].map((m) => ({ ...m, a: m.a.normalize(), b: m.b.normalize() }));
-  const PERIOD = 12,
-    FLY = 8,
-    SP = 0.075;
-  function pos(m: (typeof T)[0], u: number, along: number, side: number) {
-    const uu = clamp(u + along * 0.012);
-    const d = slerpDir(m.a, m.b, uu);
-    const alt = mix(m.h0, m.h1, 1 - (1 - uu) ** 2.2);
-    const P = C.clone().addScaledVector(d, R + alt);
-    const n = m.a.clone().cross(m.b).normalize();
-    return P.addScaledVector(n, side * SP);
-  }
-  // Per slot (mission k mod 4): 4 craft + 4 trails. Records reuse the trails of their slot.
-  const slots = T.map(() => ({
-    craft: WEDGE.map((_, i) => s.kit.craft(i === 3 ? COPPER_DEEP : IVORY, 0.24, i === 3 ? 1.6 : 1.45, true)),
-    trails: WEDGE.map(() => s.kit.trail(1.6)),
-  }));
-  const N = 64;
+/** A formation flown along a curve. size: craft size; sp: side spacing; du: along spacing in u. */
+function wedge(s: Stage, size: number, sp: number, du: number) {
+  const crafts = WEDGE.map((_, i) => s.kit.craft(i === 3 ? COPPER_DEEP : IVORY, size, i === 3 ? 1.6 : 1.45, true));
+  const trails = WEDGE.map((_, i) => s.kit.trail(i === 3 ? 1.6 : 1.4));
+  const N = 48;
   const pts: THREE.Vector3[] = Array.from({ length: N + 1 }, () => V());
+  const tmp = V(),
+    head = V(),
+    tan = V(),
+    side = V();
+  const at = (curve: THREE.Curve<THREE.Vector3>, u: number, al: number, sd: number, up: THREE.Vector3, out: THREE.Vector3) => {
+    const uu = clamp(u + al * du);
+    curve.getPointAt(uu, out);
+    curve.getTangentAt(clamp(uu, 0.001, 0.999), tan);
+    side.copy(tan).cross(up).normalize();
+    return out.addScaledVector(side, sd * sp);
+  };
   return {
-    t0: 3 * PERIOD + 3.5,
-    poster: 3 * PERIOD + 5,
+    /** u: flight progress (0..1; outside it the craft are hidden and the trail fades); tail: trail
+     *  length in u; fade: trail gain. Returns the craft opacity. */
+    set(curve: THREE.Curve<THREE.Vector3>, u: number, up: THREE.Vector3, tail: number, fade: number) {
+      const live = u >= 0 && u < 1;
+      const op = live ? ss(0, 0.07, u) * (1 - ss(0.9, 1, u)) : 0;
+      const uc = clamp(u);
+      WEDGE.forEach(([al, sd], i) => {
+        const h = uc + al * du;
+        const from = Math.max(0, h - tail);
+        for (let q = 0; q <= N; q++) at(curve, mix(uc, uc - (h - from), q / N), al, sd, up, pts[q]);
+        s.kit.place(crafts[i], [at(curve, uc, al, sd, up, head), at(curve, uc - 0.004, al, sd, up, tmp)]);
+        crafts[i].setOpacity(op);
+        crafts[i].group.visible = op > 0.01;
+        const g = (live ? 0.95 : 0.6) * fade * (i === 3 ? 1 : 0.85);
+        const show = u > 0.003 && h - from > 0.002 && fade > 0.003;
+        s.kit.setTrail(trails[i], show ? pts : [], i === 3 ? COPPER_DEEP : RED, g, live ? 1.1 : 0.6);
+      });
+      return op;
+    },
+  };
+}
+
+function dashed(s: Stage, pts: THREE.Vector3[], alpha: number, dash: number) {
+  const l = s.kit.staticLine(pts, 0xefe6d2, alpha, 1.1, true);
+  const m = l.material as unknown as { dashSize: number; gapSize: number };
+  m.dashSize = dash;
+  m.gapSize = dash * 1.25;
+  return l;
+}
+
+/** K2 Three approaches (Portfolio). */
+const threeApproaches: Build = (s) => {
+  const R = 9;
+  const sf: Surface = { C: V(0, -R, 0), R, n0: V(0, 1, 0), e1: V(1, 0, 0), e2: V(0, 0, -1) };
+  s.scene.add(s.own(groundSphere(sf, 0.42, 448, [1.2, 2.6])));
+  s.scene.add(s.own(atmosphere(sf.C, R, 0.14, 1.0, KEY_DIR)));
+  // A higher eye than the study (1.25), looking further down, so the spiral opens into a coil and
+  // the sites stand on the ground rather than against the horizon.
+  s.look.pos.set(0, 1.6, 0.15);
+  s.look.target.copy(S(sf, 0.06, 2.5, 0.16));
+  s.look.fov = 38;
+  s.look.fog = 0.1;
+  const rnd = rng(77);
+  // Unequal sites (about 1.35x the study's, so they read as built on a phone): a spread of low
+  // blocks (left, four additions), a lone spire (centre, three segments), a span and an arch
+  // between two standing towers (right, two additions). Plus unrelated settlement on the horizon.
+  const A = { x: -0.58, s: 1.78 },
+    B = { x: 0.08, s: 2.4 },
+    Cc = { x: 0.66, s: 1.86 };
+  const k = 1.35;
+  const base: Bld[] = [
+    ...cityCluster(rnd, -0.2, 4.6, 2.2, 0.6, 0.32, 90, 0.07),
+    ...cityCluster(rnd, 1.9, 3.2, 0.5, 0.4, 0.24, 26, 0.06),
+    { type: 'twist', x: Cc.x - 0.26, s: Cc.s, w: 0.085, d: 0.085, h: 0.46, seed: 0.35 },
+    { type: 'drum', x: Cc.x + 0.26, s: Cc.s, w: 0.08, d: 0.08, h: 0.4, seed: 0.62 },
+    { type: 'dome', x: A.x - 0.33, s: A.s + 0.16, w: 0.16, d: 0.16, h: 0.07, seed: -1 },
+  ];
+  s.structures.add(sf, base);
+  const sites: { steps: Bld[] }[] = [
+    {
+      steps: [
+        { type: 'slab', x: A.x, s: A.s, w: 0.12 * k, d: 0.09 * k, h: 0.07 * k, seed: 0.2 },
+        { type: 'slab', x: A.x + 0.2, s: A.s - 0.04, w: 0.09 * k, d: 0.09 * k, h: 0.11 * k, seed: 0.4 },
+        { type: 'setback', x: A.x + 0.07, s: A.s + 0.17, w: 0.1 * k, d: 0.1 * k, h: 0.16 * k, seed: 0.6 },
+        { type: 'dome', x: A.x - 0.16, s: A.s - 0.13, w: 0.1 * k, d: 0.1 * k, h: 0.05 * k, seed: -1 },
+      ],
+    },
+    {
+      steps: [
+        { type: 'drum', x: B.x, s: B.s, w: 0.13 * k, d: 0.13 * k, h: 0.16 * k, seed: 0.3 },
+        { type: 'twist', x: B.x, s: B.s, w: 0.09 * k, d: 0.09 * k, h: 0.42 * k, seed: 0.5 },
+        { type: 'needle', x: B.x, s: B.s, w: 0.04 * k, d: 0.04 * k, h: 0.62 * k, seed: -1 },
+      ],
+    },
+    {
+      steps: [
+        { type: 'span', x: Cc.x, s: Cc.s, w: 0.5, d: 0.03, h: 0.022, a: 0.27, seed: -1 },
+        { type: 'arch', x: Cc.x, s: Cc.s, w: 0.5, d: 0.4, h: 0.4, a: 0.0, seed: -1 },
+      ],
+    },
+  ];
+  const risers = sites.map((st) => s.keep(riser(s.scene, sf, st.steps)));
+  // Three route shapes, all ending on a site.
+  const straight = new THREE.CatmullRomCurve3([S(sf, -1.2, 3.4, 1.15), S(sf, -0.95, 2.7, 0.62), S(sf, A.x, A.s, 0.08)]);
+  // The spiral's plane is tilted toward the eye (its far side higher) so it reads as a coil.
+  const spiralPts: THREE.Vector3[] = [];
+  const spireTop = 0.62 * k + 0.03;
+  for (let i = 0; i <= 120; i++) {
+    const u = i / 120,
+      ang = 0.6 + u * TAU * 1.6,
+      rr = mix(0.36, 0.03, u * u);
+    spiralPts.push(S(sf, B.x + Math.cos(ang) * rr, B.s + Math.sin(ang) * rr, mix(0.98, spireTop, u) + Math.sin(ang) * rr * 0.9));
+  }
+  const spiral = new THREE.CatmullRomCurve3(spiralPts);
+  // A coast, a burn, a descending arc, a second burn onto the span.
+  const b1 = S(sf, 1.12, 3.15, 0.85),
+    b2 = S(sf, Cc.x + 0.06, Cc.s + 0.17, 0.42);
+  const transfer = new THREE.CatmullRomCurve3(
+    [S(sf, 1.7, 3.95, 1.05), S(sf, 1.42, 3.55, 0.98), b1, S(sf, 1.07, 2.6, 0.66), b2, S(sf, Cc.x, Cc.s, 0.3)],
+    false,
+    'centripetal',
+  );
+  const routes = [straight, spiral, transfer];
+  routes.forEach((r) => dashed(s, r.getSpacedPoints(200), 0.36, 0.03));
+  const team = routes.map(() => wedge(s, 0.085, 0.032, 0.025));
+  const burns = [0, 1, 2].map((i) => s.glow(RED.clone().multiplyScalar(1.5), i === 0 ? 0.15 : 0.17));
+  const kinks = [b1, b2];
+  // The flights: each route in turn until its site is finished (A has four elements, B three, C
+  // two), so every arrival adds one element: A B C A B C A B A. Then the finished world holds, the
+  // new structures fade out (a fade, not un-building) and the loop starts again.
+  const ORDER = [0, 1, 2, 0, 1, 2, 0, 1, 0];
+  const SLOT = 6.5,
+    FLY = 4.2,
+    LOOP = 72,
+    FADE0 = 66.5,
+    FADE1 = 70;
+  const flights = ORDER.map((j, n) => ({ j, st: n * SLOT, step: ORDER.slice(0, n).filter((x) => x === j).length }));
+  const upv = V(0, 1, 0);
+  return {
+    t0: 3 * SLOT + 1.2,
+    poster: 8 * SLOT + 2.7, // the last flight on its way down, two sites finished, the blocks three-quarters built
     tick(t) {
-      planet.update(t, 0, 0, 1, 1);
-      const kNow = Math.floor(t / PERIOD);
-      for (let j = 0; j < 4; j++) {
-        // slot j shows mission k where k ≡ j (mod 4) and k ≤ kNow, the most recent one
-        const k = kNow - (((kNow - j) % 4) + 4) % 4;
-        const age = kNow - k; // 0 = live
-        const m = T[j],
-          sl = slots[j];
-        const u = age === 0 ? clamp((t - k * PERIOD) / FLY) : 1;
-        const fade = age === 0 ? 1 : age === 3 ? (1 - clamp((t - kNow * PERIOD) / 3)) * 0.18 : [1, 0.55, 0.32][age];
-        const live = age === 0 && u < 1;
-        WEDGE.forEach(([al, sd], i) => {
-          for (let q = 0; q <= N; q++) pts[q] = pos(m, u * (1 - q / N), al, sd);
-          s.kit.place(sl.craft[i], [pos(m, u, al, sd), pos(m, u - 0.01, al, sd)]);
-          const op = live ? ss(0, 0.06, u) * (1 - ss(0.86, 0.99, u)) : 0;
-          sl.craft[i].setOpacity(op);
-          sl.craft[i].group.visible = op > 0.01;
-          const g =
-            (age === 0 ? (live ? 0.95 : mix(0.95, 0.55, clamp((t - k * PERIOD - FLY) / 1.5))) : 0.55 * fade) *
-            (i === 3 ? 1 : 0.8);
-          s.kit.setTrail(sl.trails[i], u > 0.002 ? pts : [], i === 3 ? COPPER_DEEP : RED, age === 0 ? g : g * fade, live ? 1.1 : 0.35);
-        });
+      const L = ((t % LOOP) + LOOP) % LOOP;
+      const fadeOut = 1 - ss(FADE0, FADE1, L);
+      burns.forEach((b) => (b.material.opacity = 0));
+      // Each team flies its route's latest flight that has started (trails linger ~2 s after).
+      routes.forEach((route, j) => {
+        let f = null as (typeof flights)[number] | null;
+        for (const x of flights) if (x.j === j && x.st <= L) f = x;
+        const u = f ? (L - f.st) / FLY : -1;
+        const fade = !f ? 0 : u < 1 ? 1 : 1 - ss(f.st + FLY, f.st + FLY + 2, L);
+        team[j].set(route, u, upv, j === 1 ? 0.3 : 0.45, fade);
+        if (f && u > 0 && u < 1 && j === 2) {
+          kinks.forEach((kp, q) => {
+            const uk = q === 0 ? 0.38 : 0.78;
+            burns[q + 1].position.copy(kp);
+            burns[q + 1].material.opacity = Math.exp(-(((u - uk) / 0.05) ** 2)) * 0.8;
+          });
+        }
+      });
+      for (const f of flights) {
+        const arr = f.st + FLY;
+        const p = ss(arr - 0.1, arr + 1, L);
+        const glow = Math.exp(-((L - arr - 0.3) ** 2) / 0.35);
+        risers[f.j].set(f.step, p, glow, fadeOut);
+        const a = Math.exp(-(((L - arr) / 0.3) ** 2));
+        if (a > 0.01) {
+          burns[0].position.copy(routes[f.j].getPointAt(1));
+          burns[0].material.opacity = Math.max(burns[0].material.opacity, a * 0.7);
+        }
       }
     },
   };
@@ -164,6 +270,8 @@ const maneuver: Build = (s) => {
     r2 = 3.45;
   const inPlane = (th: number, r: number) => V(Math.cos(th) * r, 0, Math.sin(th) * r).applyQuaternion(PLANE).add(O);
   const planet = s.planet(0.95, O);
+  s.look.fov = 35;
+  s.look.fog = 0.018;
   s.look.pos.set(0.4, 2.2, 11.4);
   s.look.target.set(-0.1, -0.35, 0);
   const ring = (r: number) => Array.from({ length: 181 }, (_, j) => inPlane((j / 180) * TAU, r));
@@ -231,7 +339,9 @@ const maneuver: Build = (s) => {
   };
 };
 
-const BUILDS: Record<CollectionKind, Build> = { portfolio: flightRecord, playbooks: maneuver };
+
+const BUILDS: Record<CollectionKind, Build> = { portfolio: threeApproaches, playbooks: maneuver };
+
 
 export function createCollectionScene(
   host: HTMLElement,
@@ -249,7 +359,8 @@ export function createCollectionScene(
   host.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(STAGE_GROUND, 0.018);
+  const fog = new THREE.FogExp2(STAGE_GROUND, 0.018);
+  scene.fog = fog;
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envRoom = new RoomEnvironment();
   const envTex = pmrem.fromScene(envRoom, 0.045).texture;
@@ -264,7 +375,7 @@ export function createCollectionScene(
   rim.position.copy(RIM_DIR).multiplyScalar(10);
   scene.add(key, fill, rim);
 
-  const camera = new THREE.PerspectiveCamera(BASE_FOV, 1, 0.05, 200);
+  const camera = new THREE.PerspectiveCamera(35, 1, 0.02, 200);
   const composer = new EffectComposer(
     renderer,
     new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: 4 }),
@@ -282,11 +393,23 @@ export function createCollectionScene(
   const kit = makeCraftKit(scene, camera);
   const planets: PlanetHandle[] = [];
   const sprites: THREE.SpriteMaterial[] = [];
+  const owned: { dispose(): void }[] = [];
+  const structures = new Structures(scene, buildingMaterial(0.11, 0.012));
+  owned.push(structures);
   const stage: Stage = {
     scene,
     camera,
     kit,
-    look: { pos: V(0, 0, 10), target: V() },
+    structures,
+    look: { pos: V(0, 0, 10), target: V(), fov: 35, fog: 0.018 },
+    own(mesh) {
+      owned.push(mesh.geometry, mesh.material as THREE.Material);
+      return mesh;
+    },
+    keep(d) {
+      owned.push(d);
+      return d;
+    },
     planet(r, p) {
       const pl = createPlanet({ radius: r, lights: { key: KEY_DIR, fill: FILL_DIR, rim: RIM_DIR } });
       pl.group.position.copy(p);
@@ -306,6 +429,8 @@ export function createCollectionScene(
   const build = BUILDS[kind](stage);
   camera.position.copy(stage.look.pos);
   camera.lookAt(stage.look.target);
+  fog.density = stage.look.fog;
+  const baseFov = stage.look.fov;
 
   /* ---- loop: runs only on screen, in a visible tab, unpaused ---- */
   const frozen = freeze === 'poster' ? build.poster : freeze;
@@ -403,7 +528,7 @@ export function createCollectionScene(
     camera.aspect = w / h;
     // Keep the study's horizontal extent in narrower boxes (taller desktop stages, phones).
     const k = Math.max(1, DESIGN_ASPECT / camera.aspect) / (camera.aspect < 1.1 ? build.narrowZoom ?? 1 : 1);
-    camera.fov = (2 * Math.atan(Math.tan((BASE_FOV * Math.PI) / 360) * k) * 180) / Math.PI;
+    camera.fov = (2 * Math.atan(Math.tan((baseFov * Math.PI) / 360) * k) * 180) / Math.PI;
     camera.updateProjectionMatrix();
     if (!running) draw();
   }
@@ -425,6 +550,7 @@ export function createCollectionScene(
       document.removeEventListener('visibilitychange', onVisibility);
       renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
       planets.forEach((p) => p.dispose());
+      owned.forEach((d) => d.dispose());
       sprites.forEach((m) => m.dispose());
       dust.dispose();
       kit.dispose();
