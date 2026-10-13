@@ -2,12 +2,27 @@
 // Red line marks under page titles, brought back from the earlier site at Brandon's
 // request (2026-10-06). Each draws once when it comes into view; it never replays.
 // The final drawing is plain SVG, so reduced motion and no-JS readers see it still.
+//
+// `blocks` (Portfolio) and `blueprint` (Playbooks): Brandon's third-round picks (2026-10-13,
+// Brandon OS analysis/2026-10-13-title-mark-concepts-r3: P3 Blocks, K1 Blueprint to built), in
+// the Bookshelf mark's spirit: solid, filled objects placed on a quiet ground line. blocks:
+// twelve chunky blocks (a front, a top and a side face) drop and settle one after another into
+// three stepped structures, small, tallest, small. blueprint: a dashed plan with dimension lines
+// wipes in, then the solid building (a gabled wing, a tower, a long low wing) fills it from the
+// ground up; the dimension lines stay, soft. Both are 430 × 60 drawings that scale as a whole
+// (never stretched) to the mark's width, so at 351 they are 351 × 49. The faces are opaque mixes
+// of the red on the ground (12, 22, 30%), so overlapping blocks never double their tint.
 interface Props {
-  kind: 'momentum' | 'map' | 'align' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
-  /** align only: size the mark to its container; the fork is half, the single line the other half (Brandon, 2026-10-06). */
+  kind: 'momentum' | 'map' | 'align' | 'blocks' | 'blueprint' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
+  /** align: size the mark to its container (Brandon, 2026-10-06); blocks and blueprint always
+   *  take the container's width, scaled as a whole. */
   stretch?: boolean;
 }
 const { kind, stretch = false } = Astro.props;
+// blocks: the twelve blocks' top-left corners (three structures: 3, 6 and 3 blocks), placed in
+// order, 85 ms apart, after the ground (0.12–1.48 s).
+const BLOCKS: [number, number][] = [[16, 42], [44, 42], [30, 28], [100, 42], [128, 42], [156, 42], [114, 28], [142, 28], [128, 14], [214, 42], [242, 42], [242, 28]];
+const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
 ---
 
 {stretch && kind === 'align' ? (
@@ -36,6 +51,36 @@ const { kind, stretch = false } = Astro.props;
         <path class="mls-path mls-soft" data-ml="top" pathLength="1" d="M 1 6 H 296 C 327 6 327 20 360 20" />
         <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717 M 711 14 l 6 6 -6 6" />
         <path class="mls-path mls-soft" data-ml="bottom" pathLength="1" d="M 1 34 H 296 C 327 34 327 20 360 20" />
+      </g>
+    </svg>
+  </div>
+) : kind === 'blocks' ? (
+  <div class="motion-line motion-line-stretch motion-line-scene motion-line-blocks" data-motion aria-hidden="true">
+    <svg width="100%" height="100%" viewBox="0 0 430 60" preserveAspectRatio="xMinYMax meet" fill="none" focusable="false">
+      <path class="mlx-ground" pathLength="1" d="M2 56H428" />
+      {BLOCKS.map(([x, y], i) => (
+        <g class="mlx-drop" style={`--ml-delay:${120 + i * 85}ms`}>
+          <path class="mlx-f3" d={`M${x + 28} ${y}l4 -4v14l-4 4z`} />
+          <path class="mlx-f2" d={`M${x} ${y}l4 -4h28l-4 4z`} />
+          <rect class="mlx-f1" x={x} y={y} width="28" height="14" rx="0.5" />
+        </g>
+      ))}
+    </svg>
+  </div>
+) : kind === 'blueprint' ? (
+  <div class="motion-line motion-line-stretch motion-line-scene motion-line-blueprint" data-motion aria-hidden="true">
+    <svg width="100%" height="100%" viewBox="0 0 430 60" preserveAspectRatio="xMinYMax meet" fill="none" focusable="false">
+      <path class="mlx-ground" pathLength="1" d="M2 56H428" />
+      <g class="mlx-plan">
+        <path class="mlx-dash" d={PLAN} />
+        <path class="mlx-dash" d="M112 56V44H124V56M152 44h14v6h-14zM176 44h14v6h-14z" />
+        <path class="mlx-dim" d="M40 4H200M40 1v6M200 1v6M214 12V56M211 12h6M211 56h6" />
+      </g>
+      <g class="mlx-reveal">
+        <path class="mlx-f1" d={`${PLAN}Z`} />
+        <rect class="mlx-f3" x="128" y="12" width="8" height="44" rx="1" />
+        <path class="mlx-f2" d="M112 56V44H124V56" />
+        <path class="mlx-f2" d="M152 44h14v6h-14zM176 44h14v6h-14z" />
       </g>
     </svg>
   </div>
@@ -172,6 +217,16 @@ const { kind, stretch = false } = Astro.props;
   .mls-sharp .mls-soft { opacity: 0.65; stroke: url(#mls-fade-g); }
   .mls-glow { opacity: 0.42; stroke-width: 4; }
   .mls-glow .mls-path[data-ml='top'], .mls-glow .mls-path[data-ml='bottom'] { opacity: 0.6; stroke: url(#mls-fade-g); }
+  /* blocks and blueprint: 430 × 60 scenes scaled as a whole to the mark's width (351 × 49 on
+     phones); faces are opaque mixes of the red on the ground. */
+  .motion-line-scene { width: var(--mark-max, 430px); max-width: 100%; height: auto; aspect-ratio: 430 / 60; }
+  .motion-line-scene svg { width: 100%; height: 100%; }
+  .mlx-ground { stroke-dasharray: 1; stroke-dashoffset: 0; opacity: 0.55; }
+  .mlx-f1 { fill: color-mix(in srgb, currentColor 12%, var(--ground)); }
+  .mlx-f2 { fill: color-mix(in srgb, currentColor 22%, var(--ground)); }
+  .mlx-f3 { fill: color-mix(in srgb, currentColor 30%, var(--ground)); }
+  .mlx-dash { stroke-dasharray: 3 4; opacity: 0.75; }
+  .mlx-dim { stroke-width: 1; opacity: 0.55; }
   .ml-dot { fill: currentColor; stroke: none; }
   .ml-soft { opacity: 0.65; }
   .ml-track { opacity: 0.25; }
@@ -186,7 +241,18 @@ const { kind, stretch = false } = Astro.props;
     /* Stretched mark: every path draws at the same speed (durations set per length by the
        script), so the strands land on the merge as the centre head passes — one gesture. */
     .motion-line[data-motion-armed]:not([data-motion-play]) .mls-path { stroke-dashoffset: 1; }
-    .motion-line[data-motion-play] .mls-path { animation: ml-draw var(--mls-dur, 950ms) linear both; }
+    .motion-line[data-motion-play] .mls-path { animation: ml-draw var(--mls-dur, 950ms) linear var(--mls-delay, 0ms) both; }
+    /* blocks: the ground draws (0–0.4 s), then each block drops 14px and settles, 85 ms apart.
+       blueprint: the ground and the dashed plan with its dimensions wipe in (0–0.52 s), then the
+       solid building is revealed from the ground up (0.56–1.38 s). */
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlx-ground { stroke-dashoffset: 1; }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlx-drop { opacity: 0; }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlx-plan { clip-path: inset(-8px 100% -8px -8px); }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlx-reveal { clip-path: inset(100% -8px -8px -8px); }
+    .motion-line[data-motion-play] .mlx-ground { animation: ml-draw 400ms ease-out both; }
+    .motion-line[data-motion-play] .mlx-drop { animation: ml-drop 420ms ease-out var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-play] .mlx-plan { animation: ml-wipe-x 520ms linear both; }
+    .motion-line[data-motion-play] .mlx-reveal { animation: ml-reveal 820ms cubic-bezier(0.45, 0, 0.3, 1) 560ms both; }
     .motion-line[data-motion-play] .ml-arrive { animation: ml-arrive 650ms ease-out var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-place { animation: ml-place 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-meet { animation: ml-meet 950ms ease-out both; }
@@ -196,6 +262,9 @@ const { kind, stretch = false } = Astro.props;
   }
 
   @keyframes ml-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes ml-drop { 0% { transform: translateY(-14px); opacity: 0; } 25% { opacity: 1; } 70% { transform: translateY(1.5px); } 100% { transform: none; opacity: 1; } }
+  @keyframes ml-wipe-x { from { clip-path: inset(-8px 100% -8px -8px); } to { clip-path: inset(-8px -8px -8px -8px); } }
+  @keyframes ml-reveal { from { clip-path: inset(100% -8px -8px -8px); } to { clip-path: inset(-8px -8px -8px -8px); } }
   @keyframes ml-arrive { from { opacity: 0.45; } to { opacity: 1; } }
   @keyframes ml-place { from { transform: translateY(-4px); } to { transform: translateY(0); } }
   @keyframes ml-meet { from { transform: scale(0.6); opacity: 0.45; } to { transform: scale(1); opacity: 1; } }

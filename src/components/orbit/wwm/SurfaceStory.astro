@@ -59,6 +59,11 @@ const steps = [
   let observers: IntersectionObserver[] = [];
   const scenes = new Map<HTMLElement, FormationHandle>();
 
+  /** Scroll progress is read where the eye reads (60% down the viewport); a beat turns
+      current a little earlier (58%) so its copy is lit by the time it reaches that line. */
+  const READING_LINE = 0.6;
+  const BEAT_LINE = 0.58;
+
   const clamp01 = (x: number) => Math.min(Math.max(x, 0), 1);
 
   /** Reading progress 0..1 through a story, piecewise per beat: the 60% reading line maps
@@ -68,7 +73,7 @@ const steps = [
   function progressOf(story: HTMLElement): number {
     const copies = story.querySelectorAll<HTMLElement>('[data-story-step] .step-copy');
     if (copies.length < 3) return 0;
-    const line = innerHeight * 0.6;
+    const line = innerHeight * READING_LINE;
     let p = 0;
     copies.forEach((c, i) => {
       const r = c.getBoundingClientRect();
@@ -82,7 +87,7 @@ const steps = [
       mid-story model switch can't leave the new story on the old beat): the last copy block
       whose top sits above the 58% line; none means overview. */
   function beatPass(story: HTMLElement, steps: HTMLElement[]) {
-    const line = innerHeight * 0.58;
+    const line = innerHeight * BEAT_LINE;
     let active: HTMLElement | null = null;
     for (const st of steps) {
       const copy = st.querySelector<HTMLElement>('.step-copy') ?? st;
@@ -98,6 +103,25 @@ const steps = [
         st.setAttribute('aria-current', 'step');
       } else st.removeAttribute('aria-current');
     }
+  }
+
+  /** Resolves once the orbit stage is not flying (no stage, or not entering or leaving)
+      and the browser has a moment to spare; the poster holds the frame meanwhile. */
+  function afterFlight(signal: AbortSignal): Promise<void> {
+    const stage = document.querySelector<HTMLElement>('.map-stage[data-orbit]');
+    const flying = () => !!stage && (stage.dataset.mode === 'entering' || stage.dataset.mode === 'leaving');
+    const idle = (done: () => void) =>
+      'requestIdleCallback' in window ? requestIdleCallback(() => done(), { timeout: 300 }) : setTimeout(done, 50);
+    return new Promise((resolve) => {
+      const go = () => idle(() => { if (!signal.aborted && !flying()) resolve(); else if (!signal.aborted) wait(); });
+      const wait = () => {
+        if (!flying()) { go(); return; }
+        const mo = new MutationObserver(() => { if (!flying()) { mo.disconnect(); go(); } });
+        mo.observe(stage!, { attributes: true, attributeFilter: ['data-mode'] });
+        signal.addEventListener('abort', () => mo.disconnect(), { once: true });
+      };
+      wait();
+    });
   }
 
   function init() {
@@ -136,16 +160,26 @@ const steps = [
       // itself offscreen (detail hidden, scrolled away, background tab) and is kept
       // across model switches so a return does not recompile shaders.
       if (webgl && host) {
+        // Half the media in view, not its first pixel: at landing the media peeks in under the
+        // model's intro (≈10% at 1440×900, ≈43% at 2000×1240), and building there costs a
+        // ≈100ms hitch while the visitor watches the moon. Built on the way down instead, the
+        // same cost lands during a compositor scroll; the poster holds the frame until then.
         const lazy = new IntersectionObserver((entries) => {
-          if (!entries.some((en) => en.isIntersecting) || scenes.has(host)) return;
+          if (!entries.some((en) => en.isIntersecting && en.intersectionRatio >= 0.5) || scenes.has(host)) return;
           lazy.disconnect();
-          import('../../../lib/orbit/formation-scene')
+          // Built once the orbit's flight has landed, never during it (2026-10-13 rework):
+          // choosing a model reveals this story under the stage in the same frame, and
+          // building the scene there (a new context, the environment map, the first shader
+          // compile: 70–260ms warm, over 1.5s on a cold shader cache) froze the flight.
+          afterFlight(signal)
+            .then(() => import('../../../lib/orbit/formation-scene'))
             .then(({ createFormation }) => {
-              if (!ctl || ctl.signal.aborted || scenes.has(host)) return;
+              // This init's own signal, not the module's `ctl`: a same-page navigation during
+              // the import replaces `ctl` with a live controller, and building here would put a
+              // context on the old, detached host that nothing would dispose.
+              if (signal.aborted || !host.isConnected || scenes.has(host)) return;
               const scene = createFormation(host, slug);
               scenes.set(host, scene);
-              // The page's pause chip (D3) may already be pressed when a story first shows.
-              if (document.querySelector('.map-stage[data-paused]')) scene.pause(true);
               scene.setProgress(progressOf(story));
               story.classList.add('is-live');
               // A lost context means the canvas is dead: back to the poster, for good.
@@ -156,7 +190,7 @@ const steps = [
               }, { once: true });
             })
             .catch(() => { /* the poster stands */ });
-        });
+        }, { threshold: [0, 0.5] });
         lazy.observe(host);
         observers.push(lazy);
       }
@@ -164,13 +198,14 @@ const steps = [
 
     // One rAF loop does all the scroll-coupled work from geometry — the active beat, the
     // red thread and the scene scrub share one progress measure, and a model switch is
-    // corrected on the next frame rather than waiting for a scroll event.
+    // corrected on the next frame rather than waiting for a scroll event. It runs only
+    // while a story is on screen in a visible tab: a hidden detail never intersects, so
+    // showing a model starts it and scrolling to the evidence band or footer stops it.
+    const onScreen = new Set<HTMLElement>();
     let raf = 0;
-    const loop = () => {
-      raf = requestAnimationFrame(loop);
-      if (document.hidden) return;
+    const pass = () => {
       for (const w of wired) {
-        if (w.story.offsetParent === null) continue; // hidden detail
+        if (!onScreen.has(w.story) || w.story.offsetParent === null) continue; // hidden detail
         beatPass(w.story, w.steps);
         const p = progressOf(w.story);
         if (w.thread) w.thread.style.transform = `scaleY(${p.toFixed(3)})`;
@@ -178,14 +213,29 @@ const steps = [
         if (scene) scene.setProgress(p);
       }
     };
-    raf = requestAnimationFrame(loop);
-    signal.addEventListener('abort', () => cancelAnimationFrame(raf));
-
-    // The stage's pause chip (OrbitStage, D3) stops the story scenes' motion with the orbit's.
-    document.addEventListener('orbit:pause', (e) => {
-      const paused = !!(e as CustomEvent<{ paused: boolean }>).detail?.paused;
-      scenes.forEach((s) => s.pause(paused));
-    }, { signal });
+    const loop = () => {
+      if (document.hidden || !onScreen.size) { raf = 0; return; }
+      raf = requestAnimationFrame(loop);
+      pass();
+    };
+    const start = () => { if (!raf && onScreen.size && !document.hidden) raf = requestAnimationFrame(loop); };
+    const seen = new IntersectionObserver((entries) => {
+      for (const en of entries) {
+        if (en.isIntersecting) onScreen.add(en.target as HTMLElement);
+        else if (onScreen.delete(en.target as HTMLElement)) {
+          // Leaving: settle its last frame (a fast fling can skip the end of the story).
+          const w = wired.find((x) => x.story === en.target);
+          if (w && w.story.offsetParent !== null) {
+            onScreen.add(w.story); pass(); onScreen.delete(w.story);
+          }
+        }
+      }
+      start();
+    });
+    for (const w of wired) seen.observe(w.story);
+    observers.push(seen);
+    document.addEventListener('visibilitychange', start, { signal });
+    signal.addEventListener('abort', () => { cancelAnimationFrame(raf); raf = 0; });
   }
 
   function teardown() {

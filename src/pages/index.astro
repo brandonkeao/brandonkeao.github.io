@@ -7,6 +7,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import OrbitStage from '../components/orbit/OrbitStage.astro';
 import HeroMeteor from '../components/orbit/HeroMeteor.astro';
 import Sheet from '../components/orbit/Sheet.astro';
+import ClosingSheet from '../components/orbit/ClosingSheet.astro';
 import SectionHead from '../components/orbit/SectionHead.astro';
 import Quote from '../components/orbit/Quote.astro';
 import ExperienceStrip from '../components/orbit/ExperienceStrip.astro';
@@ -23,7 +24,7 @@ const reading = [
 const engagements = [
   { meta: 'Hiring into the team', title: 'Full time Senior IC Roles', body: 'A senior product role with room to shape direction, own meaningful work, and stay close to the details.', href: '/services/?engagement=full-time' },
   { meta: 'A product engagement', title: 'Fractional Product Leadership', body: 'Experienced product leadership for a defined outcome or initiative, from framing the problem through delivery.', href: '/services/?engagement=fractional' },
-  { meta: 'A business engagement', title: 'Advisory and Consulting', body: 'Focused help with business, operations and analytics, including putting changes into practice.', href: '/services/?engagement=advisory' },
+  { meta: 'A business engagement', title: 'Advisory and Consulting', body: 'Focused help with business, operations, and analytics, including putting changes into practice.', href: '/services/?engagement=advisory' },
 ];
 ---
 
@@ -111,15 +112,7 @@ const engagements = [
 
   <!-- Field 4: the ask. One white callout closes the page (Brandon 2026-10-07: "one large bottom
        dedicated component that is a very clear call to action"). -->
-  <Sheet class="hv-close" label="Start a conversation">
-    <div class="hv-close-inner">
-      <div class="hv-close-text">
-        <p class="t-caption hv-close-eyebrow">Start a conversation</p>
-        <h2 class="t-page-title hv-close-title" id="hv-close">If you're stuck, let's talk about what to try first.</h2>
-      </div>
-      <a href="/contact/" class="btn btn-brand hv-close-btn">Let's talk</a>
-    </div>
-  </Sheet>
+  <ClosingSheet size="display" eyebrow="Start a conversation" title="If you're stuck, let's talk about what to try first." button="Let's talk" titleId="hv-close" />
 </BaseLayout>
 
 <style is:global>
@@ -181,15 +174,6 @@ const engagements = [
   .hv-way:hover .hv-title { text-decoration-color: var(--on-ground); }
   .hv-way:hover .hv-arrow { color: var(--on-ground); }
 
-  /* ---- field 4: the ask ----------------------------------------------------------------- */
-  /* A white callout that takes over the end of the page: display-size title on the grid's left
-     edge, one large brand-red button under it. */
-  /* The ask: the button sits left, under the text (Brandon, 2026-10-07: smaller title, button back down). */
-  .sheet.hv-close { padding-top: 120px; padding-bottom: 128px; }
-  .hv-close-text { max-width: 760px; }
-  .hv-close-eyebrow { font-weight: 500; color: var(--on-sheet-muted); margin-bottom: 20px; }
-  .hv-close-title { color: var(--on-sheet); max-width: 15.5em; text-wrap: balance; }
-  .hv-close-btn { margin-top: 48px; font-size: 19px; padding: 20px 36px; min-height: 64px; }
 
   @media (max-width: 1100px) {
     .hv-head { grid-column: 1 / span 5; }
@@ -216,9 +200,5 @@ const engagements = [
     .hv-field { padding-bottom: var(--space-band-sm); }
     .hv-ways { padding-top: var(--space-band-sm); }
     .hv-way-list { gap: 28px; }
-    .sheet.hv-close { padding-top: 72px; padding-bottom: 80px; }
-    .hv-close-eyebrow { margin-bottom: 14px; }
-    .hv-close-title { font-size: 32px; }
-    .hv-close-btn { margin-top: 32px; font-size: 18px; padding: 18px 28px; min-height: 60px; display: flex; width: 100%; }
   }
 </style>

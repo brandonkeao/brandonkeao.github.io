@@ -35,19 +35,19 @@ const MODELS: Category[] = [
   model('portfolio', 'full-time', 'Hiring into the team', 'Full time Senior IC Roles',
     'A senior product role with room to shape direction, own meaningful work, and stay close to the details.', [
       'You have a product area or business problem that needs a clear owner.',
-      'I would work with the team to understand the problem, decide where to focus, and turn that direction into work we can deliver and learn from. That includes customer discovery, product strategy, prioritization and the decisions that come up along the way.',
+      'I would work with the team to understand the problem, decide where to focus, and turn that direction into work we can deliver and learn from. That includes customer discovery, product strategy, prioritization, and the decisions that come up along the way.',
       "I'd join your team with ongoing ownership of a product area or initiative. We'd be clear about the outcomes, the decisions I own, and how I work with the people around me. I want to stay involved as the work moves from an idea into something customers can use.",
     ]),
   model('playbooks', 'fractional', 'A product engagement', 'Fractional Product Leadership',
     'Experienced product leadership for a defined outcome or initiative, from framing the problem through delivery.', [
       'An important product initiative needs experienced ownership.',
       'The work could include understanding customer needs, defining the outcome, setting priorities, and working with design and engineering to move an initiative forward. The scope follows the product problem, not a preset package of deliverables.',
-      "We'd agree on the outcome, my responsibilities and the decisions that stay with your team. I'd work alongside the people doing the work, with a regular way to review progress and adjust the plan. We'd also be clear about what your team needs to continue when the engagement ends.",
+      "We'd agree on the outcome, my responsibilities, and the decisions that stay with your team. I'd work alongside the people doing the work, with a regular way to review progress and adjust the plan. We'd also be clear about what your team needs to continue when the engagement ends.",
     ]),
   model('approach', 'advisory', 'A business engagement', 'Advisory and Consulting',
-    'Focused help with business, operations and analytics, including putting changes into practice.', [
-      'A process is creating friction, delays or work that has to be done twice.',
-      "We'd look at the process, the data and the decisions around the problem. The work might be a focused assessment, a recommendation, or helping your team make and evaluate a change. We'd choose the approach based on what you need to accomplish.",
+    'Focused help with business, operations, and analytics, including putting changes into practice.', [
+      'A process is creating friction, delays, or work that has to be done twice.',
+      "We'd look at the process, the data, and the decisions around the problem. The work might be a focused assessment, a recommendation, or helping your team make and evaluate a change. We'd choose the approach based on what you need to accomplish.",
       "We'd start by agreeing on the question, who needs to be involved, and how we'll know whether the work helped. Advisory can mean working through decisions with you. Consulting can include doing the analysis and helping implement the changes. We'll define that responsibility up front.",
     ]),
 ];
