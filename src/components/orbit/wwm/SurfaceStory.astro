@@ -155,8 +155,12 @@ const steps = [
       // itself offscreen (detail hidden, scrolled away, background tab) and is kept
       // across model switches so a return does not recompile shaders.
       if (webgl && host) {
+        // Half the media in view, not its first pixel: at landing the media peeks in under the
+        // model's intro (≈10% at 1440×900, ≈43% at 2000×1240), and building there costs a
+        // ≈100ms hitch while the visitor watches the moon. Built on the way down instead, the
+        // same cost lands during a compositor scroll; the poster holds the frame until then.
         const lazy = new IntersectionObserver((entries) => {
-          if (!entries.some((en) => en.isIntersecting) || scenes.has(host)) return;
+          if (!entries.some((en) => en.isIntersecting && en.intersectionRatio >= 0.5) || scenes.has(host)) return;
           lazy.disconnect();
           // Built once the orbit's flight has landed, never during it (2026-10-13 rework):
           // choosing a model reveals this story under the stage in the same frame, and
@@ -178,7 +182,7 @@ const steps = [
               }, { once: true });
             })
             .catch(() => { /* the poster stands */ });
-        });
+        }, { threshold: [0, 0.5] });
         lazy.observe(host);
         observers.push(lazy);
       }
