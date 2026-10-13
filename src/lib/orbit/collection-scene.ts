@@ -498,17 +498,21 @@ export function createCollectionScene(
     kit.orientCrafts();
     composer.render();
   }
+  /** Longest step a frame may advance the clock (s): a stalled tab resumes, never jumps. */
+  const MAX_STEP_S = 0.05;
+  /** Frame times kept for the p50/p95 diagnostics. */
+  const FRAME_SAMPLES = 240;
   function tick(now: number) {
     raf = 0;
     if (!running || disposed) return;
     const dtMs = now - last;
     last = now;
-    if (frozen === undefined) t += Math.min(dtMs / 1000, 0.05) || 0;
+    if (frozen === undefined) t += Math.min(dtMs / 1000, MAX_STEP_S) || 0;
     draw();
     totalFrames++;
     if (totalFrames > 1) {
       frameTimes.push(dtMs);
-      if (frameTimes.length > 240) frameTimes.shift();
+      if (frameTimes.length > FRAME_SAMPLES) frameTimes.shift();
     }
     if (now - diagnosticAt > 1000) publish(now);
     if (!ready) {

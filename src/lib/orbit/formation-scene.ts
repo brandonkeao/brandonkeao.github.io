@@ -569,20 +569,25 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
   const camPos = V(),
     camLook = V();
 
+  /** Longest step a frame may advance the clock (s): a stalled tab resumes, never jumps. */
+  const MAX_STEP_S = 0.05;
+  /** Time constants (s): scroll progress eases a little faster than the camera follows. */
+  const PROGRESS_EASE_S = 0.14;
+  const CAMERA_EASE_S = 0.18;
   function tick(now: number) {
     raf = 0;
     if (!running || disposed) return;
-    const dt = Math.min((now - last) / 1000, 0.05) || 0;
+    const dt = Math.min((now - last) / 1000, MAX_STEP_S) || 0;
     last = now;
     t += dt;
-    pS = first ? pTarget : pS + (pTarget - pS) * (1 - Math.exp(-dt / 0.14));
+    pS = first ? pTarget : pS + (pTarget - pS) * (1 - Math.exp(-dt / PROGRESS_EASE_S));
     moon.rotation.y = 0.5 + t * 0.012; // a slow turn; the craft carry the motion
     const { K, up } = story.update(pS, t);
     const { i, f } = beatMix(pS);
     const pos = K[i].pos.clone().lerp(K[i + 1].pos, f);
     const look = K[i].look.clone().lerp(K[i + 1].look, f);
     const fov = mix(K[i].fov, K[i + 1].fov, f);
-    const k = first ? 1 : 1 - Math.exp(-dt / 0.18);
+    const k = first ? 1 : 1 - Math.exp(-dt / CAMERA_EASE_S);
     camPos.lerp(pos, k);
     camLook.lerp(look, k);
     first = false;

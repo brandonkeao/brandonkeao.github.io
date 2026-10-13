@@ -59,6 +59,11 @@ const steps = [
   let observers: IntersectionObserver[] = [];
   const scenes = new Map<HTMLElement, FormationHandle>();
 
+  /** Scroll progress is read where the eye reads (60% down the viewport); a beat turns
+      current a little earlier (58%) so its copy is lit by the time it reaches that line. */
+  const READING_LINE = 0.6;
+  const BEAT_LINE = 0.58;
+
   const clamp01 = (x: number) => Math.min(Math.max(x, 0), 1);
 
   /** Reading progress 0..1 through a story, piecewise per beat: the 60% reading line maps
@@ -68,7 +73,7 @@ const steps = [
   function progressOf(story: HTMLElement): number {
     const copies = story.querySelectorAll<HTMLElement>('[data-story-step] .step-copy');
     if (copies.length < 3) return 0;
-    const line = innerHeight * 0.6;
+    const line = innerHeight * READING_LINE;
     let p = 0;
     copies.forEach((c, i) => {
       const r = c.getBoundingClientRect();
@@ -82,7 +87,7 @@ const steps = [
       mid-story model switch can't leave the new story on the old beat): the last copy block
       whose top sits above the 58% line; none means overview. */
   function beatPass(story: HTMLElement, steps: HTMLElement[]) {
-    const line = innerHeight * 0.58;
+    const line = innerHeight * BEAT_LINE;
     let active: HTMLElement | null = null;
     for (const st of steps) {
       const copy = st.querySelector<HTMLElement>('.step-copy') ?? st;
