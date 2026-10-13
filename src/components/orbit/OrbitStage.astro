@@ -316,11 +316,11 @@ const poster = scene
         // and the moons are smaller ("they don't look that realistic"). Only the close-up stage
         // passes moonScale, so Work with me keeps its moons.
         // Off production, ?zoom=&ox=&oy=&ms= override the framing so it can be tuned on the preview.
-        let framing: { zoom: number; offsetX: number; offsetY: number; maxPixelRatio: number; moonScale: number } | undefined;
+        let framing: { zoom: number; offsetX: number; offsetY: number; maxPixelRatio: number; moonScale: number; edgeFade: boolean } | undefined;
         if (stage.hasAttribute('data-closeup')) {
           framing = matchMedia('(max-width: 860px)').matches
-            ? { zoom: 1.6, offsetX: 0.6, offsetY: 0, maxPixelRatio: 1.5, moonScale: 0.6 }
-            : { zoom: 2.1, offsetX: 0.8, offsetY: -0.1, maxPixelRatio: 1.5, moonScale: 0.6 };
+            ? { zoom: 1.6, offsetX: 0.6, offsetY: 0, maxPixelRatio: 1.5, moonScale: 0.6, edgeFade: false }
+            : { zoom: 2.1, offsetX: 0.8, offsetY: -0.1, maxPixelRatio: 1.5, moonScale: 0.6, edgeFade: false };
           if (!/(^|\.)brandonkeao\.com$/.test(location.hostname)) {
             const qs = new URLSearchParams(location.search);
             for (const [k, key] of [['zoom', 'zoom'], ['ox', 'offsetX'], ['oy', 'offsetY'], ['ms', 'moonScale']] as const) {

@@ -3,6 +3,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { addStarDust } from './star-dust';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { surfaceMaterial, rustTexture, STAGE_GROUND } from './moon-surfaces';
 import { makeCraftKit, RED, IVORY, COPPER_DEEP } from './formation-craft';
@@ -129,28 +130,11 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
-  // Star dust: far shell, below the bloom threshold.
-  const dust = (() => {
-    const n = 900,
-      pos = new Float32Array(n * 3);
-    for (let i = 0; i < n; i++) {
-      const v = new THREE.Vector3().randomDirection().multiplyScalar(60 + Math.random() * 30);
-      pos.set([v.x, v.y, v.z], i * 3);
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const m = new THREE.PointsMaterial({
-      color: 0x8a877d,
-      size: 1.4,
-      sizeAttenuation: false,
-      transparent: true,
-      opacity: 0.55,
-      depthWrite: false,
-    });
-    const p = new THREE.Points(g, m);
-    scene.add(p);
-    return { g, m };
-  })();
+  // Star dust (Brandon, 2026-10-13: stars in every animation background): the collections'
+  // shell, quieter here (0.38 vs 0.55, 1.2px) so under this scene's bloom it never glows or
+  // competes with the craft trails. Centred on the camera each frame (it flies the story).
+  const dust = addStarDust(scene, { opacity: 0.38, size: 1.2 });
+  container.dataset.starCount = String(dust.count);
 
   /* ---- primitives: the shared craft kit, plus this scene's entry sheaths ---- */
   const kit = makeCraftKit(scene, camera);
@@ -608,6 +592,7 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
     camera.fov = fov;
     camera.updateProjectionMatrix();
     orientCrafts();
+    dust.points.position.copy(camera.position);
     composer.render();
     raf = requestAnimationFrame(tick);
   }
@@ -682,8 +667,7 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
       moonMat.dispose();
       rustTex?.dispose();
       atmo.material.dispose();
-      dust.g.dispose();
-      dust.m.dispose();
+      dust.dispose();
       kit.dispose();
       envTex.dispose();
       pmrem.dispose();

@@ -7,6 +7,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createPlanet, type Planet as PlanetHandle } from './planet';
 import { STAGE_GROUND } from './moon-surfaces';
+import { addStarDust, EdgeFeather, setEdgeFade } from './star-dust';
 import { makeCraftKit, RED, IVORY, COPPER_DEEP, type CraftKit } from './formation-craft';
 
 /**
@@ -55,8 +56,6 @@ const KEY_DIR = new THREE.Vector3(-5.2, 3.4, 3.6).normalize();
 const FILL_DIR = new THREE.Vector3(4, -2.5, 3).normalize();
 const RIM_DIR = new THREE.Vector3(2.6, 1.8, -6).normalize();
 const ADD = THREE.AdditiveBlending;
-/** The page ground in output (sRGB) space: what STAGE_GROUND tone-maps to, pixel-exact. */
-const GROUND_OUT = new THREE.Vector3(43 / 255, 45 / 255, 41 / 255);
 /** The studies were framed for a 760×520 stage; narrower boxes keep that horizontal extent. */
 const DESIGN_ASPECT = 760 / 520;
 const BASE_FOV = 35;
@@ -77,21 +76,6 @@ function slerpDir(a: THREE.Vector3, b: THREE.Vector3, u: number) {
   const s = Math.sin(om);
   return a.clone().multiplyScalar(Math.sin((1 - u) * om) / s).addScaledVector(b, Math.sin(u * om) / s).normalize();
 }
-
-/** Final pass: the outer frame blends to the page ground (hard 10px, soft 40px, CSS px). */
-const EdgeFeather = {
-  uniforms: {
-    tDiffuse: { value: null },
-    uRes: { value: new THREE.Vector2(1, 1) },
-    uHard: { value: 10 },
-    uSoft: { value: 40 },
-    uGround: { value: GROUND_OUT },
-  },
-  vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-  fragmentShader: `uniform sampler2D tDiffuse;uniform vec2 uRes;uniform float uHard;uniform float uSoft;uniform vec3 uGround;varying vec2 vUv;
-  void main(){vec4 c=texture2D(tDiffuse,vUv);vec2 px=vUv*uRes;float d=min(min(px.x,uRes.x-px.x),min(px.y,uRes.y-px.y));
-  float k=smoothstep(uHard,uHard+uSoft,d);gl_FragColor=vec4(mix(uGround,c.rgb,k),1.);}`,
-};
 
 interface Stage {
   scene: THREE.Scene;
@@ -293,23 +277,7 @@ export function createCollectionScene(
   composer.addPass(feather);
 
   // Star dust: a far shell below the bloom threshold (seeded, so posters are repeatable).
-  const dust = (() => {
-    const n = 900,
-      pos = new Float32Array(n * 3);
-    let seed = 7;
-    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    for (let i = 0; i < n; i++) {
-      const v = V(rnd() * 2 - 1, rnd() * 2 - 1, rnd() * 2 - 1).normalize().multiplyScalar(60 + rnd() * 30);
-      pos.set([v.x, v.y, v.z], i * 3);
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const m = new THREE.PointsMaterial({
-      color: 0x8a877d, size: 1.4, sizeAttenuation: false, transparent: true, opacity: 0.55, depthWrite: false, fog: false,
-    });
-    scene.add(new THREE.Points(g, m));
-    return { g, m };
-  })();
+  const dust = addStarDust(scene);
 
   const kit = makeCraftKit(scene, camera);
   const planets: PlanetHandle[] = [];
@@ -386,6 +354,7 @@ export function createCollectionScene(
     host.dataset.frameSamples = String(n);
     host.dataset.simTime = t.toFixed(2);
     host.dataset.scene = kind;
+    host.dataset.starCount = String(dust.count);
     diagnosticAt = now;
   }
   function setRunning() {
@@ -430,9 +399,7 @@ export function createCollectionScene(
     composer.setSize(w, h);
     bloom.resolution.set(w * pr, h * pr);
     kit.setResolution(w * pr, h * pr);
-    feather.uniforms.uRes.value.set(w * pr, h * pr);
-    feather.uniforms.uHard.value = 10 * pr;
-    feather.uniforms.uSoft.value = 40 * pr;
+    setEdgeFade(feather, w, h, pr);
     camera.aspect = w / h;
     // Keep the study's horizontal extent in narrower boxes (taller desktop stages, phones).
     const k = Math.max(1, DESIGN_ASPECT / camera.aspect) / (camera.aspect < 1.1 ? build.narrowZoom ?? 1 : 1);
@@ -459,8 +426,7 @@ export function createCollectionScene(
       renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
       planets.forEach((p) => p.dispose());
       sprites.forEach((m) => m.dispose());
-      dust.g.dispose();
-      dust.m.dispose();
+      dust.dispose();
       kit.dispose();
       envTex.dispose();
       pmrem.dispose();

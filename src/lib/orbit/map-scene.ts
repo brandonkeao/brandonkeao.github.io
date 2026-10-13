@@ -3,6 +3,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CATEGORIES, type CategoryId, type ContentItem } from './orbit-data';
@@ -32,6 +33,7 @@ import { createPlanet } from './planet';
 import { resolveMoonStyle, SPHERE_RADII, SPHERE_CENTER_RADII } from './moon-style';
 import { surfaceMaterial, valueNoise, dataTexture, rustTexture, STAGE_GROUND, type SurfaceUniforms } from './moon-surfaces';
 import { attachMicroFormation, type MicroFormation } from './formation-craft';
+import { addStarDust, EdgeFeather, setEdgeFade } from './star-dust';
 
 /**
  * The renderer no longer decides navigation. The host owns a `lib/map-state`
@@ -174,8 +176,10 @@ function brushedTexture() {
 /** Close-up framing on top of the fitted pose: `zoom` divides the camera distance; `offsetX`/`offsetY`
  * shift the image in NDC without changing perspective (Home's "Quiet orbit" close-up, 2026-10-06).
  * `moonScale` multiplies the moons' overview size for this stage only (Home: smaller moons, Brandon
- * 2026-10-07 "decrease the moon sizes"); a chosen moon still grows to its usual centred size. */
-export type Framing = { zoom: number; offsetX: number; offsetY: number; maxPixelRatio: number; moonScale?: number };
+ * 2026-10-07 "decrease the moon sizes"); a chosen moon still grows to its usual centred size.
+ * `edgeFade: false` skips the stage-box edge fade (Home's full-bleed stage, whose page masks
+ * already fade it into the ground and whose right edge is the window's). */
+export type Framing = { zoom: number; offsetX: number; offsetY: number; maxPixelRatio: number; moonScale?: number; edgeFade?: boolean };
 
 /** `speed` scales the ambient motion (orbits, steps, planet surface); flights keep their timing. */
 export function createMap(
@@ -224,6 +228,14 @@ export function createMap(
   const bloom = new UnrealBloomPass(new THREE.Vector2(800, 600), 0.34, 0.45, 0.93);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
+  // Stars in the background (Brandon, 2026-10-13): the collections' dust, centred on the camera
+  // each frame so it sits at infinity behind every body through the flights; the frame edge
+  // fades to the ground (10px + 40px) so the dust never reaches the stage box's edge.
+  // 1500 points rather than the collections' 900: the moons, orbits and wider frame cover
+  // more of this stage, and 1500 lands the visible density on the collections' (AI-made, reversible).
+  const stars = addStarDust(scene, { count: 1500 });
+  const feather = framing.edgeFade === false ? null : new ShaderPass(EdgeFeather);
+  if (feather) composer.addPass(feather);
 
   const key = new THREE.DirectionalLight(0xffe2bd, 2.7);
   key.position.copy(KEY_DIR).multiplyScalar(10);
@@ -952,6 +964,7 @@ export function createMap(
       // Line2 trails need the drawing-buffer size or they render at the 1×1 default.
       const pr = renderer.getPixelRatio();
       micros.forEach((mf) => mf.setResolution(r.width * pr, r.height * pr));
+      if (feather) setEdgeFade(feather, r.width, r.height, pr);
     }
     leaderLayer.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
     measureLabels();
@@ -1403,12 +1416,14 @@ export function createMap(
     }
 
     if (!fallback && visible && !offscreen) {
+      stars.points.position.copy(camera.position);
       composer.render();
       totalFrames++;
       if (now - diagnosticAt > 1000 || paused || reduced) {
         const times = [...frameTimes].sort((a, b) => a - b);
         const count = times.length;
         host.dataset.frameCount = String(totalFrames);
+        host.dataset.starCount = String(stars.count);
         host.dataset.frameP50 = String(times[Math.floor(count * 0.5)] || 0);
         host.dataset.frameP95 = String(times[Math.floor(count * 0.95)] || 0);
         host.dataset.frameSamples = String(count);
@@ -1544,6 +1559,8 @@ export function createMap(
       brushed.dispose();
       rust.dispose();
       environment.dispose();
+      stars.dispose();
+      feather?.dispose();
       bloom.dispose();
       composer.dispose();
       renderer.dispose();
