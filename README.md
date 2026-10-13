@@ -23,16 +23,23 @@ See [September 22 release notes](docs/RELEASE_2026_09_22.md) for cleanup, mobile
 
 ## Local review
 
+Use Node 22 (declared in `.nvmrc`), then install dependencies and start Astro:
+
 ```sh
 npm ci
 npm run dev
 ```
 
-Astro will print the local review address. The production build check is:
+Astro will print the local review address. Before opening a pull request, run the same checks as CI:
 
 ```sh
+npm run check
+npm run test:audit
 npm run build
+npm run audit
 ```
+
+See [`docs/CI.md`](docs/CI.md) for the workflow and proposed branch protection settings.
 
 ## Publishing boundary
 

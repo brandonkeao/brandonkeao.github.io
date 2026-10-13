@@ -2,9 +2,15 @@
   "name": "brandonkeao.github.io",
   "type": "module",
   "version": "0.0.1",
+  "engines": {
+    "node": ">=22 <23"
+  },
   "scripts": {
     "dev": "astro dev",
+    "check": "astro check",
+    "test:audit": "node --test scripts/audit-static.test.mjs",
     "build": "astro build",
+    "audit": "node scripts/audit-static.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -13,5 +19,9 @@
     "@tailwindcss/vite": "^4.1.18",
     "astro": "^5.16.6",
     "tailwindcss": "^4.1.18"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "typescript": "5.9.3"
   }
 }

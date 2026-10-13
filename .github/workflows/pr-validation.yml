@@ -1,0 +1,38 @@
+name: PR validation
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Website validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Astro and TypeScript
+        run: npm run check
+
+      - name: Test static audit
+        run: npm run test:audit
+
+      - name: Build
+        run: npm run build
+
+      - name: Audit built routes and assets
+        run: npm run audit
