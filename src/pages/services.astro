@@ -186,26 +186,20 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     }
     .wwm-evidence { scroll-margin-top: calc(var(--wwm-intro-h, 0px) + 16px); }
   }
-  /* Selected on desktop: the stage gives up height so that intro — tag, name and summary —
-     shows above the fold beside the moon (Brandon, 2026-10-12 round 10: the details were
-     "Not above the fold"; round 11: the lower section "a little higher up vertically", so
-     tall windows cap instead of riding 100svh). Both states cap at 660px since 2026-10-13, so
-     at tall windows the box holds still through the flight. The renderer re-fits the camera
-     whenever the box resizes, so the reframe rides the selection flight; Overview restores
-     the tall wide view. */
+  /* One stage height for both states on desktop (2026-10-13, the enter-transition rework): the
+     box holds the selected state's clamp in the Overview too, so choosing a model never resizes
+     it. The selected rule it came from (round 10: tag, name and summary above the fold beside
+     the moon; round 11: tall windows cap) still sets the value; the 660 cap is the Oct 13 one.
+     A box that changed height while the camera flew re-fitted the renderer on every frame of
+     the 0.85s ride — each re-fit cleared the canvas after it had drawn, so the stage strobed
+     blank through most of the flight at windows under ~980px tall, and the flow below shifted
+     by the height difference. The hero copy keeps its own --stage-h padding, so nothing in the
+     hero moves between states. */
   @media (min-width: 861px) {
-    .wwm[data-state='selected'] .orbit-hero--large .map-stage { height: clamp(480px, calc(100svh - 320px), 660px); }
+    .wwm .orbit-hero--large .map-stage { height: clamp(480px, calc(100svh - 320px), 660px); }
   }
-  /* The box's height ride matches the camera flight (850ms, smootherstep in orbits.ts), so
-     the resize and the flight read as one motion instead of two (round 12: the Overview
-     transitions were "very jarring"; moon-to-moon felt smooth — it never resizes the box). */
-  @media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
-    .wwm .orbit-hero--large .map-stage { transition: height 0.85s cubic-bezier(0.45, 0, 0.55, 1); }
-  }
-  /* Browser Back to the Overview (D1): the stage cuts with no flight, so its box cuts back to
-     the Overview height too (no 0.85s ride), and the rows and shared sections fade back in
-     instead of popping. */
-  .wwm.wwm-returning .orbit-hero--large .map-stage { transition: none; }
+  /* Browser Back to the Overview (D1): the stage cuts with no flight, and the rows and shared
+     sections fade back in instead of popping. */
   @media (prefers-reduced-motion: no-preference) {
     .wwm.wwm-returning .wwm-select:not([hidden]),
     .wwm.wwm-returning [data-wwm-overview]:not([hidden]) { animation: wwm-in 0.35s ease-out; }
