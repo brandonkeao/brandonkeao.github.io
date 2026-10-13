@@ -55,7 +55,10 @@
 }
 
 /* ---- base ---------------------------------------------------------------- */
-html { background: var(--ground); }
+/* overflow-x: clip on the root (ticket #21) stops body's clip from propagating to the viewport,
+   so body clips its own box and nothing (the Home meteor's splash at 1280-1440) can widen the
+   document: scrollWidth stays at the window width. Neither creates a scroll container. */
+html { background: var(--ground); overflow-x: clip; }
 body {
   background: var(--ground);
   color: var(--on-ground);
