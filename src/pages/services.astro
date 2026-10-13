@@ -130,7 +130,9 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm h2[tabindex='-1']:focus-visible { outline: 2px solid var(--accent-on-ground); }
 
   /* ---- overview rows: full width, each one link ----------------------------------------- */
-  .wwm-select { padding-bottom: var(--space-band); }
+  /* The first band meets the hero at the shared hero step (64 / 40), not the 112px band step
+     (Brandon, 2026-10-13: the Overview's empty ground before "Ways to work together"). */
+  .wwm-select { padding-top: var(--space-hero-step); padding-bottom: var(--space-band); }
   /* Overview with JS (no detail showing): the rows' bottom step is the seam, so the shared
      band adds none (was 112 + 112). Without JS the stacked details sit between and keep it. */
   .wwm:not(:has(.wwm-detail:not([hidden]))) .wwm-shared { padding-top: 0; }
@@ -187,11 +189,12 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   /* Selected on desktop: the stage gives up height so that intro — tag, name and summary —
      shows above the fold beside the moon (Brandon, 2026-10-12 round 10: the details were
      "Not above the fold"; round 11: the lower section "a little higher up vertically", so
-     tall windows cap at 720px instead of riding 100svh). The renderer re-fits the camera
+     tall windows cap instead of riding 100svh). Both states cap at 660px since 2026-10-13, so
+     at tall windows the box holds still through the flight. The renderer re-fits the camera
      whenever the box resizes, so the reframe rides the selection flight; Overview restores
      the tall wide view. */
   @media (min-width: 861px) {
-    .wwm[data-state='selected'] .orbit-hero--large .map-stage { height: clamp(480px, calc(100svh - 320px), 720px); }
+    .wwm[data-state='selected'] .orbit-hero--large .map-stage { height: clamp(480px, calc(100svh - 320px), 660px); }
   }
   /* The box's height ride matches the camera flight (850ms, smootherstep in orbits.ts), so
      the resize and the flight read as one motion instead of two (round 12: the Overview
@@ -248,7 +251,7 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   @media (max-width: 860px) {
     .wwm-band { grid-template-columns: minmax(0, 1fr); row-gap: 24px; padding-top: var(--space-band-sm); padding-bottom: 0; }
     .wwm-head, .wwm-body { grid-column: 1 / -1; }
-    .wwm-select { padding-bottom: var(--space-band-sm); }
+    .wwm-select { padding-top: var(--space-hero-step); padding-bottom: var(--space-band-sm); }
     .wwm-row { padding: 18px 0; }
     .wwm-band .t-item { font-size: 19px; }
     .wwm-band .t-body { font-size: 16px; }

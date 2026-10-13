@@ -400,7 +400,10 @@ const poster = scene
      Desktop only: the phone block's plain .map-stage rule must keep winning there. */
   @media (min-width: 861px) {
     .orbit-hero--large { grid-template-columns: minmax(340px, 430px) minmax(0, 1fr); gap: 32px; }
-    .orbit-hero--large { --stage-h: clamp(540px, calc(100svh - 270px), 740px); }
+    /* Capped at 660px (was 740) to meet the selected state's cap, so at tall windows entering
+       or leaving a model no longer changes the box (Brandon, 2026-10-13: the Overview's gap
+       before "Ways to work together"; services.astro holds the selected rule). */
+    .orbit-hero--large { --stage-h: clamp(540px, calc(100svh - 270px), 660px); }
     /* Portfolio and Playbooks (size "small"): a shorter stage of their own and a 32px step into
        the sheet, so the collection heading and its first rows show above the fold (Brandon,
        2026-10-13: "the vertical spacing after the hero here can be reduced so we can see more
