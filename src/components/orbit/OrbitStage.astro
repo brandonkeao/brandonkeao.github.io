@@ -30,11 +30,10 @@ const ways = SETS[set];
 const closeup = size === 'closeup';
 const poster = scene
   ? { desktop: `/images/orbit/${scene}-desktop.jpg`, mobile: `/images/orbit/${scene}-mobile.jpg` }
-  : closeup
+  : closeup || set === 'home'
+  // The Home set only ever renders as the close-up (the wide home-* posters were unused; #21).
   ? { desktop: '/images/orbit/home-closeup-desktop.jpg', mobile: '/images/orbit/home-closeup-mobile.jpg' }
-  : set === 'home'
-    ? { desktop: '/images/orbit/home-desktop.jpg', mobile: '/images/orbit/home-mobile.jpg' }
-    : { desktop: '/images/orbit/work-desktop.jpg', mobile: '/images/orbit/work-mobile.jpg' };
+  : { desktop: '/images/orbit/work-desktop.jpg', mobile: '/images/orbit/work-mobile.jpg' };
 // One still frame per selected way (ticket #21): with reduced motion (or no WebGL) there is no
 // renderer to fly to a moon, so the stage shows the chosen moon's frame instead. Work with me
 // only, the one stage whose ways are chosen.
