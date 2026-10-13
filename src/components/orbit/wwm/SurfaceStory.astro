@@ -193,13 +193,14 @@ const steps = [
 
     // One rAF loop does all the scroll-coupled work from geometry — the active beat, the
     // red thread and the scene scrub share one progress measure, and a model switch is
-    // corrected on the next frame rather than waiting for a scroll event.
+    // corrected on the next frame rather than waiting for a scroll event. It runs only
+    // while a story is on screen in a visible tab: a hidden detail never intersects, so
+    // showing a model starts it and scrolling to the evidence band or footer stops it.
+    const onScreen = new Set<HTMLElement>();
     let raf = 0;
-    const loop = () => {
-      raf = requestAnimationFrame(loop);
-      if (document.hidden) return;
+    const pass = () => {
       for (const w of wired) {
-        if (w.story.offsetParent === null) continue; // hidden detail
+        if (!onScreen.has(w.story) || w.story.offsetParent === null) continue; // hidden detail
         beatPass(w.story, w.steps);
         const p = progressOf(w.story);
         if (w.thread) w.thread.style.transform = `scaleY(${p.toFixed(3)})`;
@@ -207,8 +208,29 @@ const steps = [
         if (scene) scene.setProgress(p);
       }
     };
-    raf = requestAnimationFrame(loop);
-    signal.addEventListener('abort', () => cancelAnimationFrame(raf));
+    const loop = () => {
+      if (document.hidden || !onScreen.size) { raf = 0; return; }
+      raf = requestAnimationFrame(loop);
+      pass();
+    };
+    const start = () => { if (!raf && onScreen.size && !document.hidden) raf = requestAnimationFrame(loop); };
+    const seen = new IntersectionObserver((entries) => {
+      for (const en of entries) {
+        if (en.isIntersecting) onScreen.add(en.target as HTMLElement);
+        else if (onScreen.delete(en.target as HTMLElement)) {
+          // Leaving: settle its last frame (a fast fling can skip the end of the story).
+          const w = wired.find((x) => x.story === en.target);
+          if (w && w.story.offsetParent !== null) {
+            onScreen.add(w.story); pass(); onScreen.delete(w.story);
+          }
+        }
+      }
+      start();
+    });
+    for (const w of wired) seen.observe(w.story);
+    observers.push(seen);
+    document.addEventListener('visibilitychange', start, { signal });
+    signal.addEventListener('abort', () => { cancelAnimationFrame(raf); raf = 0; });
   }
 
   function teardown() {
