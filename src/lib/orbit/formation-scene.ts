@@ -569,20 +569,25 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
   const camPos = V(),
     camLook = V();
 
+  /** Longest step a frame may advance the clock (s): a stalled tab resumes, never jumps. */
+  const MAX_STEP_S = 0.05;
+  /** Time constants (s): scroll progress eases a little faster than the camera follows. */
+  const PROGRESS_EASE_S = 0.14;
+  const CAMERA_EASE_S = 0.18;
   function tick(now: number) {
     raf = 0;
     if (!running || disposed) return;
-    const dt = Math.min((now - last) / 1000, 0.05) || 0;
+    const dt = Math.min((now - last) / 1000, MAX_STEP_S) || 0;
     last = now;
     t += dt;
-    pS = first ? pTarget : pS + (pTarget - pS) * (1 - Math.exp(-dt / 0.14));
+    pS = first ? pTarget : pS + (pTarget - pS) * (1 - Math.exp(-dt / PROGRESS_EASE_S));
     moon.rotation.y = 0.5 + t * 0.012; // a slow turn; the craft carry the motion
     const { K, up } = story.update(pS, t);
     const { i, f } = beatMix(pS);
     const pos = K[i].pos.clone().lerp(K[i + 1].pos, f);
     const look = K[i].look.clone().lerp(K[i + 1].look, f);
     const fov = mix(K[i].fov, K[i + 1].fov, f);
-    const k = first ? 1 : 1 - Math.exp(-dt / 0.18);
+    const k = first ? 1 : 1 - Math.exp(-dt / CAMERA_EASE_S);
     camPos.lerp(pos, k);
     camLook.lerp(look, k);
     first = false;
@@ -615,7 +620,9 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
   io.observe(container);
   const onVisibility = () => setRunning();
   document.addEventListener('visibilitychange', onVisibility);
-  // A lost context cannot be rendered into: stop for good (the host swaps to its poster).
+  // A lost context cannot be rendered into: stop the loop and mark the scene disposed. The GPU
+  // resources went with the context; the owner still calls dispose() to release the rest
+  // (listeners, observers, CPU-side geometry). Stop for good (the host swaps to its poster).
   const onContextLost = (e: Event) => {
     e.preventDefault();
     disposed = true;
@@ -670,7 +677,11 @@ export function createFormation(container: HTMLElement, model: EngagementSlug): 
       dust.dispose();
       kit.dispose();
       envTex.dispose();
+      envRoom.dispose();
       pmrem.dispose();
+      // The composer frees only its own two render targets and copy pass: each pass it holds
+      // (render, bloom with its targets and materials, output) is released here.
+      composer.passes.forEach((pass) => pass.dispose());
       composer.dispose();
       renderer.dispose();
       // Release the GPU context now rather than when the GC finds it: a services visit can

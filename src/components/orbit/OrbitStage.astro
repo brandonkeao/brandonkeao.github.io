@@ -200,7 +200,6 @@ const poses = !scene && set === 'work' && controls !== 'none'
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let mode: Mode = 'overview';
     let current: CategoryId | null = null;
-    let pending: CategoryId | null = null;
     let token = 0;
     const still = stage.hasAttribute('data-still');
     const decorative = stage.hasAttribute('data-static');
@@ -313,10 +312,10 @@ const poses = !scene && set === 'work' && controls !== 'none'
     }
 
     // The unused stage dock's Back button flies home; nothing on any page uses it today.
-    back?.addEventListener('click', () => { pending = null; goBack(); }, opts);
+    back?.addEventListener('click', () => goBack(), opts);
     // A host page's reset (Work with me's browser Back to the bare URL, D1): an instant cut to
     // the Overview, never the leave flight. Escape no longer leaves a model (round 14).
-    stage.addEventListener('orbit:reset', () => { pending = null; goBack(true); }, opts);
+    stage.addEventListener('orbit:reset', () => goBack(true), opts);
     chips.forEach((b) => b.addEventListener('click', () => select(b.dataset.id as CategoryId), opts));
     render();
 
@@ -359,7 +358,6 @@ const poses = !scene && set === 'work' && controls !== 'none'
             if (mode === 'entering') mode = 'collection';
             else if (mode === 'leaving') {
               mode = 'overview'; current = null;
-              if (pending) { const p = pending; pending = null; render(); select(p); return; }
             }
             render();
           },
