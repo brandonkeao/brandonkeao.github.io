@@ -6,11 +6,14 @@ The site uses Node 22, declared in `.nvmrc` and `package.json`. Run the same val
 npm ci
 npm run check
 npm run test:audit
+npm test
 npm run build
 npm run audit
 ```
 
 `npm run check` runs Astro's TypeScript-aware checker. `npm run test:audit` exercises the static auditor against isolated fixtures. `npm run audit` inspects the generated `dist` directory for broken internal page links, missing local assets, duplicate HTML IDs, and missing fragment targets. The audit discovers generated pages rather than requiring a fixed route list, so adding or removing a legitimate route does not require editing the script.
+
+`npm test` verifies scene geometry and buffer reuse. Browser navigation checks run separately against a local production build; see [navigation QA](NAVIGATION_QA.md).
 
 Pull requests targeting `main` run `.github/workflows/pr-validation.yml`. Its required check name is exactly **Website validation**. The workflow has read-only repository contents permission and does not deploy.
 

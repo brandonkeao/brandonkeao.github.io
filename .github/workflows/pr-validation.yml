@@ -31,6 +31,9 @@ jobs:
       - name: Test static audit
         run: npm run test:audit
 
+      - name: Test scene geometry
+        run: npm test
+
       - name: Build
         run: npm run build
 
