@@ -1,0 +1,59 @@
+---
+// Hero lab, option D · Recommended: the sentence and the evidence, side by side. PageHero with
+// its `aside` slot (built for About's portrait) carrying a ledger: "20+", its note, and the 13
+// names in two columns; the full-column momentum line runs under both, exactly as today. The
+// current headline is unchanged; the lead is a labelled DRAFT whose last sentence names the
+// three ways to work. The Experience strip below is removed (the ledger replaces it). Not for
+// production; noindex; never merged.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/orbit/PageHero.astro';
+import HomeRest from '../../components/hero-lab/HomeRest.astro';
+import { COMPANIES, LINKEDIN, CURRENT_TITLE, DESCRIPTION } from '../../components/hero-lab/data';
+---
+
+<BaseLayout title="Hero lab D" description={DESCRIPTION} noindex>
+  <PageHero
+    title={CURRENT_TITLE}
+    mark="momentum"
+    lead="Senior enough to shape the direction. Close enough to the work to help make it happen. Full time, fractional, or advisory."
+    class="hv-hero hero-d"
+  >
+    <div class="hv-hero-actions">
+      <a href="/services/" class="btn btn-brand">Work with me</a>
+      <a href={LINKEDIN} class="link-ground" rel="noopener">See my experience</a>
+    </div>
+    <aside slot="aside" class="hd-ledger" aria-label="Experience">
+      <p class="hd-years">20+</p>
+      <p class="t-small muted-g hd-note">years building products, teams, and complex systems</p>
+      <p class="t-caption muted-g hd-caption">Experience includes · Employers and clients</p>
+      <ul class="hd-names">
+        {COMPANIES.map((n) => <li>{n}</li>)}
+      </ul>
+    </aside>
+  </PageHero>
+
+  <HomeRest />
+</BaseLayout>
+
+<style is:global>
+  /* D: the sentence in about 7 columns, the ledger in the rest; the line under both. */
+  .hero-d .page-hero-top { gap: 64px; }
+  .hero-d .page-hero-main { flex: 0 1 58%; }
+  .hero-d .page-hero-aside { flex: 1 1 0; min-width: 0; padding-top: 8px; }
+  .hero-d .page-hero-lead { max-width: 640px; }
+  .hd-years { font-size: clamp(40px, 4vw, 56px); font-weight: 600; letter-spacing: -0.04em; line-height: 0.9; color: var(--on-ground); }
+  .hd-note { max-width: 240px; margin-top: 10px; }
+  .hd-caption { margin-top: 26px; font-weight: 500; }
+  .hd-names { list-style: none; margin: 10px 0 0; padding: 0; columns: 2; column-gap: 32px; }
+  .hd-names li { font-size: 18px; font-weight: 500; line-height: 1.55; color: var(--on-ground); white-space: nowrap; break-inside: avoid; }
+  @media (max-width: 860px) {
+    /* Phones: the ledger follows the actions, before the line (PageHero's grid put the aside
+       beside the title, which suits a portrait, not a ledger). */
+    .hero-d .page-hero-top { display: flex; flex-direction: column; gap: 0; }
+    .hero-d .page-hero-main { display: block; flex: none; order: 1; }
+    .hero-d .page-hero-aside { order: 2; flex: none; margin-top: 36px; padding-top: 0; }
+    .hd-years { font-size: 40px; }
+    .hd-caption { margin-top: 20px; }
+    .hd-names li { font-size: 16px; }
+  }
+</style>

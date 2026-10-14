@@ -1,0 +1,22 @@
+---
+// Hero lab, option B · The red-line introduction. Current copy, unchanged (the gesture starts
+// after "move."). Not for production; noindex; the lab branch is never merged.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import HeroB from '../../components/hero-lab/HeroB.astro';
+import ExperienceStrip from '../../components/orbit/ExperienceStrip.astro';
+import HomeRest from '../../components/hero-lab/HomeRest.astro';
+import { COMPANIES, CURRENT_TITLE, CURRENT_LEAD, DESCRIPTION } from '../../components/hero-lab/data';
+---
+
+<BaseLayout title="Hero lab B" description={DESCRIPTION} noindex>
+  <HeroB title={CURRENT_TITLE} lead={CURRENT_LEAD} breakAfter="making">
+    <div class="hv-hero-actions">
+      <a href="/services/" class="btn btn-brand">Work with me</a>
+      <a href="/contact/" class="link-ground">Let's talk</a>
+    </div>
+  </HeroB>
+
+  <ExperienceStrip surface="ground" names={COMPANIES} />
+
+  <HomeRest />
+</BaseLayout>

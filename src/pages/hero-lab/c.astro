@@ -1,0 +1,20 @@
+---
+// Hero lab, option C · Bold: the career transit map. Headline is a labelled DRAFT ("20+ years of
+// making outcomes move."); the current headline is the alternative. The Experience strip is
+// replaced by the stations on the line. Not for production; noindex; never merged.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import HeroC from '../../components/hero-lab/HeroC.astro';
+import HomeRest from '../../components/hero-lab/HomeRest.astro';
+import { COMPANIES, CURRENT_LEAD, DESCRIPTION } from '../../components/hero-lab/data';
+---
+
+<BaseLayout title="Hero lab C" description={DESCRIPTION} noindex>
+  <HeroC title="20+ years of making outcomes move." lead={CURRENT_LEAD} names={COMPANIES}>
+    <div class="hv-hero-actions">
+      <a href="/services/" class="btn btn-brand">Work with me</a>
+      <a href="/contact/" class="link-ground">Let's talk</a>
+    </div>
+  </HeroC>
+
+  <HomeRest />
+</BaseLayout>

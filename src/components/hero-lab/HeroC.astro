@@ -1,0 +1,79 @@
+---
+// Hero lab, option C · The career transit map. The hero's red line carries the 13 employers and
+// clients as stations (labels alternating above and below), drawn once across the column in 2 s
+// so each station appears as the line reaches it; the arrowhead resolves at the end. The names
+// are real content (a list), not decoration. At 860 and below the line turns vertical down the
+// left edge and the stations stack beside it. Reduced motion and no-JS: drawn. The accepted name
+// order is presentational, not chronological, so this is not labelled a timeline. Lab-local.
+interface Props { title: string; lead: string; names: string[]; }
+const { title, lead, names } = Astro.props;
+const last = names.length - 1;
+---
+
+<header class="page-header page-hero hero-c" data-page-hero data-hc>
+  <h1 class="t-page-title">{title}</h1>
+  <p class="t-lead muted-g page-lead hc-lead">{lead}</p>
+  <slot />
+  <div class="hc-map">
+    <span class="hc-rule" aria-hidden="true"></span>
+    <svg class="hc-arrow" viewBox="0 0 8 14" width="8" height="14" fill="none" aria-hidden="true" focusable="false"><path d="m1 1 6 6-6 6" /></svg>
+    <ol class="hc-stations" aria-label="Experience includes: employers and clients">
+      {names.map((n, i) => (
+        <li class="hc-station" style={`--i:${i}; --n:${last}`}>
+          <span class="hc-dot" aria-hidden="true"></span>
+          <span class="hc-name">{n}</span>
+        </li>
+      ))}
+    </ol>
+  </div>
+  <p class="t-caption muted-g hc-caption">Experience includes · Employers and clients</p>
+</header>
+
+<script>
+  function init() {
+    const root = document.querySelector<HTMLElement>('[data-hc]');
+    if (!root || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    root.setAttribute('data-hc-armed', '');
+    requestAnimationFrame(() => requestAnimationFrame(() => root.setAttribute('data-hc-play', '')));
+  }
+  document.addEventListener('astro:page-load', init);
+</script>
+
+<style is:global>
+  .hc-lead { max-width: 960px; }
+  .hc-map { position: relative; height: 92px; margin-top: 44px; color: var(--accent-on-ground); }
+  .hc-rule { position: absolute; left: 0; right: 0; top: 45px; height: 1.5px; background: currentColor; opacity: 0.65; transform-origin: 0 50%; }
+  .hc-arrow { position: absolute; right: -1px; top: 39px; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .hc-stations { list-style: none; margin: 0; padding: 0; position: absolute; inset: 0; }
+  /* Stations evenly across the column, leaving the arrowhead its own room at the right edge. */
+  .hc-station { position: absolute; top: 0; height: 100%; left: calc(var(--i) / var(--n) * (100% - 24px)); }
+  .hc-dot { position: absolute; left: -3.5px; top: 42.25px; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .hc-name { position: absolute; left: 0; transform: translateX(-50%); white-space: nowrap; font-size: 13px; line-height: 1.4; color: var(--on-ground-muted); }
+  .hc-station:nth-child(odd) .hc-name { top: 14px; }
+  .hc-station:nth-child(even) .hc-name { top: 60px; }
+  .hc-station:first-child .hc-name { transform: none; }
+  .hc-station:last-child .hc-name { transform: translateX(-100%); }
+  .hc-caption { margin-top: 12px; font-weight: 500; }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-c[data-hc-armed]:not([data-hc-play]) .hc-rule { transform: scaleX(0); }
+    .hero-c[data-hc-armed]:not([data-hc-play]) :is(.hc-dot, .hc-name, .hc-arrow) { opacity: 0; }
+    .hero-c[data-hc-play] .hc-rule { animation: hc-draw 2000ms linear both; }
+    .hero-c[data-hc-play] .hc-dot { animation: hc-in 300ms ease-out calc(var(--i) / var(--n) * 2000ms) both; }
+    .hero-c[data-hc-play] .hc-name { animation: hc-in 400ms ease-out calc(var(--i) / var(--n) * 2000ms + 60ms) both; }
+    .hero-c[data-hc-play] .hc-arrow { animation: hc-in 240ms ease-out 1960ms both; }
+  }
+  @keyframes hc-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes hc-draw-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  @keyframes hc-in { from { opacity: 0; } to { opacity: 1; } }
+  @media (max-width: 860px) {
+    /* Phones: the line runs down the left edge and the stations stack beside it. */
+    .hc-map { height: auto; margin-top: 32px; padding: 2px 0 2px 20px; }
+    .hc-rule { right: auto; top: 0; bottom: 0; width: 1.5px; height: auto; transform-origin: 50% 0; }
+    .hc-arrow { right: auto; top: auto; left: -3.25px; bottom: -10px; transform: rotate(90deg); }
+    .hc-stations { position: static; display: flex; flex-direction: column; gap: 6px; }
+    .hc-station { position: static; display: flex; align-items: center; height: auto; }
+    .hc-dot { position: static; flex: none; margin-left: -23.5px; margin-right: 14px; }
+    .hc-name { position: static; transform: none !important; font-size: 15px; }
+    .hero-c[data-hc-play] .hc-rule { animation-name: hc-draw-y; }
+  }
+</style>

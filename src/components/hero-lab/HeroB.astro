@@ -1,0 +1,102 @@
+---
+// Hero lab, option B · The red-line introduction. The line starts where the headline ends, right
+// after its last word, and draws once across the rest of the row with the momentum traveller
+// ahead of it, resolving into the arrowhead at the right edge: the sentence hands off to the
+// line that every other page's hero repeats at its lower edge. A script measures the headline's
+// last line; with less than 220px left (phones) or without JS, the line sits under the headline,
+// full width. Reduced motion: drawn. Lab-local; PageHero would gain a `line="headline"` prop for
+// the real build.
+// `breakAfter`: at desktop widths the headline breaks after this word, so its last line is short
+// and the line has most of the row (Brandon's Oct 6 break points were "product" and "making").
+// The break is hidden at 860 and below, where the headline wraps on its own.
+interface Props { title: string; lead: string; breakAfter?: string; }
+const { title, lead, breakAfter } = Astro.props;
+const at = breakAfter ? title.indexOf(` ${breakAfter} `) : -1;
+const head = at >= 0 ? title.slice(0, at + breakAfter!.length + 1) : title;
+const tail = at >= 0 ? title.slice(at + breakAfter!.length + 2) : '';
+---
+
+<header class="page-header page-hero hero-b" data-page-hero data-hb>
+  <h1 class="t-page-title hb-title"><span class="hb-text">{head}{tail && <><br class="hb-br" />{tail}</>}</span><span class="hb-line" aria-hidden="true">
+    <svg class="hb-svg" viewBox="0 0 720 40" width="100%" height="40" fill="none" focusable="false">
+      <path class="hb-track" d="M0 20H717" />
+      <path class="hb-draw" pathLength="1" d="M0 20H717" />
+      <circle class="hb-dot" cx="0" cy="20" r="3" />
+      <path class="hb-arrow" d="m711 14 6 6-6 6" />
+    </svg>
+  </span></h1>
+  <p class="t-lead muted-g page-lead hb-lead">{lead}</p>
+  <slot />
+</header>
+
+<script>
+  function layout(root: HTMLElement) {
+    const h1 = root.querySelector<HTMLElement>('.hb-title');
+    const text = root.querySelector<HTMLElement>('.hb-text');
+    const line = root.querySelector<HTMLElement>('.hb-line');
+    const svg = root.querySelector<SVGSVGElement>('.hb-svg');
+    if (!h1 || !text || !line || !svg) return;
+    // Measure with the line out of the row, so the text's last line is the text's own.
+    line.classList.remove('hb-inline');
+    line.style.width = '';
+    const range = document.createRange();
+    range.selectNodeContents(text);
+    const rects = range.getClientRects();
+    const last = rects[rects.length - 1];
+    const box = h1.getBoundingClientRect();
+    const remaining = last ? Math.floor(box.right - last.right - 28) : 0;
+    const W = remaining >= 220 ? remaining : Math.round(h1.clientWidth);
+    if (remaining >= 220) {
+      line.classList.add('hb-inline');
+      line.style.width = `${W}px`;
+    }
+    svg.setAttribute('viewBox', `0 0 ${W} 40`);
+    svg.querySelector('.hb-track')?.setAttribute('d', `M0 20H${W - 3}`);
+    svg.querySelector('.hb-draw')?.setAttribute('d', `M0 20H${W - 3}`);
+    svg.querySelector('.hb-arrow')?.setAttribute('d', `m${W - 9} 14 6 6-6 6`);
+    root.style.setProperty('--hb-travel', `${W - 12}px`);
+  }
+  let resizer: ResizeObserver | undefined;
+  function init() {
+    resizer?.disconnect();
+    const root = document.querySelector<HTMLElement>('[data-hb]');
+    if (!root) return;
+    layout(root);
+    if ('ResizeObserver' in window) {
+      resizer = new ResizeObserver(() => layout(root));
+      resizer.observe(root);
+    }
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    root.setAttribute('data-hb-armed', '');
+    requestAnimationFrame(() => requestAnimationFrame(() => root.setAttribute('data-hb-play', '')));
+  }
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => resizer?.disconnect());
+</script>
+
+<style is:global>
+  .hb-lead { max-width: 960px; }
+  .hb-title { display: block; }
+  /* Default and no-JS: the line under the headline, full width. */
+  .hb-line { display: block; width: 100%; height: 40px; margin-top: 20px; color: var(--accent-on-ground); }
+  /* With room on the headline's last row: inline, right after the last word. */
+  .hb-line.hb-inline { display: inline-block; margin: 0 0 0 28px; vertical-align: middle; transform: translateY(-2px); }
+  .hb-svg { display: block; width: 100%; height: 40px; overflow: visible; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .hb-track { opacity: 0.25; }
+  .hb-draw { stroke-dasharray: 1; stroke-dashoffset: 0; }
+  .hb-dot { fill: currentColor; stroke: none; opacity: 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-b[data-hb-armed]:not([data-hb-play]) .hb-draw { stroke-dashoffset: 1; }
+    .hero-b[data-hb-armed]:not([data-hb-play]) .hb-arrow { opacity: 0; }
+    .hero-b[data-hb-play] .hb-draw { animation: hb-draw 1400ms cubic-bezier(0.33, 0, 0.2, 1) both; }
+    .hero-b[data-hb-play] .hb-dot { animation: hb-travel 1400ms cubic-bezier(0.33, 0, 0.2, 1) both; }
+    .hero-b[data-hb-play] .hb-arrow { animation: hb-resolve 1400ms ease-out both; }
+  }
+  @keyframes hb-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes hb-travel { 0% { opacity: 1; transform: translateX(0); } 88% { opacity: 1; transform: translateX(var(--hb-travel, 700px)); } 100% { opacity: 0; transform: translateX(var(--hb-travel, 700px)); } }
+  @keyframes hb-resolve { 0%, 80% { opacity: 0; } 100% { opacity: 1; } }
+  @media (max-width: 860px) {
+    .hb-line { margin-top: 16px; }
+    .hb-br { display: none; }
+  }
+</style>
