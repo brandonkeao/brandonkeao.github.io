@@ -37,8 +37,11 @@ const fullWidth = mark === 'principles';
 // verification: it used to come first); phones still place it beside the title, by explicit grid
 // placement, and desktop puts it right.
 const hasAside = Astro.slots.has('aside');
-// `chain` (Home, #53) launches the line: the scene plays first, then the rule sets out from the
-// scene's exit with the traveller ahead of it and the arrowhead resolving at the column's edge.
+// Every rule-based line ends in an open chevron at the column's right edge, invisible while the
+// line draws and resolving in its last 0.2 s (#55; Brandon, 2026-10-14: "For all the red line
+// versions, it should end in an arrow shape at the end of the annimation."). The stretched align
+// and principles marks draw their own. `chain` (Home, #53) also launches the line: the scene plays
+// first, then the rule sets out from the scene's exit with the traveller ahead of it.
 const launches = mark === 'chain';
 ---
 
@@ -64,8 +67,7 @@ const launches = mark === 'chain';
       ? <MotionLine kind="align" stretch mergeAt={0.28} />
       : fullWidth
       ? <MotionLine kind="principles" />
-      : <><span class="hero-rule"></span><MotionLine kind={mark} /></>}
-    {launches && <><span class="hero-traveller"></span><svg class="hero-arrow" viewBox="0 0 8 14" width="8" height="14" fill="none" focusable="false"><path d="m1 1 6 6-6 6" /></svg></>}
+      : <><span class="hero-rule"></span><MotionLine kind={mark} />{launches && <span class="hero-traveller"></span>}<svg class="hero-arrow" viewBox="0 0 8 14" width="8" height="14" fill="none" focusable="false"><path d="m1 1 6 6-6 6" /></svg></>}
   </div>
 </header>
 
@@ -91,11 +93,13 @@ const launches = mark === 'chain';
   .hero-line { --rule-y: 20px; }
   .hero-line--books, .hero-line--build { --rule-y: 36px; }
   .hero-rule { position: absolute; left: 0; right: 0; top: calc(var(--rule-y) - 0.75px); height: 1.5px; background: currentColor; opacity: 0.65; transform-origin: 0 50%; }
-  /* blocks and blueprint (Portfolio, Playbooks; ticket #38) are 430 × 60 scenes, taller than
-     the 40px line: the line takes the scene's height and the rule sits on its ground (y 56 of
-     60). */
-  .hero-line--blocks, .hero-line--blueprint, .hero-line--chain { height: auto; }
-  .hero-line--blocks .hero-rule, .hero-line--blueprint .hero-rule, .hero-line--chain .hero-rule { top: calc(100% * 56 / 60 - 0.75px); }
+  /* blocks, blueprint and chain (Portfolio, Playbooks, Home; #38, #53) are 430 × 60 scenes, taller
+     than the 40px line: the line takes the scene's height and the rule sits on its ground (y 56 of
+     60), which `--rule-y` carries so the arrowhead and traveller follow it. */
+  .hero-line--blocks, .hero-line--blueprint, .hero-line--chain { height: auto; --rule-y: calc(100% * 56 / 60); }
+  /* The arrowhead at the end of every rule-based line (#55): hidden while armed, resolved in the
+     draw's last 0.2 s (the rule draws in 1.1 s; chain's launches at 0.92 s and draws in 0.95 s). */
+  .hero-arrow { position: absolute; right: -1px; top: calc(var(--rule-y) - 7px); width: 8px; height: 14px; overflow: visible; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   /* chain (Home, #53): the scene launches the line. The rule starts at the scene's exit (206 of
      430, scaled with the scene) and sets out at the last domino's cue, 0.92 s, with the traveller
      ahead of it and the arrowhead resolving at the column's edge. The line is a size container so
@@ -103,8 +107,7 @@ const launches = mark === 'chain';
      the same length in cqw (inside a transform, where % would be the dot's own width). */
   .hero-line--chain { container-type: inline-size; --hero-exit: calc(min(430px, 100%) * 0.479); --hero-exit-cq: calc(min(430px, 100cqw) * 0.479); }
   .hero-line--chain .hero-rule { left: var(--hero-exit); }
-  .hero-traveller { position: absolute; left: var(--hero-exit); top: calc(100% * 56 / 60 - 3.5px); width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: currentColor; opacity: 0; }
-  .hero-arrow { position: absolute; right: -1px; top: calc(100% * 56 / 60 - 7px); width: 8px; height: 14px; overflow: visible; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .hero-traveller { position: absolute; left: var(--hero-exit); top: calc(var(--rule-y) - 3.5px); width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: currentColor; opacity: 0; }
   /* The motif's own short shelf or ground would double the rule's tint where they overlap. */
   .hero-line--books .motion-line > .ml-draw.ml-soft:first-child,
   .hero-line--build .motion-line > .ml-draw.ml-soft:first-child,
@@ -115,11 +118,12 @@ const launches = mark === 'chain';
   @media (prefers-reduced-motion: no-preference) {
     .hero-line:has(.motion-line[data-motion-armed]:not([data-motion-play])) .hero-rule { transform: scaleX(0); }
     .hero-line:has(.motion-line[data-motion-play]) .hero-rule { animation: hero-rule-draw 1100ms cubic-bezier(0.33, 0, 0.2, 1) both; }
+    .hero-line:has(.motion-line[data-motion-armed]:not([data-motion-play])) .hero-arrow { opacity: 0; }
+    .hero-line:has(.motion-line[data-motion-play]) .hero-arrow { animation: hero-resolve 200ms ease-out 920ms both; }
     /* chain: the rule, traveller and arrowhead wait for the scene (0.92 s), then draw in 0.95 s. */
-    .hero-line--chain:has(.motion-line[data-motion-armed]:not([data-motion-play])) .hero-arrow { opacity: 0; }
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-rule { animation: hero-rule-draw 950ms cubic-bezier(0.33, 0, 0.2, 1) 920ms both; }
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-traveller { animation: hero-travel 950ms cubic-bezier(0.33, 0, 0.2, 1) 920ms forwards; }
-    .hero-line--chain:has(.motion-line[data-motion-play]) .hero-arrow { animation: hero-resolve 200ms ease-out 1690ms both; }
+    .hero-line--chain:has(.motion-line[data-motion-play]) .hero-arrow { animation-delay: 1690ms; }
   }
   @keyframes hero-rule-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @keyframes hero-travel { 0% { opacity: 1; transform: translateX(0); } 90% { opacity: 1; transform: translateX(calc(100cqw - var(--hero-exit-cq) - 9px)); } 100% { opacity: 0; transform: translateX(calc(100cqw - var(--hero-exit-cq) - 9px)); } }

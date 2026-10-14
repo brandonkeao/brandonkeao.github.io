@@ -46,7 +46,10 @@ const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
   // One SVG, three continuous paths (Brandon, 2026-10-09: the piecewise span/SVG build read
   // "segmented... I can visually see where the lines are drawn and overlap"). A script sizes the
   // viewBox to the container so curves stay undistorted; without JS the default geometry
-  // stretches mildly. The glow underlay echoes the orbital traces' softness.
+  // stretches mildly. The glow underlay echoes the orbital traces' softness. The arrowhead is its
+  // own path, hidden until the centre line arrives (#55: as a subpath of the centre line it was
+  // painted almost at once, in Chromium and WebKit alike, because dashing restarts at every
+  // subpath; Brandon: "should only show up at the end").
   <div class="motion-line motion-line-align motion-line-stretch" data-motion data-ml-stretch data-ml-merge={merge} data-ml-merge-at={mergeAt} aria-hidden="true">
     <svg width="100%" height="40" viewBox="0 0 720 40" preserveAspectRatio="none" fill="none" focusable="false">
       <defs>
@@ -61,13 +64,14 @@ const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
       </defs>
       <g class="mls-glow" filter="url(#mls-glow-f)">
         <path class="mls-path" data-ml="top" pathLength="1" d="M 1 6 H 296 C 327 6 327 20 360 20" />
-        <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717 M 711 14 l 6 6 -6 6" />
+        <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717" />
         <path class="mls-path" data-ml="bottom" pathLength="1" d="M 1 34 H 296 C 327 34 327 20 360 20" />
       </g>
       <g class="mls-sharp">
         <path class="mls-path mls-soft" data-ml="top" pathLength="1" d="M 1 6 H 296 C 327 6 327 20 360 20" />
-        <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717 M 711 14 l 6 6 -6 6" />
+        <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717" />
         <path class="mls-path mls-soft" data-ml="bottom" pathLength="1" d="M 1 34 H 296 C 327 34 327 20 360 20" />
+        <path class="mls-arrow" d="M 711 14 l 6 6 -6 6" />
       </g>
     </svg>
   </div>
@@ -216,9 +220,10 @@ const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
     const d: Record<string, string> = {
       top: outer(6),
       bottom: outer(34),
-      center: `M 1 20 H ${W - 3} M ${W - 9} 14 l 6 6 -6 6`,
+      center: `M 1 20 H ${W - 3}`,
     };
     svg.querySelectorAll<SVGPathElement>('.mls-path').forEach((p) => p.setAttribute('d', d[p.dataset.ml ?? 'center']));
+    svg.querySelector('.mls-arrow')?.setAttribute('d', `M ${W - 9} 14 l 6 6 -6 6`);
     // Equal speed everywhere: each path's duration follows its real length, so the two outer
     // heads reach the merge exactly as the centre head passes it — one gesture, no stages.
     const center = svg.querySelector<SVGPathElement>('.mls-sharp [data-ml="center"]');
@@ -327,6 +332,9 @@ const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
        script), so the strands land on the merge as the centre head passes — one gesture. */
     .motion-line[data-motion-armed]:not([data-motion-play]) .mls-path { stroke-dashoffset: 1; }
     .motion-line[data-motion-play] .mls-path { animation: ml-draw var(--mls-dur, 950ms) linear var(--mls-delay, 0ms) both; }
+    /* The stretched mark's arrowhead resolves as the centre line (950 ms) arrives (#55). */
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mls-arrow { opacity: 0; }
+    .motion-line[data-motion-play] .mls-arrow { animation: ml-fade-in 200ms ease-out 770ms both; }
     /* principles: the line draws at an even speed over 1.6 s, so each ring (timed by its share of
        the width) pops in just before the head reaches it and its dot fills just after; the
        arrowhead draws as the head arrives. */
@@ -360,6 +368,7 @@ const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
   }
 
   @keyframes ml-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes ml-fade-in { from { opacity: 0; } to { opacity: 1; } }
   @keyframes ml-node { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
   @keyframes ml-node-fill { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
   @keyframes ml-drop { 0% { transform: translateY(-14px); opacity: 0; } 25% { opacity: 1; } 70% { transform: translateY(1.5px); } 100% { transform: none; opacity: 1; } }
