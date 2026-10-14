@@ -58,8 +58,9 @@ const hasAside = Astro.slots.has('aside');
 </header>
 
 <style is:global>
-  /* The lead's measure, formerly inline on each page. */
-  .page-hero-lead { max-width: 720px; }
+  /* The lead's measure, formerly inline on each page. Widened from 720px so the lead takes fewer
+     lines (ticket #47; Brandon, 2026-10-14: "extend wider and not break so soon"). */
+  .page-hero-lead { max-width: 960px; }
   /* With an aside: text left, aside right, top-aligned; the line still runs beneath both. */
   .page-hero-top { display: flex; align-items: flex-start; gap: 56px; }
   .page-hero-main { flex: 1; min-width: 0; }
