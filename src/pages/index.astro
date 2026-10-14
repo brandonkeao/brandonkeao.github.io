@@ -35,12 +35,31 @@ const engagements = [
   title="Senior product leadership making outcomes move."
   description="I help teams build momentum toward better customer and business outcomes. My background is in engineering, consulting, and product leadership."
 >
-  <!-- Field 1: the hero and its proof are one dark field. -->
-  <PageHero title="Senior product leadership making outcomes move." mark="momentum" lead="Senior enough to shape the direction. Close enough to the work to help make it happen." class="hv-hero">
+  <!-- Field 1: the hero and its proof are one dark field. The hero is the one Brandon picked from the
+       Oct 14 rethink (ticket #53; Brandon OS analysis/2026-10-14-home-hero-rethink): option A's layout
+       with the current headline, its last words in italic red; the "I help teams" paragraph; the two
+       actions; "The role I play" callout from the pre-Orbit hero in the aside; and the chain scene
+       launching the full-column line. It runs taller than the other pages' heroes (Brandon: "it
+       should feel bigger than the other pages"). -->
+  <PageHero
+    title="Senior product leadership making outcomes move."
+    accent="making outcomes move."
+    mark="chain"
+    lead="I help teams build momentum toward better customer and business outcomes. My background is in engineering, consulting, and product leadership. I like understanding how things fit together and working with the team to fix what’s getting in the way."
+    class="hv-hero"
+  >
     <div class="hv-hero-actions">
       <a href="/services/" class="btn btn-brand">Work with me</a>
       <a href="/contact/" class="link-ground">Let's talk</a>
     </div>
+    <aside slot="aside" class="hv-role" aria-label="The role I play">
+      <p class="t-caption hv-role-label">The role I play</p>
+      <p class="t-lead-strong hv-role-text">Senior enough to shape the direction. Close enough to the work to help make it happen.</p>
+      <div class="hv-role-scale" aria-hidden="true">
+        <div class="hv-role-scale-labels"><span>Direction</span><span>Execution</span></div>
+        <div class="hv-role-scale-line"><span class="hv-role-scale-point"></span></div>
+      </div>
+    </aside>
   </PageHero>
 
   <ExperienceStrip surface="ground" names={companies} />
@@ -131,6 +150,33 @@ const engagements = [
 
   .hv-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; margin-top: 28px; }
 
+  /* ---- the hero (#53) ------------------------------------------------------------------- */
+  /* Taller than the other pages' (their page-header is 40 above, 64 below the line); the headline
+     one size up from the shared title and across the whole column; the lead one size up. */
+  .hv-hero.page-header { padding-top: 128px; padding-bottom: 88px; }
+  .hv-hero .t-page-title { font-size: clamp(40px, 4.8vw, 69px); }
+  .hv-hero .page-hero-lead { font-size: clamp(18px, 1.46vw, 21px); margin-top: 32px; max-width: none; }
+  .hv-hero .hero-line { margin-top: 44px; }
+  /* "The role I play": a red rule, the label, the text, and the Direction–Execution scale with its
+     point at the midpoint (the pre-Orbit hero's motion-continuum; Brandon's reference screenshot). */
+  .hv-role { border-top: 2px solid var(--accent-on-ground); padding-top: 18px; display: grid; gap: 12px; }
+  .hv-role-label { font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--on-ground); }
+  .hv-role-text { font-size: 23px; }
+  .hv-role-scale { display: grid; gap: 8px; margin-top: 6px; }
+  .hv-role-scale-labels { display: flex; justify-content: space-between; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--on-ground-muted); }
+  .hv-role-scale-line { position: relative; height: 1.5px; background: color-mix(in srgb, var(--on-ground) 32%, transparent); }
+  .hv-role-scale-point { position: absolute; left: 50%; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: var(--accent-on-ground); }
+  @media (min-width: 861px) {
+    /* Desktop: the headline spans both columns; the lead and actions sit left; the callout sits
+       right with its bottom on the actions' baseline, as in Brandon's reference. */
+    .hv-hero .page-hero-top { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 0 96px; align-items: end; }
+    .hv-hero .page-hero-main { display: contents; }
+    .hv-hero .page-hero-main > h1 { grid-column: 1 / -1; grid-row: 1; }
+    .hv-hero .page-hero-main > .page-hero-lead { grid-column: 1; grid-row: 2; align-self: start; }
+    .hv-hero .page-hero-main > .hv-hero-actions { grid-column: 1; grid-row: 3; }
+    .hv-hero .page-hero-aside { grid-column: 2; grid-row: 2 / 4; align-self: end; }
+  }
+
   /* ---- field 2: paper ------------------------------------------------------------------- */
   /* The sheet holds its bands edge to edge; 96 inside, a hairline between bands. */
   .sheet.hv-sheet { padding-top: 0; padding-bottom: 0; }
@@ -185,6 +231,13 @@ const engagements = [
 
   /* ---- phones: one column, designed rows ----------------------------------------------- */
   @media (max-width: 860px) {
+    /* The hero: headline, lead, actions, then the callout, then the line. */
+    .hv-hero.page-header { padding-top: 40px; padding-bottom: 56px; }
+    .hv-hero .page-hero-top { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+    .hv-hero .page-hero-main { display: block; }
+    .hv-hero .page-hero-aside { order: 2; margin-top: 32px; padding-top: 0; }
+    .hv-hero .hero-line { margin-top: 32px; }
+    .hv-role-text { font-size: 21px; }
     .hv-band { grid-template-columns: minmax(0, 1fr); row-gap: 24px; }
     .hv-head, .hv-body { grid-column: 1 / -1; }
     .hv-sheet .hv-band { padding-top: var(--space-sheet-band-sm); padding-bottom: var(--space-sheet-band-sm); padding-left: 0; padding-right: 0; }
