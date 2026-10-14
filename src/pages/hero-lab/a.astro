@@ -1,25 +1,31 @@
 ---
-// Hero lab, option A · Standard: text and action first. A still rule, the proof closing the first
-// screen. Copy is a labelled DRAFT (the meta description as the headline); the current headline
-// and lead are the alternative. Not for production; noindex; the lab branch is never merged.
+// Hero lab, option A · Standard, as Brandon picked (2026-10-14): the current headline, the lead's
+// two sentences carried by the re-introduced "The role I play" callout (from the pre-Orbit hero:
+// label, text, and the Direction–Execution scale), the current actions, and the proof closing the
+// first screen. The callout sits in PageHero's aside slot, bottom-aligned with the actions, as in
+// Brandon's reference screenshot. The line keeps the `momentum` mark as a placeholder while the
+// line studies run. Not for production; noindex; the lab branch is never merged.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/orbit/PageHero.astro';
 import ExperienceStrip from '../../components/orbit/ExperienceStrip.astro';
 import HomeRest from '../../components/hero-lab/HomeRest.astro';
-import { COMPANIES, LINKEDIN, DESCRIPTION } from '../../components/hero-lab/data';
+import { COMPANIES, CURRENT_TITLE, CURRENT_LEAD, DESCRIPTION } from '../../components/hero-lab/data';
 ---
 
 <BaseLayout title="Hero lab A" description={DESCRIPTION} noindex>
-  <PageHero
-    title="I help teams build momentum toward better customer and business outcomes."
-    mark="momentum"
-    lead="Senior product leadership with a background in engineering and consulting. Senior enough to shape the direction. Close enough to the work to help make it happen."
-    class="hv-hero hero-a"
-  >
+  <PageHero title={CURRENT_TITLE} mark="momentum" class="hv-hero hero-a">
     <div class="hv-hero-actions">
       <a href="/services/" class="btn btn-brand">Work with me</a>
-      <a href={LINKEDIN} class="link-ground" rel="noopener">See my experience</a>
+      <a href="/contact/" class="link-ground">Let's talk</a>
     </div>
+    <aside slot="aside" class="role-note" aria-label="The role I play">
+      <p class="t-caption role-label">The role I play</p>
+      <p class="t-lead-strong role-text">{CURRENT_LEAD}</p>
+      <div class="role-scale" aria-hidden="true">
+        <div class="role-scale-labels"><span>Direction</span><span>Execution</span></div>
+        <div class="role-scale-line"><span class="role-scale-point"></span></div>
+      </div>
+    </aside>
   </PageHero>
 
   <ExperienceStrip surface="ground" names={COMPANIES} />
@@ -28,12 +34,25 @@ import { COMPANIES, LINKEDIN, DESCRIPTION } from '../../components/hero-lab/data
 </BaseLayout>
 
 <style is:global>
-  /* A: the line is still. The momentum mark shows its finished state; nothing draws. */
-  .hero-a .hero-line .hero-rule { animation: none !important; transform: none !important; }
-  .hero-a .motion-line .ml-draw { animation: none !important; stroke-dashoffset: 0 !important; }
-  .hero-a .motion-line .ml-traveller { animation: none !important; opacity: 0 !important; }
-  .hero-a .motion-line .ml-resolve { animation: none !important; opacity: 1 !important; }
+  /* A: the sentence and actions left, the callout right, its bottom on the actions' baseline. */
+  .hero-a .page-hero-top { gap: 64px; align-items: flex-end; }
+  .hero-a .page-hero-main { flex: 0 1 60%; }
+  .hero-a .page-hero-aside { flex: 0 1 400px; min-width: 0; }
+  .role-note { border-top: 2px solid var(--accent-on-ground); padding-top: 18px; display: grid; gap: 12px; }
+  .role-label { font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--on-ground); }
+  .role-text { font-size: 23px; }
+  .role-scale { display: grid; gap: 8px; margin-top: 6px; }
+  .role-scale-labels { display: flex; justify-content: space-between; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--on-ground-muted); }
+  .role-scale-line { position: relative; height: 1.5px; background: color-mix(in srgb, var(--on-ground) 32%, transparent); }
+  .role-scale-point { position: absolute; left: 50%; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: var(--accent-on-ground); }
   /* A: the proof closes the first screen tighter (hero step 64 → 40, strip top 24 → 16). */
   .hero-a.page-header { padding-bottom: 40px; }
   .hero-a + section.experience--ground { padding-top: 16px; }
+  @media (max-width: 860px) {
+    /* Phones: the callout follows the actions, before the line. */
+    .hero-a .page-hero-top { display: flex; flex-direction: column; gap: 0; align-items: stretch; }
+    .hero-a .page-hero-main { display: block; flex: none; order: 1; }
+    .hero-a .page-hero-aside { order: 2; flex: none; margin-top: 32px; }
+    .role-text { font-size: 21px; }
+  }
 </style>
