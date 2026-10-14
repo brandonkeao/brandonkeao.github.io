@@ -3,9 +3,9 @@
 // 2026-10-13: "extend this pattern and approach for the hero for the portfolio and playbooks
 // page and put these animations at the bottom of the page"). PageHero gives the title and the
 // page's own mark run out as the content-width red line (Portfolio's `blocks`, Playbooks'
-// `blueprint`); the lead stays a white statement and the rest of the copy one muted body
-// paragraph (T1 Statement, Brandon 2026-10-13), passed through the hero's default slot. Copy is
-// verbatim. The built-world scene that sat beside this copy now plays in the page's end band
+// `blueprint`). The copy is one lead paragraph, the hero's own, like every other page (ticket #47;
+// Brandon, 2026-10-14: "two text elements when it should be one"). It replaces the white statement
+// plus muted body (T1 Statement, 10-13). The words stay verbatim, joined in their order. The built-world scene that sat beside this copy now plays in the page's end band
 // (SceneBand `scene`), so the hero holds no canvas.
 import PageHero from '../PageHero.astro';
 import type { CollectionKind } from '../../../lib/orbit/collection-scene';
@@ -15,7 +15,4 @@ interface Props { title: string; lead: string; body: string; note: string; scene
 const { title, lead, body, note, scene } = Astro.props;
 ---
 
-<PageHero title={title} mark={scene === 'portfolio' ? 'blocks' : 'blueprint'} class="cl-hero">
-  <p class="t-lead-strong cl-hero-lead">{lead}</p>
-  <p class="t-body muted-g cl-hero-body">{body} {note}</p>
-</PageHero>
+<PageHero title={title} mark={scene === 'portfolio' ? 'blocks' : 'blueprint'} lead={`${lead} ${body} ${note}`} class="cl-hero" />

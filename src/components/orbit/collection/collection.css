@@ -3,13 +3,7 @@
    hero's red is the align line and the stage's motion (ticket #16). AI-made layout choices,
    reversible. */
 
-/* ---- hero copy (in PageHero, ticket #38): a statement lead, one body (T1 Statement, Brandon
-   2026-10-13): the lead white 26/500 (23px on phones, .t-lead-strong) on a 20ch measure at the
-   page lead's 20px step under the title, the body 17/1.6 muted at 44ch, 14px below it; the
-   hero's red line follows. */
-.cl-hero-lead { max-width: 20ch; }
-.page-hero.cl-hero > p.cl-hero-lead { margin-top: 20px; }
-.cl-hero-body { margin-top: 14px; max-width: 44ch; line-height: 1.6; }
+/* ---- hero copy: one lead, PageHero's own (ticket #47). */
 
 /* ---- the collection sheet ----------------------------------------------------------------- */
 .sheet.cl-sheet { padding-top: var(--space-sheet); padding-bottom: 64px; }

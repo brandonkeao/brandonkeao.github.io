@@ -97,13 +97,16 @@ const principles = [
   /* How I work: the first section of the white sheet, on the About sections' own grid below it
      (the .clause grid: a 280px heading column, the reading column from 320px), so every body
      text in the sheet shares one left edge. Readable pattern from Work with me: one reading
-     column (about 630px, 18px, the sheet's ink), a hairline between principles, no numbers.
+     column (18px, the sheet's ink), a hairline between principles, no numbers. How I work and the
+     sections below share one reading measure, 820px, so their lines break at the same right edge
+     (ticket #47; Brandon, 2026-10-14: "the text breaks here look inconsistent").
      The h2 is sized to sit in the heading column. */
   .about-band { display: grid; grid-template-columns: 280px minmax(0, 1fr); column-gap: 40px; padding-bottom: 56px; }
   .about-band-head .section-head { max-width: none; }
   @media (min-width: 861px) { .about-band-head .t-section { font-size: 28px; line-height: 1.2; } }
   .about-band-body { min-width: 0; }
-  .about-steps { list-style: none; margin: 0; padding: 0; max-width: 630px; }
+  .about-steps { list-style: none; margin: 0; padding: 0; }
+  .about-steps, .about-clauses .clause > div { max-width: 820px; }
   .about-steps li { padding: 20px 0; border-top: 1px solid var(--line-on-sheet); }
   .about-steps li:first-child { border-top: 0; padding-top: 0; }
   .about-steps li:last-child { padding-bottom: 0; }
