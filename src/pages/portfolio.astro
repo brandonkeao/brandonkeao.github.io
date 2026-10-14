@@ -8,6 +8,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import CollectionHero from '../components/orbit/collection/CollectionHero.astro';
 import SceneBand from '../components/orbit/SceneBand.astro';
+import WorldNote from '../components/orbit/WorldNote.astro';
 import Collection from '../components/orbit/collection/Collection.astro';
 import CollectionRow from '../components/orbit/collection/CollectionRow.astro';
 import DetailHead from '../components/orbit/collection/DetailHead.astro';
@@ -143,6 +144,14 @@ const [pie, ora, bitly] = stories;
 
   {/* The page's built world, moved from the hero to a band at the end, above the closing (ticket #38). */}
   <SceneBand scene="portfolio" />
+  {/* The world below (#57). The claim is Brandon's accepted wording; the rest is draft under his
+      review. Its bases sit on a moon in his model; the scene's routes come down onto a moon in a
+      later ticket. */}
+  <WorldNote
+    title="A base is what stands once the team is established."
+    body="Every structure in this picture was built on a moon by a team that flew in, landed, and got to work. The routes down were different because the problems were different: one straight descent, one spiral, one long coast with a couple of burns. What I care about is what is still standing once the team is established and I have moved on: the product, the process, and the decisions that keep paying off. The three stories above are that kind of work."
+    turn="If one of them looks like the problem in front of you, say so."
+  />
 
   <Prefooter prompt="Not sure which story matters for your problem?" />
   <Prefooter when="pie" prompt="Want the fuller story behind this work?" />

@@ -1,0 +1,38 @@
+---
+// The world below (ticket #57): a caption under a page's scene band, in the metaphor's own words.
+// Brandon, 2026-10-14 (Brandon OS analysis/2026-10-14-end-of-page-world): philosophy first, the
+// picture as the way in; under the band, after the reader has seen it; each page its own words,
+// nothing recurring; first person, then turned to the reader, the last line leading into the
+// closing. His treatment pick: the claim in the hero accent's italic on-ground red, the passage
+// under it, both at the band's full width ("The text needs to be wider and not leave so much
+// empty space on the right"). Static: no reveal, so reduced motion and no-JS readers see the same.
+// Copy comes from the page (COPY.md in Brandon OS); the claim's heading level follows the
+// closing beside it (Work with me's per-model closings are h3).
+interface Props {
+  title: string;
+  body: string;
+  /** The turn to the reader: the last sentence, set in the ground's white. */
+  turn?: string;
+  level?: 'h2' | 'h3';
+  class?: string;
+}
+const { title, body, turn, level = 'h2', class: extra } = Astro.props;
+const Heading = level;
+---
+
+<section class:list={['world-note', 'ground-pad', extra]}>
+  <Heading class="world-note-title">{title}</Heading>
+  <p class="t-lead muted-g world-note-body">{body}{turn && <>{' '}<strong class="world-note-turn">{turn}</strong></>}</p>
+</section>
+
+<style is:global>
+  /* The band above has its own top step and no bottom one; the caption carries the space to the
+     closing sheet. Both lines span the content column, the band's own edges. */
+  .world-note { display: grid; gap: 20px; padding-top: 36px; padding-bottom: 56px; }
+  .world-note-title { font-size: clamp(28px, 3.2vw, 44px); font-weight: 600; font-style: italic; letter-spacing: -0.03em; line-height: 1.08; color: var(--accent-on-ground); text-wrap: pretty; }
+  .world-note-body { max-width: none; }
+  .world-note-turn { font-weight: 500; color: var(--on-ground); }
+  @media (max-width: 860px) {
+    .world-note { gap: 14px; padding-top: 24px; padding-bottom: 40px; }
+  }
+</style>
