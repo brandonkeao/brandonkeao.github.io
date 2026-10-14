@@ -1,11 +1,14 @@
 ---
-// Home (promoted from the Home v2 proposal, ticket #8 Direction B, 2026-10-09). Hero and Experience
-// strip are unchanged from v2. Structure: stage (hero + strip), one paper sheet (about, how I think,
+// Home (promoted from the Home v2 proposal, ticket #8 Direction B, 2026-10-09). The hero is the
+// shared PageHero with the `momentum` line, and the planet scene that filled it now plays in the
+// end band above the closing call to action, like every other page (ticket #51; Brandon,
+// 2026-10-14: "move the annimation to the bottom of the page to be consistent across the site").
+// Copy verbatim. The Experience strip is unchanged from v2. Structure: stage (hero + strip), one paper sheet (about, how I think,
 // quote), stage (ways to work together), then the closing callout with the one brand-red button.
 // One grid: 12 columns, heading in columns 1-4, content in 6-12; one column at 860 and below.
 import BaseLayout from '../layouts/BaseLayout.astro';
-import OrbitStage from '../components/orbit/OrbitStage.astro';
-import HeroMeteor from '../components/orbit/HeroMeteor.astro';
+import PageHero from '../components/orbit/PageHero.astro';
+import SceneBand from '../components/orbit/SceneBand.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import ClosingSheet from '../components/orbit/ClosingSheet.astro';
 import SectionHead from '../components/orbit/SectionHead.astro';
@@ -32,16 +35,13 @@ const engagements = [
   title="Senior product leadership making outcomes move."
   description="I help teams build momentum toward better customer and business outcomes. My background is in engineering, consulting, and product leadership."
 >
-  <!-- Field 1: the stage. The hero and its proof are one dark field. -->
-  <OrbitStage set="home" size="closeup" controls="none" speed={2}>
-    <h1 slot="headline" class="t-display">Senior product<br /> leadership making<br /> outcomes move.</h1>
-    <HeroMeteor slot="headline" />
-    <p class="t-lead muted-g">Senior enough to shape the direction. Close enough to the work to help make it happen.</p>
+  <!-- Field 1: the hero and its proof are one dark field. -->
+  <PageHero title="Senior product leadership making outcomes move." mark="momentum" lead="Senior enough to shape the direction. Close enough to the work to help make it happen." class="hv-hero">
     <div class="hv-hero-actions">
       <a href="/services/" class="btn btn-brand">Work with me</a>
       <a href="/contact/" class="link-ground">Let's talk</a>
     </div>
-  </OrbitStage>
+  </PageHero>
 
   <ExperienceStrip surface="ground" names={companies} />
 
@@ -112,6 +112,9 @@ const engagements = [
 
   <!-- Field 4: the ask. One white callout closes the page (Brandon 2026-10-07: "one large bottom
        dedicated component that is a very clear call to action"). -->
+  <!-- The planet scene, as the end band every page has (#51). -->
+  <SceneBand set="home" speed={2} />
+
   <ClosingSheet size="display" eyebrow="Start a conversation" title="If you're stuck, let's talk about what to try first." button="Let's talk" titleId="hv-close" />
 </BaseLayout>
 

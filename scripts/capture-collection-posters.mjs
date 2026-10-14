@@ -1,4 +1,4 @@
-// Captures stage posters from the live scenes: `npm run build`, serve dist on 127.0.0.1:4217 (or BASE), then `node scripts/capture-collection-posters.mjs [collections|stages|poses|stories|all]` (default collections: {portfolio,playbooks}-{desktop,mobile}.jpg; stages: home-closeup-* and work-*.jpg with page masks and copy hidden; stories: formation/{full-time,fractional,advisory}.webp at 1152×1224, mid-story; bands [keys]: band/{work,full-time,fractional,advisory,portfolio,playbooks}-{desktop,mobile}.webp, the end band's landscape frame (#37, #38); poses: work-{full-time,fractional,advisory}-*.jpg, each way's settled moon) (Playwright from the repo or PLAYWRIGHT_FROM).
+// Captures stage posters from the live scenes: `npm run build`, serve dist on 127.0.0.1:4217 (or BASE), then `node scripts/capture-collection-posters.mjs [collections|stages|poses|stories|all]` (default collections: {portfolio,playbooks}-{desktop,mobile}.jpg; stages: home-closeup-* and work-*.jpg with page masks and copy hidden; stories: formation/{full-time,fractional,advisory}.webp at 1152×1224, mid-story; bands [keys]: band/{work,full-time,fractional,advisory,portfolio,playbooks,home}-{desktop,mobile}.webp, the end band's landscape frame (#37, #38); poses: work-{full-time,fractional,advisory}-*.jpg, each way's settled moon) (Playwright from the repo or PLAYWRIGHT_FROM).
 import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -102,10 +102,11 @@ for (const slug of want('stories') ? ['full-time', 'fractional', 'advisory'] : [
 const bandLift = `.scene-band-host, .scene-band-poster img { -webkit-mask-image: none !important; mask-image: none !important; }`;
 // Portfolio and Playbooks (ticket #38): their built worlds in the same band, at the settled
 // frame (?scene-t=poster).
-const bandUrl = (key) => key === 'work' ? '/services/'
+// Home (ticket #51): its planet system in the same band.
+const bandUrl = (key) => key === 'home' ? '/' : key === 'work' ? '/services/'
   : key === 'portfolio' || key === 'playbooks' ? `/${key}/?scene-t=poster`
   : `/services/?engagement=${key}&scene-p=0.5`;
-for (const key of want('bands') ? (process.argv[3]?.split(',') ?? ['work', 'full-time', 'fractional', 'advisory', 'portfolio', 'playbooks']) : []) {
+for (const key of want('bands') ? (process.argv[3]?.split(',') ?? ['work', 'full-time', 'fractional', 'advisory', 'portfolio', 'playbooks', 'home']) : []) {
   for (const [name, [width, height], dsf] of [['desktop', sizes.desktop, 1.5], ['mobile', sizes.mobile, 2]]) {
     const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: dsf });
     await page.goto(`${base}${bandUrl(key)}`);
