@@ -13,7 +13,7 @@
 // (never stretched) to the mark's width, so at 351 they are 351 × 49. The faces are opaque mixes
 // of the red on the ground (12, 22, 30%), so overlapping blocks never double their tint.
 interface Props {
-  kind: 'momentum' | 'map' | 'align' | 'blocks' | 'blueprint' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
+  kind: 'momentum' | 'map' | 'align' | 'principles' | 'blocks' | 'blueprint' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
   /** align: size the mark to its container (Brandon, 2026-10-06); blocks and blueprint always
    *  take the container's width, scaled as a whole. */
   stretch?: boolean;
@@ -28,6 +28,9 @@ const { kind, stretch = false, merge, mergeAt } = Astro.props;
 // blocks: the twelve blocks' top-left corners (three structures: 3, 6 and 3 blocks), placed in
 // order, 85 ms apart, after the ground (0.12–1.48 s).
 const BLOCKS: [number, number][] = [[16, 42], [44, 42], [30, 28], [100, 42], [128, 42], [156, 42], [114, 28], [142, 28], [128, 14], [214, 42], [242, 42], [242, 28]];
+// principles: the four nodes' positions as shares of the line, and the line's draw time.
+const PRINCIPLES_AT = [0.06, 0.3, 0.54, 0.78];
+const PRINCIPLES_MS = 1600;
 const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
 ---
 
@@ -58,6 +61,23 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
         <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717 M 711 14 l 6 6 -6 6" />
         <path class="mls-path mls-soft" data-ml="bottom" pathLength="1" d="M 1 34 H 296 C 327 34 327 20 360 20" />
       </g>
+    </svg>
+  </div>
+) : kind === 'principles' ? (
+  // About's mark (ticket #45; Brandon picked option A, 2026-10-14): one line across the content
+  // column, passing four nodes, one for each How I work principle below the hero (Understand, Start,
+  // Own, Improve). Each ring appears and fills as the line reaches it, and the line ends in an
+  // arrow. The script sizes the geometry to the container; the defaults are for a 720-wide box.
+  <div class="motion-line motion-line-stretch motion-line-principles" data-motion data-ml-principles aria-hidden="true">
+    <svg width="100%" height="40" viewBox="0 0 720 40" fill="none" focusable="false">
+      <path class="mlp-line" pathLength="1" d="M 1 20 H 717" />
+      <path class="mlp-arrow" pathLength="1" d="M 711 14 l 6 6 -6 6" />
+      {PRINCIPLES_AT.map((t, i) => (
+        <g class="mlp-node" style={`--ml-delay:${Math.round(t * PRINCIPLES_MS)}ms`} data-at={t}>
+          <circle class="mlp-ring" cx={Math.round(720 * t)} cy="20" r="7" />
+          <circle class="mlp-dot" cx={Math.round(720 * t)} cy="20" r="3.2" />
+        </g>
+      ))}
     </svg>
   </div>
 ) : kind === 'blocks' ? (
@@ -188,14 +208,36 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
     });
   }
 
+  /** About's principles mark, pixel-true for the container width: the line, its arrowhead, and the
+   *  four nodes at their fixed shares of the width. */
+  function buildPrinciples(root: HTMLElement) {
+    const svg = root.querySelector('svg');
+    if (!svg) return;
+    const W = Math.max(220, Math.round(root.clientWidth));
+    svg.setAttribute('viewBox', `0 0 ${W} 40`);
+    svg.querySelector('.mlp-line')?.setAttribute('d', `M 1 20 H ${W - 3}`);
+    svg.querySelector('.mlp-arrow')?.setAttribute('d', `M ${W - 9} 14 l 6 6 -6 6`);
+    svg.querySelectorAll<SVGGElement>('.mlp-node').forEach((g) => {
+      const x = String(Math.round(W * Number(g.dataset.at)));
+      g.querySelectorAll('circle').forEach((c) => c.setAttribute('cx', x));
+    });
+  }
+
   function init() {
     observer?.disconnect();
     resizer?.disconnect();
     const stretches = document.querySelectorAll<HTMLElement>('[data-ml-stretch]');
+    const principles = document.querySelectorAll<HTMLElement>('[data-ml-principles]');
     stretches.forEach(buildStretch);
+    principles.forEach(buildPrinciples);
     if ('ResizeObserver' in window) {
-      resizer = new ResizeObserver((es) => es.forEach((e) => buildStretch(e.target as HTMLElement)));
+      resizer = new ResizeObserver((es) => es.forEach((e) => {
+        const el = e.target as HTMLElement;
+        if (el.hasAttribute('data-ml-principles')) buildPrinciples(el);
+        else buildStretch(el);
+      }));
       stretches.forEach((el) => resizer?.observe(el));
+      principles.forEach((el) => resizer?.observe(el));
     }
     if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
     observer = new IntersectionObserver((entries) => {
@@ -232,6 +274,11 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
   .mls-sharp .mls-soft { opacity: 0.65; stroke: url(#mls-fade-g); }
   .mls-glow { opacity: 0.42; stroke-width: 4; }
   .mls-glow .mls-path[data-ml='top'], .mls-glow .mls-path[data-ml='bottom'] { opacity: 0.6; stroke: url(#mls-fade-g); }
+  /* principles: rings are ground-filled so the line passes behind them; the dots fill each ring. */
+  .mlp-line, .mlp-arrow { stroke-dasharray: 1; stroke-dashoffset: 0; }
+  .mlp-ring { fill: var(--ground); }
+  .mlp-dot { fill: currentColor; stroke: none; }
+  .mlp-node circle { transform-box: fill-box; transform-origin: center; }
   /* blocks and blueprint: 430 × 60 scenes scaled as a whole to the mark's width (351 × 49 on
      phones); faces are opaque mixes of the red on the ground. */
   .motion-line-scene { width: var(--mark-max, 430px); max-width: 100%; height: auto; aspect-ratio: 430 / 60; }
@@ -257,6 +304,15 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
        script), so the strands land on the merge as the centre head passes — one gesture. */
     .motion-line[data-motion-armed]:not([data-motion-play]) .mls-path { stroke-dashoffset: 1; }
     .motion-line[data-motion-play] .mls-path { animation: ml-draw var(--mls-dur, 950ms) linear var(--mls-delay, 0ms) both; }
+    /* principles: the line draws at an even speed over 1.6 s, so each ring (timed by its share of
+       the width) pops in just before the head reaches it and its dot fills just after; the
+       arrowhead draws as the head arrives. */
+    .motion-line[data-motion-armed]:not([data-motion-play]) :is(.mlp-line, .mlp-arrow) { stroke-dashoffset: 1; }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlp-node circle { opacity: 0; }
+    .motion-line[data-motion-play] .mlp-line { animation: ml-draw 1600ms linear both; }
+    .motion-line[data-motion-play] .mlp-arrow { animation: ml-draw 220ms ease-out 1580ms both; }
+    .motion-line[data-motion-play] .mlp-ring { animation: ml-node 320ms cubic-bezier(0.3, 1.4, 0.5, 1) calc(var(--ml-delay, 0ms) - 120ms) both; }
+    .motion-line[data-motion-play] .mlp-dot { animation: ml-node-fill 280ms ease-out calc(var(--ml-delay, 0ms) + 60ms) both; }
     /* blocks: the ground draws (0–0.4 s), then each block drops 14px and settles, 85 ms apart.
        blueprint: the ground and the dashed plan with its dimensions wipe in (0–0.52 s), then the
        solid building is revealed from the ground up (0.56–1.38 s). */
@@ -277,6 +333,8 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
   }
 
   @keyframes ml-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes ml-node { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+  @keyframes ml-node-fill { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
   @keyframes ml-drop { 0% { transform: translateY(-14px); opacity: 0; } 25% { opacity: 1; } 70% { transform: translateY(1.5px); } 100% { transform: none; opacity: 1; } }
   @keyframes ml-wipe-x { from { clip-path: inset(-8px 100% -8px -8px); } to { clip-path: inset(-8px -8px -8px -8px); } }
   @keyframes ml-reveal { from { clip-path: inset(100% -8px -8px -8px); } to { clip-path: inset(-8px -8px -8px -8px); } }

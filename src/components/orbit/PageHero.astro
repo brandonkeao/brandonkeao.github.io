@@ -10,7 +10,7 @@
 // Spacing and measure live in CSS (the old inline max-widths moved here).
 import MotionLine from './MotionLine.astro';
 
-type Kind = 'momentum' | 'map' | 'align' | 'blocks' | 'blueprint' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
+type Kind = 'momentum' | 'map' | 'align' | 'principles' | 'blocks' | 'blueprint' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
 interface Props {
   title: string;
   mark: Kind;
@@ -23,6 +23,8 @@ const { title, mark, lead, class: extra } = Astro.props;
 // arrowhead at the right edge. Every
 // other motif sits at the title's left edge on a full-width rule at its own baseline.
 const stretched = mark === 'align';
+// `principles` (About, #45) is also drawn across the whole line, by MotionLine itself.
+const fullWidth = mark === 'principles';
 // An optional `aside` slot (About's portrait, ticket #39) sits beside the title and lead, above
 // the line. Without it the markup is unchanged. The aside comes first in the source so phones
 // can float it right of the title; on desktop it is ordered after the text.
@@ -49,6 +51,8 @@ const hasAside = Astro.slots.has('aside');
   <div class:list={['hero-line', `hero-line--${mark}`]} aria-hidden="true">
     {stretched
       ? <MotionLine kind="align" stretch mergeAt={0.28} />
+      : fullWidth
+      ? <MotionLine kind="principles" />
       : <><span class="hero-rule"></span><MotionLine kind={mark} /></>}
   </div>
 </header>
