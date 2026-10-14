@@ -31,9 +31,11 @@ const head = accented ? title.slice(0, -accent!.length).trimEnd() : title;
 const stretched = mark === 'align';
 // `principles` (About, #45) is also drawn across the whole line, by MotionLine itself.
 const fullWidth = mark === 'principles';
-// An optional `aside` slot (About's portrait, ticket #39) sits beside the title and lead, above
-// the line. Without it the markup is unchanged. The aside comes first in the source so phones
-// can float it right of the title; on desktop it is ordered after the text.
+// An optional `aside` slot (About's portrait, ticket #39; Home's "The role I play" callout, #53)
+// sits beside the title and lead, above the line. Without it the markup is unchanged. The aside
+// follows the text in the source, so readers meet the title, the lead and the actions first (#53's
+// verification: it used to come first); phones still place it beside the title, by explicit grid
+// placement, and desktop puts it right.
 const hasAside = Astro.slots.has('aside');
 // `chain` (Home, #53) launches the line: the scene plays first, then the rule sets out from the
 // scene's exit with the traveller ahead of it and the arrowhead resolving at the column's edge.
@@ -43,12 +45,12 @@ const launches = mark === 'chain';
 <header class:list={['page-header', 'page-hero', extra]} data-page-hero>
   {hasAside ? (
     <div class="page-hero-top">
-      <div class="page-hero-aside"><slot name="aside" /></div>
       <div class="page-hero-main">
         <h1 class="t-page-title">{head}{accented && <>{' '}<em class="page-hero-accent">{accent}</em></>}</h1>
         {lead && <p class="t-lead muted-g page-lead page-hero-lead">{lead}</p>}
         <slot />
       </div>
+      <div class="page-hero-aside"><slot name="aside" /></div>
     </div>
   ) : (
     <>
@@ -77,7 +79,7 @@ const launches = mark === 'chain';
   /* With an aside: text left, aside right, top-aligned; the line still runs beneath both. */
   .page-hero-top { display: flex; align-items: flex-start; gap: 56px; }
   .page-hero-main { flex: 1; min-width: 0; }
-  .page-hero-aside { flex: none; order: 2; }
+  .page-hero-aside { flex: none; }
   /* The line spans the content column — from the title's left edge to the right edge of the
      nav's "Let's talk" button — not the window (Brandon, 2026-10-13, #36: "wayyy to long"). */
   .hero-line { position: relative; margin: 32px 0 0; height: 40px; color: var(--accent-on-ground); }
