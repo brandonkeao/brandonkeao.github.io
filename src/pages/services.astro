@@ -13,8 +13,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/orbit/PageHero.astro';
 import ClosingSheet from '../components/orbit/ClosingSheet.astro';
 import SceneBand from '../components/orbit/SceneBand.astro';
+import WorldNote from '../components/orbit/WorldNote.astro';
 import EngagementDetail from '../components/orbit/wwm/EngagementDetail.astro';
 import { ENGAGEMENTS } from '../components/orbit/wwm/content';
+
+// The world below (#57): the overview's caption and one per model, following the accepted
+// Formation story (inside, on the wing, above; every story ends with the team going into the
+// atmosphere). Draft copy under Brandon's review on staging (Brandon OS
+// analysis/2026-10-14-end-of-page-world/COPY.md).
+const worldNotes: Record<string, { title: string; body: string; turn: string }> = {
+  overview: {
+    title: 'A formation is a team with one heading.',
+    body: "The craft in this picture are a team flying together, and the copper one is me. I have worked with teams in three ways, and the difference is really where I sit. Sometimes I am inside the formation as one of the crew, there for the long haul. Sometimes I am on the wing for one climb, there to help the team reach a new altitude and then let them hold it. Sometimes I am above it, with the view from orbit, helping the team see the loops in their path and draw a straighter one. The destination is the same in all three: the team heads into the atmosphere to do the actual work. Where I fly depends on what you need.",
+    turn: "Tell me what you are trying to do, and I will tell you where I would fit.",
+  },
+  'full-time': {
+    title: 'Inside the formation.',
+    body: 'This is the one where I join the crew. There is an open slot in the formation, I take it, and the separate trails pull together into one heading. I like being close to the details: understanding how the pieces fit together, picking what to try next, and working alongside the people doing the work. We go into the atmosphere together, and I stay for the mission.',
+    turn: "If your team has a slot like that open, let's talk about what the role needs to own.",
+  },
+  fractional: {
+    title: 'On the wing for the climb.',
+    body: 'Here I fly alongside the team for one deliberate burn. There is a higher orbit the team needs to reach, a product outcome that needs an owner for a while, and the climb is easier with someone on the wing who has made it before. We plan the burn, we make it, and once the team is holding the new altitude without me, I peel off. That is the point of it: the team ends up somewhere better and keeps it.',
+    turn: 'If there is a climb like that ahead of you, tell me where the work stands.',
+  },
+  advisory: {
+    title: 'The view from orbit.',
+    body: 'From high orbit you can see things that are hard to see from inside the work: where a path loops back on itself, where a process costs more than it returns, where a decision keeps getting remade. In this one I stay above the formation. I look at how the business, the operations, and the numbers fit together, draw the cleaner line ahead, and the team flies it into the atmosphere themselves. Honest, timely feedback and a few small fixes usually do more than a big plan.',
+    turn: "If something isn't working as well as it should, that is what the view is for.",
+  },
+};
 
 const lead = 'Bring me into your team full time, work with me on a product outcome, or get help with a business problem.';
 ---
@@ -66,11 +94,13 @@ const lead = 'Bring me into your team full time, work with me on a product outco
     <SceneBand set="work" speed={2} models={ENGAGEMENTS.map((e) => e.slug)} />
 
     <div data-wwm-overview>
+      <WorldNote {...worldNotes.overview} />
       <ClosingSheet class="wwm-close" eyebrow="Let's talk" title="Not sure where your work fits? Tell me what you're trying to do." button="Let's talk" />
     </div>
-    {/* Each model's own closing; shown with its model (no-JS readers get the overview's one). */}
+    {/* Each model's own caption and closing; shown with its model (no-JS readers get the overview's). */}
     {ENGAGEMENTS.map((e) => (
       <div data-wwm-closing={e.slug} hidden>
+        <WorldNote level="h3" {...worldNotes[e.slug]} />
         <ClosingSheet class="wwm-close" level="h3" label={`Let's talk about ${e.name}`} eyebrow="Let's talk" title={e.cta.title} button={e.cta.button} href={e.cta.href} />
       </div>
     ))}

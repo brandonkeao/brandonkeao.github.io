@@ -10,6 +10,7 @@ import Sheet from '../components/orbit/Sheet.astro';
 import StepList from '../components/orbit/StepList.astro';
 import CollectionHero from '../components/orbit/collection/CollectionHero.astro';
 import SceneBand from '../components/orbit/SceneBand.astro';
+import WorldNote from '../components/orbit/WorldNote.astro';
 import Collection from '../components/orbit/collection/Collection.astro';
 import CollectionRow from '../components/orbit/collection/CollectionRow.astro';
 import DetailHead from '../components/orbit/collection/DetailHead.astro';
@@ -143,6 +144,12 @@ const riceSteps = [
 
   {/* The page's built world, moved from the hero to a band at the end, above the closing (ticket #38). */}
   <SceneBand scene="playbooks" />
+  {/* The world below (#57). Draft copy under Brandon's review on staging. */}
+  <WorldNote
+    title="A playbook is the pass a formation flies again."
+    body="The cities in this picture are where the work gets done, and the formation flying low over them is running a play it has flown before. That is what a playbook is to me: a way of working that was drawn once, with its dimensions, so a team can fly it without me the next time. None of these are theory. They are the methods I keep reaching for because they helped a real team make a real decision."
+    turn="If there is a decision in front of you, one of these probably applies."
+  />
 
   <Prefooter prompt="Have a decision these methods could help with?" />
   <Prefooter when="rice" prompt="Facing a prioritization decision like this?" />
