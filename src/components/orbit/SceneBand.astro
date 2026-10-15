@@ -10,8 +10,10 @@
 // (lib/orbit/formation-scene.ts), the one SurfaceStory played beside the copy until #34 — and
 // with no model (the Overview) the general overview system. Brandon, 2026-10-13: selecting a
 // bucket "should change the visualization at the end to be what we had before for those three
-// buckets, not the general one". The Formation story is scrubbed by scrolling, as it was: here
-// by the band's own passage up the window (0 as its top enters, 1 once it is centred).
+// buckets, not the general one". The Formation story plays on its own once the band is in view
+// (ticket #59; Brandon, 2026-10-15: it "shouldn't be tied to the scroll. It should start playing
+// at the begining when the user gets to the bottom of the screen"): 0 to 1 on a fixed clock,
+// then it holds; leaving the window stops it and the next arrival starts it over.
 //
 // One WebGL context at most: a model change disposes the current scene (which releases its
 // context) before the next is built, and a scene is only built while the band is within 400px of
@@ -149,21 +151,43 @@ const key = scene ?? set;
       return { ...f, zoom: tune.zoom ?? f.zoom, offsetY: tune.oy ?? f.offsetY };
     };
 
-    /** The band's passage up the window: 0 as its top enters at the bottom, 1 once it is
-        centred (or as far as the page can scroll, if it cannot be centred). */
-    function progress(): number {
-      if (pinned !== undefined) return pinned;
-      const r = stage.getBoundingClientRect();
-      const vh = innerHeight;
-      const top = r.top + scrollY;
-      const start = top - vh;
-      const maxScroll = document.documentElement.scrollHeight - vh;
-      const end = Math.min(top - (vh - r.height) / 2, maxScroll);
-      if (end <= start) return 1;
-      return Math.min(Math.max((scrollY - start) / (end - start), 0), 1);
+    /** The Formation story's own clock (#59): 0 to 1 over STORY_S seconds once the band is in
+        view, then it holds. It runs on wall time between frames (a stall longer than a second
+        does not count), pauses while the tab is hidden, and resumes where it was. `?scene-p` pins
+        it (poster capture). The scene eases the input itself (PROGRESS_EASE_S in
+        formation-scene.ts), so the feed is linear. */
+    const STORY_S = 12;
+    const MAX_STEP_MS = 1000;
+    let inView = false;
+    let playRaf = 0;
+    let played = 0; // ms of story elapsed
+    let lastTick = 0;
+    function stopPlay() { cancelAnimationFrame(playRaf); playRaf = 0; lastTick = 0; }
+    function resumePlay() {
+      stopPlay();
+      if (!live?.setProgress || document.hidden) return;
+      if (pinned !== undefined) { live.setProgress(pinned); return; }
+      const tick = (now: number) => {
+        playRaf = 0;
+        if (!live?.setProgress || disposed) return;
+        if (lastTick) played += Math.min(now - lastTick, MAX_STEP_MS);
+        lastTick = now;
+        const p = Math.min(played / (STORY_S * 1000), 1);
+        live.setProgress(p);
+        stage.dataset.storyProgress = p.toFixed(3);
+        if (p < 1) playRaf = requestAnimationFrame(tick);
+      };
+      playRaf = requestAnimationFrame(tick);
+    }
+    function playFromStart() {
+      played = 0;
+      live?.setProgress?.(pinned ?? 0);
+      resumePlay();
     }
 
     function stop() {
+      stopPlay();
+      delete stage.dataset.storyProgress;
       building++;
       inflight = null;
       live?.dispose();
@@ -194,9 +218,10 @@ const key = scene ?? set;
             dispose: () => { canvas?.removeEventListener('webglcontextlost', fallBack); scene.dispose(); },
             setProgress: (p) => scene.setProgress(p),
           };
-          scene.setProgress(progress());
-          // The scene draws on its next frame; let it land before the poster fades out.
-          requestAnimationFrame(() => requestAnimationFrame(ready));
+          scene.setProgress(pinned ?? 0);
+          // The scene draws on its next frame; let it land before the poster fades out; then the
+          // story starts from the beginning if the band is already in view.
+          requestAnimationFrame(() => requestAnimationFrame(() => { ready(); if (inView) playFromStart(); }));
         } else if (stage.dataset.sceneCollection) {
           const { createCollectionScene } = await import('../../lib/orbit/collection-scene');
           if (token !== building || disposed) return;
@@ -257,14 +282,18 @@ const key = scene ?? set;
     }, { rootMargin: '400px 0px' });
     nearIO.observe(stage);
 
-    // The Formation story's scrub: one read per frame while the page scrolls.
-    let raf = 0;
-    const onScroll = () => {
-      if (raf || !live?.setProgress) return;
-      raf = requestAnimationFrame(() => { raf = 0; live?.setProgress?.(progress()); });
-    };
-    addEventListener('scroll', onScroll, { passive: true });
-    addEventListener('resize', onScroll, { passive: true });
+    // In view (a fifth of the band showing): the story starts from the beginning. Out of view: it
+    // stops, and the next arrival starts it over (Brandon, 2026-10-15).
+    const viewIO = new IntersectionObserver((entries) => {
+      const was = inView;
+      inView = entries[entries.length - 1].isIntersecting;
+      if (inView && !was) playFromStart();
+      if (!inView) stopPlay();
+    }, { threshold: 0.2 });
+    viewIO.observe(stage);
+    // A hidden tab pauses the story; it resumes where it was when the tab is visible again.
+    const onVisibility = () => { if (document.hidden) stopPlay(); else if (inView) resumePlay(); };
+    document.addEventListener('visibilitychange', onVisibility);
 
     // Crossing the phone breakpoint changes the framing: rebuild for the new frame.
     const bp = matchMedia('(max-width: 860px)');
@@ -276,9 +305,9 @@ const key = scene ?? set;
       bp.removeEventListener('change', onBreakpoint);
       watch.disconnect();
       nearIO.disconnect();
-      removeEventListener('scroll', onScroll);
-      removeEventListener('resize', onScroll);
-      cancelAnimationFrame(raf);
+      viewIO.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+      stopPlay();
       stop();
     };
   }
