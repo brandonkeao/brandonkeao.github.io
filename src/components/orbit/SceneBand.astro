@@ -65,8 +65,18 @@ const key = scene ?? set;
 
   let teardown: (() => void) | undefined;
 
-  /** The band's framings (AI-made, reversible; tuned against the 1440, 1280 and 390 captures). */
-  const FORMATION_VIEW = { wide: { fovScale: 0.8, shiftY: 0.55 }, phone: { fovScale: 0.9, shiftY: 0.4 } };
+  /** The band's framings (AI-made, reversible; tuned against the 1440, 1280 and 390 captures).
+      Per model since #63 (Brandon, 2026-10-16, on Advisory: "this annimation has the top cut off so
+      we need to re-think the \"zoom\" here"): each story climbs a different height above the moon,
+      so each gets the field of view and the lift that keep its whole story inside the frame,
+      pinned at 0, 0.3, 0.6 and 1 in the study (Brandon OS analysis/2026-10-16-band-framing). */
+  type View = { fovScale: number; shiftY: number };
+  const FORMATION_VIEW: Record<string, Record<'wide' | 'phone', View>> = {
+    'full-time': { wide: { fovScale: 1.0, shiftY: 0.4 }, phone: { fovScale: 1.05, shiftY: 0.3 } },
+    fractional: { wide: { fovScale: 1.1, shiftY: 0.35 }, phone: { fovScale: 1.15, shiftY: 0.28 } },
+    advisory: { wide: { fovScale: 1.15, shiftY: 0.28 }, phone: { fovScale: 1.2, shiftY: 0.2 } },
+  };
+  const FORMATION_DEFAULT: Record<'wide' | 'phone', View> = { wide: { fovScale: 0.8, shiftY: 0.55 }, phone: { fovScale: 0.9, shiftY: 0.4 } };
   const COLLECTION_VIEW: Record<CollectionKind, Record<'wide' | 'phone', { fovScale: number; shiftX: number; shiftY: number }>> = {
     portfolio: { wide: { fovScale: 0.85, shiftX: 0, shiftY: -0.2 }, phone: { fovScale: 0.8, shiftX: 0, shiftY: -0.2 } },
     playbooks: { wide: { fovScale: 0.7, shiftX: 0.3, shiftY: -0.6 }, phone: { fovScale: 0.8, shiftX: 0.3, shiftY: -0.4 } },
@@ -140,7 +150,10 @@ const key = scene ?? set;
     // the camera moves in and the image shifts so the world's curve runs along the lower edge
     // as a horizon, with the formation or the moons above it. Phones are less wide (16:9) and keep a little more of the world.
     const phone = () => matchMedia('(max-width: 860px)').matches;
-    const formationView = () => ({ fovScale: tune.fov ?? (phone() ? FORMATION_VIEW.phone.fovScale : FORMATION_VIEW.wide.fovScale), shiftY: tune.shift ?? (phone() ? FORMATION_VIEW.phone.shiftY : FORMATION_VIEW.wide.shiftY) });
+    const formationView = (model: string) => {
+      const v = (FORMATION_VIEW[model] ?? FORMATION_DEFAULT)[phone() ? 'phone' : 'wide'];
+      return { fovScale: tune.fov ?? v.fovScale, shiftY: tune.shift ?? v.shiftY };
+    };
     const collectionView = () => {
       const c = COLLECTION_VIEW[stage.dataset.sceneCollection as CollectionKind];
       const v = phone() ? c.phone : c.wide;
@@ -208,7 +221,7 @@ const key = scene ?? set;
         if (key) {
           const { createFormation } = await import('../../lib/orbit/formation-scene');
           if (token !== building || disposed) return;
-          const scene = createFormation(host, key as EngagementSlug, formationView());
+          const scene = createFormation(host, key as EngagementSlug, formationView(key));
           // A context lost under the scene means the poster for good; our own dispose (which
           // forces the loss to free the context now) unhooks this first.
           const canvas = host.querySelector('canvas');
