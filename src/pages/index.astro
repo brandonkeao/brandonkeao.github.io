@@ -15,6 +15,11 @@ import SectionHead from '../components/orbit/SectionHead.astro';
 import Quote from '../components/orbit/Quote.astro';
 import ExperienceStrip from '../components/orbit/ExperienceStrip.astro';
 import WorldNote from '../components/orbit/WorldNote.astro';
+const homeClosing = {
+  "title": "My work is like a planetary system, with different projects orbiting a common center.",
+  "body": "That center is how I work: understand, start, own, improve. I want to understand the problem and how the pieces fit together, then start something useful so we can learn. Taking ownership means staying with the problem, and improving means paying attention to the small things as well as the big decisions. The projects are the moons around that center, each with its own team and conditions. The formations show how we work together; the bases are what we build. The red line carries that idea of momentum through the site: making decisions, learning, and building toward better outcomes.",
+  "turn": "If something is stuck in your world, let's talk about where to start."
+};
 
 const companies = ['Rebrandly', 'Pie Insurance', 'Bitly', 'PAIRIN', 'Ora Interactive', 'Sears', 'Bridgewater', 'Bloomberg', 'Goldman Sachs', 'Deutsche Bank', 'Capital Group', 'Thomson Reuters', 'Saxo Bank'];
 
@@ -136,11 +141,7 @@ const engagements = [
   <SceneBand set="home" speed={2} />
   {/* The world below (#57): the picture explained in its own words, first person then turned to the
       reader; the last line leads into the closing. Draft copy under Brandon's review on staging. */}
-  <WorldNote
-    title="Everything I build orbits the same four things."
-    body="The planet in this picture is the way I work: understand the problem, start before the debate becomes the work, own everything in your world, and keep fixing the small things, because they compound. Every project I have been part of circles those four. The moons are the projects themselves, built with other companies and their teams, each on its own orbit and each a little different in how we got there. The red line that runs through this site is momentum. It starts with a push, picks a direction, and keeps going until something is actually different for the customer or the business. That is the part I care about most."
-    turn="If your team needs that kind of motion around a problem, let's start a conversation."
-  />
+  <WorldNote {...homeClosing} />
 
   <ClosingSheet size="display" eyebrow="Start a conversation" title="If you're stuck, let's talk about what to try first." button="Let's talk" titleId="hv-close" />
 </BaseLayout>
