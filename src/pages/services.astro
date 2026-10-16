@@ -1,7 +1,7 @@
 ---
 // Work with me (ticket #8, Direction B; ticket #34, designer review Phase 1, layout O1).
-// The shared page hero on the ground (title, lead, the `align` mark run out as a full-width red
-// line); then one white sheet that opens on the three selector cards — the most important element
+// The shared page hero on the ground (title, lead, then a compact formation handing off to the
+// full-width red line); then one white sheet that opens on the three selector cards — the most important element
 // on the page, above the fold — with the chosen model's content continuing below them in the
 // same sheet. The cards are the one switcher: they replace the overview rows, the hero's chip
 // dock and the phone tabs, and stay in place after a choice. The orbital scene left the hero for
@@ -49,7 +49,7 @@ const lead = 'Bring me into your team full time, work with me on a product outco
 
 <BaseLayout title="Work with me" description={lead}>
   <div class="wwm" data-wwm data-state="overview">
-    <PageHero title="Work with me" mark="align" lead={lead} />
+    <PageHero title="Work with me" mark="formation" lead={lead} class="wwm-hero" />
 
     <div class="sheet wwm-sheet" data-wwm-flow>
       <!-- The three ways as selector cards. Real links, so they work without JavaScript; the

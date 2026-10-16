@@ -4,13 +4,13 @@
 // line across the hero's lower edge, the width of the content column, separating it from the content below
 // (Brandon, 2026-10-13, after Alicia: "a long line throughout the whole screen", "a grounding
 // point in the header … keep it out longer"). Each page keeps its own motif on the line, so the
-// heroes share a structure without becoming one template (Work with me: `align`; Bookshelf:
+// heroes share a structure without becoming one template (Work with me: `formation`; Bookshelf:
 // `books`). The line draws in once with its mark (MotionLine's own observer) and then stays;
 // reduced motion and no-JS readers see it drawn. It is flat: no glow underlay.
 // Spacing and measure live in CSS (the old inline max-widths moved here).
 import MotionLine from './MotionLine.astro';
 
-type Kind = 'momentum' | 'map' | 'align' | 'principles' | 'blocks' | 'blueprint' | 'chain' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
+type Kind = 'momentum' | 'map' | 'align' | 'principles' | 'blocks' | 'blueprint' | 'chain' | 'books' | 'exchange' | 'formation' | 'connect' | 'converge' | 'build';
 interface Props {
   title: string;
   mark: Kind;
@@ -107,6 +107,8 @@ const launches = mark === 'chain';
      the same length in cqw (inside a transform, where % would be the dot's own width). */
   .hero-line--chain { container-type: inline-size; --hero-exit: calc(min(430px, 100%) * 0.479); --hero-exit-cq: calc(min(430px, 100cqw) * 0.479); }
   .hero-line--chain .hero-rule { left: var(--hero-exit); }
+  .hero-line--exchange, .hero-line--formation { --hero-exit: min(228px, 82%); }
+  .hero-line--exchange .hero-rule, .hero-line--formation .hero-rule { left: var(--hero-exit); }
   .hero-traveller { position: absolute; left: var(--hero-exit); top: calc(var(--rule-y) - 3.5px); width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: currentColor; opacity: 0; }
   /* The motif's own short shelf or ground would double the rule's tint where they overlap. */
   .hero-line--books .motion-line > .ml-draw.ml-soft:first-child,
@@ -124,6 +126,11 @@ const launches = mark === 'chain';
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-rule { animation: hero-rule-draw 950ms cubic-bezier(0.33, 0, 0.2, 1) 920ms both; }
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-traveller { animation: hero-travel 950ms cubic-bezier(0.33, 0, 0.2, 1) 920ms forwards; }
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-arrow { animation-delay: 1690ms; }
+    /* Exchange and formation settle first, then hand off to the same long terminal rule. */
+    .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-rule,
+    .hero-line--formation:has(.motion-line[data-motion-play]) .hero-rule { animation-duration: 950ms; animation-delay: 620ms; }
+    .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-arrow,
+    .hero-line--formation:has(.motion-line[data-motion-play]) .hero-arrow { animation-delay: 1370ms; }
   }
   @keyframes hero-rule-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @keyframes hero-travel { 0% { opacity: 1; transform: translateX(0); } 90% { opacity: 1; transform: translateX(calc(100cqw - var(--hero-exit-cq) - 9px)); } 100% { opacity: 0; transform: translateX(calc(100cqw - var(--hero-exit-cq) - 9px)); } }

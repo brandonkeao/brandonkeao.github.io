@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import Clause from '../components/orbit/Clause.astro';
 import Closing from '../components/orbit/Closing.astro';
+import PageHero from '../components/orbit/PageHero.astro';
 
 const toc = [
   ['motivations', 'Motivations'],
@@ -13,15 +14,15 @@ const toc = [
   ['coaching', 'Coaching and Delegation'],
   ['values', 'Values'],
 ];
-import MotionLine from '../components/orbit/MotionLine.astro';
 ---
 
 <BaseLayout title="Manager README" description="Brandon Keao's original management philosophy, working style, and values.">
-  <header class="page-header">
-    <h1 class="t-page-title">Manager README</h1>
-    <MotionLine kind="exchange" />
-    <p class="t-lead muted-g page-lead" style="max-width:720px">My approach to leadership, collaborating, getting things done, and enjoying work. A practical tool for working well together and for keeping me accountable to my values.</p>
-  </header>
+  <PageHero
+    title="Manager README"
+    mark="exchange"
+    lead="My approach to leadership, collaborating, getting things done, and enjoying work. A practical tool for working well together and for keeping me accountable to my values."
+    class="readme-hero"
+  />
 
   <Sheet label="Manager README">
     <div class="readme-grid">
@@ -97,6 +98,7 @@ import MotionLine from '../components/orbit/MotionLine.astro';
 </BaseLayout>
 
 <style>
+  :global(.readme-hero .page-hero-lead) { max-width: 760px; }
   .readme-grid { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 56px; align-items: start; }
   .readme-toc { position: sticky; top: 24px; }
   .readme-body { min-width: 0; }
