@@ -6,7 +6,13 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "check": "astro check",
+    "test:navigation": "node tests/navigation.mjs",
+    "audit": "node scripts/audit-static.mjs",
+    "test:audit": "node --test scripts/audit-static.test.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test:stage": "node tests/stage-regression.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",
@@ -16,6 +22,12 @@
     "three": "0.186.1"
   },
   "devDependencies": {
-    "@types/three": "0.186.0"
+    "@astrojs/check": "0.9.10",
+    "@types/three": "0.186.0",
+    "playwright": "1.58.2",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22 <23"
   }
 }
