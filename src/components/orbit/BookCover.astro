@@ -1,0 +1,11 @@
+---
+interface Props { src: string; title: string; author: string; href?: string }
+const { src, title, author, href } = Astro.props;
+---
+
+<figure class="cover">
+  {href
+    ? <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`${title} by ${author} (opens in a new tab)`}><img src={src} alt="" loading="lazy" decoding="async" width="200" height="300" /></a>
+    : <img src={src} alt="" loading="lazy" decoding="async" width="200" height="300" />}
+  <p>{title}<span>{author}</span></p>
+</figure>

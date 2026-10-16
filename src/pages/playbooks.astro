@@ -1,0 +1,105 @@
+---
+// Public content staged for review under #65; method mechanics retain their original attribution.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sheet from '../components/orbit/Sheet.astro';
+import CollectionHero from '../components/orbit/collection/CollectionHero.astro';
+import SceneBand from '../components/orbit/SceneBand.astro';
+import WorldNote from '../components/orbit/WorldNote.astro';
+import Collection from '../components/orbit/collection/Collection.astro';
+import CollectionRow from '../components/orbit/collection/CollectionRow.astro';
+import DetailHead from '../components/orbit/collection/DetailHead.astro';
+import DetailBlock from '../components/orbit/collection/DetailBlock.astro';
+import Prefooter from '../components/orbit/collection/Prefooter.astro';
+const playbooks = [
+  {
+    "id": "ost",
+    "title": "Opportunity Solution Trees",
+    "category": "Product discovery",
+    "description": "Connect the outcome to customer needs, possible solutions, and questions worth testing.",
+    "when": "A visual map would help the team understand its choices or break a broad opportunity into smaller problems.",
+    "source": "Method source: Teresa Torres · Product Talk"
+  },
+  {
+    "id": "rice",
+    "title": "RICE with an opportunity backlog",
+    "category": "Product strategy",
+    "description": "Compare the assumptions behind competing priorities, then work through the tradeoffs together.",
+    "when": "Several pieces of work compete for the same capacity and people need to understand the proposed order.",
+    "source": "Method source: Intercom"
+  },
+  {
+    "id": "sprints",
+    "title": "Design Sprints",
+    "category": "Product design",
+    "description": "Explore a specific product question through a prototype and customer feedback.",
+    "when": "The uncertainty can be tested with a realistic prototype and the right people can participate.",
+    "source": "Method source: The Sprint authors"
+  }
+];
+const closing = {
+  "title": "A playbook is like a flight plan for a formation of ships.",
+  "body": "It gives us a shared way to approach the work, so we can coordinate without having to figure everything out from scratch. I use these methods to make assumptions visible and help a team understand why we're choosing one approach over another. The plan gives us somewhere to start; the team still has to adapt it to the project and learn from what happens.",
+  "turn": "If you're working through a decision, there may be something here you can use."
+};
+---
+<BaseLayout title="Playbooks" description="Tools for building shared understanding. Practical ways to connect customer problems, business goals, and the work a team takes on.">
+  <CollectionHero scene="playbooks" title="Playbooks" lead="Tools for building shared understanding."
+    body="A team needs a shared understanding of the customer problem, the business goal, and what it can realistically take on. These are some of the tools I reach for to help people work through those questions together."
+    note="Three methods for working through product decisions together." />
+  <Sheet class="cl-sheet" label="Three playbooks">
+    <Collection param="playbook" label="Playbooks" items={playbooks.map((p) => ({ id: p.id, label: p.title }))} restoreLabel="↑ All playbooks">
+      <Fragment slot="overview">
+        <h2 class="t-section cl-section-title">Three playbooks</h2>
+        <p class="t-body muted-s collection-intro">RICE makes the assumptions behind a priority easier to compare. Opportunity Solution Trees give us a visual way to connect an outcome to customer needs and possible solutions. A Design Sprint helps a team learn from a prototype when there is a specific question to test.</p>
+        <ol class="cl-rows">
+          {playbooks.map((p, i) => <CollectionRow id={p.id} index={i + 1} controls={`playbook-${p.id}`} eyebrow={p.category} title={p.title} description={p.description} when={p.when} source={p.source} />)}
+        </ol>
+      </Fragment>
+<section class="cl-detail" id="playbook-ost" data-cl-detail="ost" aria-label="Opportunity Solution Trees">
+<DetailHead title="Opportunity Solution Trees" eyebrow="01 · Product discovery" lead="See how the ideas connect to the outcome." />
+<DetailBlock label="How I approach it"><p>An Opportunity Solution Tree is one of my other starting points because a visual map can make a discussion easier to follow. Some people work comfortably through estimates in a table. Others understand the choices more quickly when they can see how the pieces fit together. Both help build shared understanding.</p>
+<p>The tree connects an outcome we want to improve to customer needs, possible solutions, and the assumptions we need to test. It gives the team a way to ask whether an idea addresses a meaningful problem and whether solving that problem would move us toward the outcome.</p></DetailBlock>
+<DetailBlock label="Make the connection visible"><p>Start with a clear product outcome linked to the business goal. Use customer research to identify the needs and difficulties that could help explain why that outcome is not happening. Those are the opportunities. Under a selected opportunity, explore different solutions and the assumptions each depends on.</p>
+<p>The structure comes from <a class="link-sheet" href="https://www.producttalk.org/opportunity-solution-trees/">Teresa Torres's Opportunity Solution Trees</a>. Her method keeps customer opportunities distinct from solutions and uses assumption tests to guide what the team learns next.</p></DetailBlock>
+<DetailBlock label="Use the map to find the next question"><p>I find the visual structure useful for seeing where something is still too broad. A large branch may contain several different customer problems. Breaking it down can help us choose a smaller opportunity and identify an experiment that would teach us something useful.</p>
+<p>For a simple, hypothetical example, a team might want more new customers to finish a first useful task. If research shows they cannot tell which option fits their situation, several responses are possible: clearer descriptions, a guided first step, or a different starting point. The next question is which assumption we need to test before committing to one.</p></DetailBlock>
+<DetailBlock label="Keep the evidence with the tree"><p>The diagram should make the team's thinking easier to examine. Keep customer evidence close to the opportunities, distinguish assumptions from findings, and change the map as you learn. A useful tree helps people explain what they are considering, why it matters, and what they still need to understand.</p></DetailBlock>
+</section>
+<section class="cl-detail" id="playbook-rice" data-cl-detail="rice" aria-label="RICE with an opportunity backlog">
+<DetailHead title="RICE with an opportunity backlog" eyebrow="02 · Product strategy" lead="Make the assumptions behind a priority easier to discuss." />
+<DetailBlock label="How I approach it"><p>RICE is my default starting point for prioritization. Reach, impact, confidence, and effort give us a straightforward way to discuss an idea and compare it with other work. The useful part is what we learn by working through those estimates together.</p>
+<p>A precise score can give people more confidence than the inputs deserve. If we disagree about impact, we need to talk about what would actually change for customers or the business. If confidence is low, we should be able to explain what we do and don't know. The framework gives those conversations a place to start.</p></DetailBlock>
+<DetailBlock label="Start with the opportunity"><p>Keep the customer problem, supporting evidence, and intended outcome with the work you are considering. Before estimating effort, describe a possible approach at a useful level of detail. The same problem may have several solutions with very different costs.</p></DetailBlock>
+<DetailBlock label="Work through the assumptions"><ul class="content-points">
+<li><strong>Reach:</strong> Who would benefit, and how many of them would we expect to reach in the same time period?</li>
+<li><strong>Impact:</strong> What meaningful change do we expect for those people, and how does it contribute to the outcome?</li>
+<li><strong>Confidence:</strong> What supports the estimates? Where are we relying on an assumption?</li>
+<li><strong>Effort:</strong> What would this approach take from the people involved?</li>
+</ul>
+<p><strong>RICE score = Reach × Impact × Confidence ÷ Effort</strong></p>
+<p>Use comparable units and explain the estimates. A colleague should be able to understand why one option ranks above another and challenge the reasoning. <a class="link-sheet" href="https://www.intercom.com/blog/rice-simple-prioritization-for-product-managers">Intercom's original RICE method</a> describes the scoring model.</p></DetailBlock>
+<DetailBlock label="Keep priorities connected to commitments"><p>The ranking is one input to the decision. Dependencies, operational work, risk, and team capacity affect what can happen next. When priorities change, explain what moved and what that means for existing commitments.</p>
+<p>That is where trust comes in. People need to know why the plan changed and what they can now expect. New tools can change the effort involved too, including where AI makes a different approach practical. Revisit the estimate when the work changes; keep responsibility for the decision with the team.</p></DetailBlock>
+<DetailBlock label="Related work"><p>I used RICE with cross-functional leaders at Pie as part of our roadmap prioritization. <a class="link-sheet" href="/portfolio/?story=pie">Read the Pie Insurance story →</a></p></DetailBlock>
+</section>
+<section class="cl-detail" id="playbook-sprints" data-cl-detail="sprints" aria-label="Design Sprints">
+<DetailHead title="Design Sprints" eyebrow="03 · Product design" lead="Learn from a prototype before committing to a build." />
+<DetailBlock label="The method"><p>Some disagreements are hard to resolve by talking. A prototype gives people something to react to, and a test with customers gives the team new information to work with.</p>
+<p>A design sprint puts a short, structured process around that learning: understand the challenge, explore approaches, choose one to prototype, and test it. The question you need to answer gives the week its purpose.</p></DetailBlock>
+<DetailBlock label="When it helps"><p>There is a consequential uncertainty you can explore through a realistic prototype. The people who need to act on the answer can participate, and you can reach the customers whose response matters.</p></DetailBlock>
+<DetailBlock label="Before the workshop"><p>Agree on the decision this work should help you make. Identify the assumptions behind the idea and what you would need to see to change direction. Plan the customer sessions early enough that testing actually happens.</p></DetailBlock>
+<DetailBlock label="What you take away"><p>A workshop and a prototype are useful work, but the learning comes from seeing what people do with the idea. Use that evidence to decide what to change or investigate next. A short test doesn't establish long-term adoption or answer every technical question.</p>
+<p>Method: <a class="link-sheet" href="https://www.character.vc/sprint">The Sprint authors' guide</a>.</p></DetailBlock>
+</section>
+    </Collection>
+  </Sheet>
+  <SceneBand scene="playbooks" />
+  <WorldNote {...closing} />
+  <Prefooter prompt="What decision is your team working through?" />
+</BaseLayout>
+
+<style>
+  .content-points { list-style: disc; padding-left: 1.2em; }
+  .content-points li + li { margin-top: 16px; }
+  .collection-intro { max-width: 66ch; margin-top: 20px; }
+</style>

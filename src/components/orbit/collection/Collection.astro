@@ -1,0 +1,165 @@
+---
+// In-place selected states for a collection page (Portfolio, Playbooks).
+//
+// Markup: every detail is server-rendered. Without JS the list, then every detail, render
+// stacked. With JS one state shows at a time: the overview (the list) or one item's detail
+// under a sticky switcher.
+//
+// State lives in the URL: ?<param>=<id>. Choosing a row or tab pushes that URL, the restore
+// button pushes the bare page URL, popstate restores, and loading with the param selects it.
+// Pushed entries carry Astro's history state, so the View Transitions router can still return
+// to them from another page; same-page back/forward is handled here (capture phase, before the
+// router) so it does not refetch the page.
+//
+// Elements anywhere on the page with data-cl-when="<ids>|default" show only in those states
+// (the pre-footer variants).
+import Switcher from './Switcher.astro';
+import './collection.css';
+
+interface Props {
+  param: string;
+  label: string;
+  items: { id: string; label: string }[];
+  restoreLabel: string;
+}
+const { param, label, items, restoreLabel } = Astro.props;
+---
+
+<div class="cl" data-collection data-param={param}>
+  <Switcher label={label} items={items} restoreLabel={restoreLabel} />
+  <div class="cl-overview" data-cl-overview><slot name="overview" /></div>
+  <div class="cl-details"><slot /></div>
+</div>
+<script is:inline data-astro-rerun>
+  /* First paint: apply the URL state before the module controller loads, so details do not flash. */
+  (function () {
+    var s = document.currentScript, r = s && s.previousElementSibling;
+    if (!r || !r.hasAttribute('data-collection')) return;
+    var v = new URLSearchParams(location.search).get(r.getAttribute('data-param'));
+    var ds = r.querySelectorAll('[data-cl-detail]'), ok = false;
+    ds.forEach(function (d) { if (d.getAttribute('data-cl-detail') === v) ok = true; });
+    if (!ok) v = null;
+    ds.forEach(function (d) { d.hidden = d.getAttribute('data-cl-detail') !== v; });
+    r.querySelector('[data-cl-overview]').hidden = !!v;
+    r.querySelector('[data-cl-switcher]').hidden = !v;
+    r.querySelectorAll('[data-cl-tab]').forEach(function (t) { t.setAttribute('aria-pressed', String(t.getAttribute('data-cl-tab') === v)); });
+    // The pre-footer variants come later in the page than this script, so they are switched by a
+    // temporary rule (the controller removes it once it applies the state itself).
+    var old = document.querySelector('style[data-cl-pre]');
+    if (old) old.remove();
+    if (v) {
+      var w = '[data-cl-when~="' + CSS.escape(v) + '"]', st = document.createElement('style');
+      st.setAttribute('data-cl-pre', '');
+      st.textContent = ':root:has(' + w + ') [data-cl-when]:not(' + w + ') { display: none !important; } ' + w + '[hidden] { display: block !important; }';
+      document.head.appendChild(st);
+    }
+    r.setAttribute('data-cl-js', '');
+  })();
+</script>
+
+<script>
+  let dispose: (() => void) | undefined;
+
+  function initCollection() {
+    dispose?.();
+    dispose = undefined;
+    const root = document.querySelector<HTMLElement>('[data-collection]');
+    if (!root) return;
+    const param = root.dataset.param ?? '';
+    const overview = root.querySelector<HTMLElement>('[data-cl-overview]');
+    const switcher = root.querySelector<HTMLElement>('[data-cl-switcher]');
+    const details = [...root.querySelectorAll<HTMLElement>('[data-cl-detail]')];
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-cl-tab]')];
+    const variants = [...document.querySelectorAll<HTMLElement>('[data-cl-when]')];
+    if (!overview || !switcher) return;
+    const ids = details.map((d) => d.dataset.clDetail ?? '');
+    const named = new Set(variants.flatMap((v) => (v.dataset.clWhen ?? '').split(/\s+/)).filter((w) => w && w !== 'default'));
+    const pathname = location.pathname;
+    const ctl = new AbortController();
+    const opts = { signal: ctl.signal };
+
+    const read = (): string | null => {
+      const v = new URLSearchParams(location.search).get(param);
+      return v && ids.includes(v) ? v : null;
+    };
+
+    const apply = (id: string | null) => {
+      overview.hidden = id !== null;
+      switcher.hidden = id === null;
+      details.forEach((d) => { d.hidden = d.dataset.clDetail !== id; });
+      tabs.forEach((t) => t.setAttribute('aria-pressed', String(t.dataset.clTab === id)));
+      const key = id !== null && named.has(id) ? id : 'default';
+      variants.forEach((v) => { v.hidden = !(v.dataset.clWhen ?? '').split(/\s+/).includes(key); });
+      root.dataset.clState = id ?? 'overview';
+    };
+
+    // Keep the reader's place: if they were inside the collection, its top comes to the top of
+    // the window (the switcher sits there); otherwise the page does not move.
+    const keepPlace = (wasInside: boolean) => {
+      if (!wasInside) return;
+      const top = root.getBoundingClientRect().top + scrollY;
+      scrollTo({ top, behavior: 'instant' as ScrollBehavior });
+    };
+
+    const select = (id: string | null, focus: 'detail' | 'row' | 'none') => {
+      const prev = read();
+      if (id === prev) return;
+      const wasInside = root.getBoundingClientRect().top < 0;
+      // Keep Astro's state shape (index, scroll) so the router can return to these entries later,
+      // and record the real positions so Back/Forward restore them.
+      if (history.state) history.replaceState({ ...history.state, scrollX, scrollY }, '');
+      apply(id);
+      keepPlace(wasInside);
+      const url = new URL(location.href);
+      if (id) url.searchParams.set(param, id); else url.searchParams.delete(param);
+      url.hash = '';
+      history.pushState({ ...(history.state ?? {}), scrollX, scrollY }, '', url);
+      if (focus === 'detail' && id) {
+        details.find((d) => d.dataset.clDetail === id)?.querySelector<HTMLElement>('[data-cl-focus]')?.focus({ preventScroll: true });
+      } else if (focus === 'row' && prev) {
+        root.querySelector<HTMLElement>(`[data-cl-select="${prev}"]`)?.focus();
+      }
+    };
+
+    apply(read());
+    document.querySelectorAll('style[data-cl-pre]').forEach((s) => s.remove());
+    root.setAttribute('data-cl-js', '');
+
+    const plainClick = (e: MouseEvent) => e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
+
+    root.addEventListener('click', (e) => {
+      const t = e.target as Element;
+      const row = t.closest<HTMLElement>('[data-cl-select]');
+      if (row) {
+        // Rows are real links (they work without JS); a modified click keeps the browser's behavior.
+        if (!plainClick(e)) return;
+        e.preventDefault();
+        select(row.dataset.clSelect ?? null, 'detail');
+        return;
+      }
+      const tab = t.closest<HTMLElement>('[data-cl-tab]');
+      if (tab) { select(tab.dataset.clTab ?? null, 'none'); return; }
+      if (t.closest('[data-cl-restore]')) select(null, 'row');
+    }, opts);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || e.defaultPrevented || read() === null) return;
+      if (document.querySelector('#mobile-menu:not([hidden])')) return;
+      select(null, 'row');
+    }, opts);
+
+    // Same-page back/forward between collection states: handle it here and keep the router out.
+    window.addEventListener('popstate', (e) => {
+      if (location.pathname !== pathname) return;
+      e.stopImmediatePropagation();
+      apply(read());
+      const st = e.state as { scrollX?: number; scrollY?: number } | null;
+      if (st && typeof st.scrollY === 'number') scrollTo(st.scrollX ?? 0, st.scrollY);
+    }, { capture: true, signal: ctl.signal });
+
+    dispose = () => ctl.abort();
+  }
+
+  document.addEventListener('astro:page-load', initCollection);
+  document.addEventListener('astro:before-swap', () => { dispose?.(); dispose = undefined; });
+</script>

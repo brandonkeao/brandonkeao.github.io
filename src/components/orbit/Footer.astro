@@ -1,0 +1,24 @@
+---
+const links = [
+  { href: '/services/', label: 'Work with me' },
+  { href: '/portfolio/', label: 'Portfolio' },
+  { href: '/playbooks/', label: 'Playbooks' },
+  { href: '/about/', label: 'About' },
+  // The footer's ask (Home v2 review UX-09): the same words and place as the header's.
+  { href: '/contact/', label: "Let's talk" },
+  { href: 'https://www.linkedin.com/in/brandonkeao/', label: 'LinkedIn', external: true },
+  { href: 'mailto:brandon.keao@gmail.com', label: 'Email' },
+];
+---
+
+<footer class="footer">
+  <div>
+    <p class="t-item">Product leader and builder.</p>
+    <p class="t-caption faint-g" style="margin-top:8px">© {new Date().getFullYear()} Brandon Keao</p>
+  </div>
+  <nav class="flinks" aria-label="Footer navigation">
+    {links.map((l) => l.external
+      ? <a href={l.href} target="_blank" rel="noopener noreferrer">{l.label}</a>
+      : <a href={l.href}>{l.label}</a>)}
+  </nav>
+</footer>

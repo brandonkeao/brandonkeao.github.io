@@ -1,0 +1,14 @@
+---
+// One way of working together: meta line, title (optional moon dot), description, link.
+interface Props { meta?: string; title: string; description: string; href?: string; linkLabel?: string; dot?: 1 | 2 | 3 }
+const { meta, title, description, href, linkLabel, dot } = Astro.props;
+---
+
+<div class="way">
+  <div>
+    {meta && <p class="meta">{meta}</p>}
+    <h3 class="t-item way-title">{dot && <i class={`dot dot-${dot}`} aria-hidden="true"></i>}{title}</h3>
+  </div>
+  <p class="t-body muted-s">{description}</p>
+  {href && linkLabel && <p class="way-link"><a class="link-sheet" href={href}>{linkLabel}</a></p>}
+</div>

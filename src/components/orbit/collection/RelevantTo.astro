@@ -1,0 +1,13 @@
+---
+// "Relevant to" engagement-model tags on a collection row.
+import Tag from '../Tag.astro';
+import './collection.css';
+
+interface Props { models: string[] }
+const { models } = Astro.props;
+---
+
+<div class="cl-relevant">
+  <span class="cl-relevant-label">Relevant to</span>
+  {models.map((m) => <Tag>{m}</Tag>)}
+</div>

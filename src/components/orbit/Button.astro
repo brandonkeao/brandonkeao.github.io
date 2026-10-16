@@ -1,0 +1,21 @@
+---
+// Orbit button. `on` names the surface it sits on; ground buttons are white, sheet buttons take the ground colour.
+interface Props {
+  href?: string;
+  on?: 'ground' | 'sheet';
+  variant?: 'solid' | 'outline';
+  size?: 'md' | 'sm';
+  type?: 'button' | 'submit';
+  class?: string;
+  [key: string]: unknown;
+}
+const { href, on = 'ground', variant = 'solid', size = 'md', type = 'button', class: extra, ...rest } = Astro.props;
+const cls = [
+  'btn',
+  variant === 'solid' ? (on === 'ground' ? 'btn-ground' : 'btn-action') : on === 'ground' ? 'btn-outline-ground' : 'btn-outline-sheet',
+  size === 'sm' && 'btn-sm',
+  extra,
+];
+---
+
+{href ? <a href={href} class:list={cls} {...rest}><slot /></a> : <button type={type} class:list={cls} {...rest}><slot /></button>}

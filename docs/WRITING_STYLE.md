@@ -72,6 +72,7 @@ The public website sits between Brandon's conversational and executive registers
 - Use em dashes sparingly; never let them become the page's dominant cadence.
 - Use first person for beliefs and direct experience. Use second person when explaining how working together will feel.
 - Use headings that make a claim or answer a reader's question.
+- Use the Oxford comma in every list of three or more: "Bloomberg, Goldman Sachs, and Thomson Reuters" (Brandon, 2026-10-06).
 
 ## Language to preserve
 

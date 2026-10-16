@@ -1,0 +1,68 @@
+---
+// Work with me (ticket #8, Direction B): one engagement model's detail, shown in place under the
+// selector cards. Server-rendered and visible by default, so with JavaScript off all three
+// details read stacked; the page script hides the ones not selected.
+// Order (Brandon, Oct 9): intro → When this fits / What I would take on / How we would work
+// together → Relevant work and methods, as calm sections on the white sheet (ticket #34). The
+// model's closing sheet follows the page's scene band; services.astro renders it. DRAFT COPY under Brandon's review; it lives in ./content.ts.
+import SectionHead from '../SectionHead.astro';
+import SurfaceStory from './SurfaceStory.astro';
+import type { Engagement } from './content';
+
+interface Props { e: Engagement }
+const { e } = Astro.props;
+const id = `wwm-${e.slug}`;
+---
+
+<section class="wwm-detail" id={id} data-wwm-detail={e.slug} aria-labelledby={`${id}-title`}>
+  {/* The model's identity row (the shared SectionHead): tag, name and intro, under the cards. */}
+  <div class="wwm-band wwm-detail-intro" data-wwm-intro>
+    <div class="wwm-head">
+      <SectionHead eyebrow={e.tag} dot={e.dot} title={e.name} id={`${id}-title`} focusable />
+    </div>
+    <div class="wwm-body">
+      <p class="t-lead wwm-read">{e.intro}</p>
+    </div>
+  </div>
+
+  <SurfaceStory e={e} />
+
+  {/* Relevant work and methods, in the same section rhythm: two link lists, each item its
+      title as a link, then the note, then the origin as plain text (readable pattern, rule 7). */}
+  <section class="wwm-band wwm-section wwm-evidence" id={`${id}-evidence`} aria-labelledby={`${id}-evidence-title`}>
+    <div class="wwm-head">
+      <h3 class="wwm-section-title" id={`${id}-evidence-title`}>Relevant work and methods</h3>
+    </div>
+    <div class="wwm-body">
+      <p class="wwm-read wwm-ev-lead">{e.evidenceLead}</p>
+      <div class="wwm-groups">
+        <div class="wwm-group">
+          <p class="wwm-group-label">From the Portfolio</p>
+          <ul class="wwm-ev-list">
+            {e.portfolio.map((p) => (
+              <li>
+                <a class="wwm-ev-name" href={p.href}>{p.title} <span aria-hidden="true">→</span></a>
+                <span class="wwm-ev-note">{p.note}</span>
+                {p.origin && <span class="wwm-ev-origin">{p.origin}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div class="wwm-group">
+          <p class="wwm-group-label">From the Playbooks</p>
+          {e.playbooks.length > 0 && (
+            <ul class="wwm-ev-list">
+              {e.playbooks.map((p) => (
+                <li>
+                  <a class="wwm-ev-name" href={p.href}>{p.title} <span aria-hidden="true">→</span></a>
+                  <span class="wwm-ev-note">{p.note}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {e.playbooksLink && <p class="wwm-group-link"><a class="link-ground" href={e.playbooksLink.href}>{e.playbooksLink.label} →</a></p>}
+        </div>
+      </div>
+    </div>
+  </section>
+</section>

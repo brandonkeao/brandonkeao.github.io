@@ -1,138 +1,261 @@
 ---
+// Work with me (ticket #8, Direction B; ticket #34, designer review Phase 1, layout O1).
+// The shared page hero on the ground (title, lead, then a compact formation handing off to the
+// full-width red line); then one white sheet that opens on the three selector cards — the most important element
+// on the page, above the fold — with the chosen model's content continuing below them in the
+// same sheet. The cards are the one switcher: they replace the overview rows, the hero's chip
+// dock and the phone tabs, and stay in place after a choice. The orbital scene left the hero for
+// a band at the end of the page, above the closing call to action (Brandon, 2026-10-13).
+// ?engagement= makes a choice shareable. All copy is verbatim from
+// analysis/2026-10-09-hifi-directions/COPY_PACK.md and is DRAFT under Brandon's review. Layout
+// choices are AI-made and reversible.
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HeroMotion from '../components/HeroMotion.astro';
+import PageHero from '../components/orbit/PageHero.astro';
+import ClosingSheet from '../components/orbit/ClosingSheet.astro';
+import SceneBand from '../components/orbit/SceneBand.astro';
+import WorldNote from '../components/orbit/WorldNote.astro';
+import EngagementDetail from '../components/orbit/wwm/EngagementDetail.astro';
+import { ENGAGEMENTS } from '../components/orbit/wwm/content';
 
-const serviceAreas = [
-  {
-    title: 'Product Vision, Strategy & Positioning',
-    items: ['Vision development', 'Strategic planning', 'Positioning', 'Roadmapping', 'Go-to-market strategy', 'Strategy summits']
+// The world below (#57): the overview's caption and one per model, following the accepted
+// Formation story (inside, on the wing, above; every story ends with the team going into the
+// atmosphere). Draft copy under Brandon's review on staging (Brandon OS
+// analysis/2026-10-14-end-of-page-world/COPY.md).
+const worldNotes: Record<string, { title: string; body: string; turn: string }> = {
+  "overview": {
+    "title": "Working with a team is like flying in formation.",
+    "body": "Everyone brings different skills, but we need a shared understanding of where we're headed and how we'll work together to get there. The formations across this site represent the different ways I can contribute. I might join the team full time, take responsibility for a product initiative, or help work through a problem that cuts across the business. How I fit depends on what the team needs. In each case, I want to understand what matters to the business and its customers, then work with the team to turn that into something we can act on.",
+    "turn": "Tell me what you're trying to do, and we can work out where I'd be useful."
   },
-  {
-    title: 'Product Design & User Research',
-    items: ['User personas', 'Experience research', 'Customer journeys', 'Interviews', 'Usability testing', 'Opportunity mapping']
+  "full-time": {
+    "title": "A full-time product role is like joining the formation.",
+    "body": "I'm part of the team, sharing responsibility for where we're going and doing the work to get there. I like talking with customers, working through a problem with design and engineering, and staying close enough to see what happens when we put something into people's hands. Understanding the business gives that work direction. Staying with the team gives me the chance to learn from what we build and help improve it over time.",
+    "turn": "If that's the kind of role you're shaping, I'd like to hear what it needs to own."
   },
-  {
-    title: 'Product Operations & Organization Design',
-    items: ['Organizational assessments', 'Team structure', 'Competency frameworks', 'Analytics reviews', 'Decision practices', 'Operating cadence']
+  "fractional": {
+    "title": "Fractional product leadership is like flying alongside a formation for one stage of its journey.",
+    "body": "The team has somewhere it needs to get to, and I take responsibility for helping it make that progress. In practice, that means agreeing on a product outcome, working through the decisions with the team, and helping carry the work into delivery. I also care about the team's ability to carry it forward. We'd be clear about what they can own, where they still need help, and when it makes sense for me to step back.",
+    "turn": "If there's a stage of the work where that would help, tell me where things stand."
   },
-  {
-    title: 'Coaching & Mentoring',
-    items: ['Product coaching', 'Team hiring', 'Communication', 'Prioritization', 'Functional training', 'Leadership development']
+  "advisory": {
+    "title": "Advisory and consulting are like getting a wider view from orbit.",
+    "body": "That perspective can reveal connections that are easy to miss when you're close to one part of the work. I see things as systems, so I'd want to understand how the customer experience, the operations, and the numbers affect each other. Then we'd work through what that means with the people closest to the problem. The wider view should help us decide what to do on the ground, whether that's a recommendation, a small fix, or a change I help put into practice.",
+    "turn": "If something keeps getting in your team's way, let's start there."
   }
-];
+};
+
+const lead = 'Bring me into your team full time, work with me on a product outcome, or get help with a business problem.';
 ---
 
-<BaseLayout title="Work With Me" description="Product strategy, discovery, assessment, and fractional product leadership with Brandon Keao.">
-  <section class="page-hero">
-    <div class="container">
-      <p class="kicker">Work with me</p>
-      <h1 class="page-title">Get unstuck.<br />Build momentum.</h1>
-      <HeroMotion kind="align" />
-      <p class="page-dek">I work with leadership teams when an important product or growth problem is not moving. The cause may be unclear, the data may not settle the debate, or the work may need several teams to move together. I help the team find what is getting in the way, decide what to do next, and see it through.</p>
-    </div>
-  </section>
+<BaseLayout title="Work with me" description={lead}>
+  <div class="wwm" data-wwm data-state="overview">
+    <PageHero title="Work with me" mark="formation" lead={lead} class="wwm-hero" />
 
-  <section class="v2-section">
-    <div class="container">
-      <div class="v2-section-heading">
-        <p class="kicker">Ways to work together</p>
-        <h2 class="v2-section-title">Start with the problem.</h2>
-      </div>
+    <div class="sheet wwm-sheet" data-wwm-flow>
+      <!-- The three ways as selector cards. Real links, so they work without JavaScript; the
+           script makes them toggle buttons (aria-pressed), nothing pressed on load. -->
+      <section class="wwm-select" aria-labelledby="wwm-ways-title" data-wwm-select>
+        <h2 class="sr-only" id="wwm-ways-title">Ways to work together</h2>
+        <p class="wwm-cards-caption">Choose an option to see how we could work together.</p>
+        <ul class="wwm-cards">
+          {ENGAGEMENTS.map((e) => (
+            <li>
+              <a class="wwm-card" href={`/services/?engagement=${e.slug}#wwm-${e.slug}`} data-wwm-choose={e.slug} aria-controls={`wwm-${e.slug}`}>
+                <span class="wwm-card-tag"><i class={`dot dot-${e.dot}`} aria-hidden="true"></i>{e.tag}</span>
+                <span class="wwm-card-name">{e.name}</span>
+                <span class="wwm-card-summary">{e.summary}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      <div class="v2-engagements">
-        <article class="v2-engagement">
-          <span class="v2-number">01</span>
-          <div>
-            <span class="v2-engagement-meta">Explore the problem</span>
-            <h3>Initial conversation</h3>
+      <div class="wwm-content">
+        {ENGAGEMENTS.map((e) => <EngagementDetail e={e} />)}
+
+        <section class="wwm-band wwm-shared" aria-labelledby="wwm-shared-title" data-wwm-overview>
+          <div class="wwm-head">
+            <h2 class="t-section" id="wwm-shared-title">One shared body of work</h2>
+            <p class="t-lead muted-g wwm-follow">Whichever way we work together, the same work backs it up.</p>
           </div>
-          <p>Tell me what you are trying to accomplish and where the work is getting stuck. I will give you an honest view of whether I can help and what a useful next step could be.</p>
-          <span class="v2-engagement-symbol" aria-hidden="true">◎</span>
-        </article>
-
-        <article class="v2-engagement">
-          <span class="v2-number">02</span>
-          <div>
-            <span class="v2-engagement-meta">Find the constraint</span>
-            <h3>Focused diagnostic</h3>
+          <div class="wwm-body">
+            <p class="t-body muted-g wwm-measure">The Portfolio shows applied work in its original context; the Playbooks explain reusable methods. Both support all three ways of working together — a project from one kind of role can inform a different kind of engagement without changing what it was.</p>
+            <p class="wwm-links">
+              <a class="link-ground" href="/portfolio/">Browse the Portfolio →</a>
+              <a class="link-ground" href="/playbooks/">Explore the Playbooks →</a>
+            </p>
           </div>
-          <p>A focused engagement to understand the system, test the competing explanations, and leave the team with a clear direction and next move.</p>
-          <span class="v2-engagement-symbol" aria-hidden="true">↗</span>
-        </article>
-
-        <article class="v2-engagement">
-          <span class="v2-number">03</span>
-          <div>
-            <span class="v2-engagement-meta">Own the outcome</span>
-            <h3>Embedded product leadership</h3>
-          </div>
-          <p>Hands-on senior leadership for a critical initiative or transition. I connect the decisions, teams, and delivery needed to create momentum and make the change real.</p>
-          <span class="v2-engagement-symbol" aria-hidden="true">∞</span>
-        </article>
-      </div>
-
-    </div>
-  </section>
-
-  <section class="v2-section v2-dark">
-    <div class="container">
-      <div class="v2-split-heading">
-        <div>
-          <p class="kicker">Where I can help</p>
-          <h2 class="v2-section-title">The product is only one part of the system.</h2>
-        </div>
-        <p class="v2-lead">I work across teams to solve customer and business problems.</p>
-      </div>
-
-      <div class="service-area-grid">
-        {serviceAreas.map((area, index) => (
-          <article class="service-area">
-            <span>0{index + 1}</span>
-            <h3>{area.title}</h3>
-            <ul>
-              {area.items.map(item => <li>{item}</li>)}
-            </ul>
-          </article>
-        ))}
+        </section>
       </div>
     </div>
-  </section>
 
-  <section class="v2-section">
-    <div class="container v2-about-grid">
-      <div>
-        <p class="kicker">What working together feels like</p>
-        <h2 class="v2-section-title service-values-title">
-          <span>Clear expectations.</span>
-          <span>Honest feedback.</span>
-          <span>Shared ownership.</span>
-        </h2>
-      </div>
-      <div>
-        <p class="v2-lead">I believe leadership comes from everywhere. My role is to help make the problem clear, create the conditions for good work, and support the people doing it.</p>
-        <p class="service-body">The full version includes how I run one-on-ones, give feedback, think about development, and hold myself accountable when my behavior does not match the values on the page.</p>
-        <a class="text-link" href="/manager-readme">Read my Manager README <span aria-hidden="true">↗</span></a>
-      </div>
-    </div>
-  </section>
+    {/* The band follows the selection (ticket #37): each model's own Formation story; the
+        Overview keeps the general scene. */}
+    <SceneBand set="work" speed={2} models={ENGAGEMENTS.map((e) => e.slug)} />
 
-  <section class="v2-section v2-contact">
-    <div class="container">
-      <p class="kicker">Start a conversation</p>
-      <h2>Tell me what you're trying to move.</h2>
-      <a class="btn btn-primary" href="/contact">Get in touch <span aria-hidden="true">↗</span></a>
+    <div data-wwm-overview>
+      <WorldNote {...worldNotes.overview} />
+      <ClosingSheet class="wwm-close" eyebrow="Let's talk" title="Not sure where your work fits? Tell me what you're trying to do." button="Let's talk" />
     </div>
-  </section>
+    {/* Each model's own caption and closing; shown with its model (no-JS readers get the overview's). */}
+    {ENGAGEMENTS.map((e) => (
+      <div data-wwm-closing={e.slug} hidden>
+        <WorldNote level="h3" {...worldNotes[e.slug]} />
+        <ClosingSheet class="wwm-close" level="h3" label={`Let's talk about ${e.name}`} eyebrow="Let's talk" title={e.cta.title} button={e.cta.button} href={e.cta.href} />
+      </div>
+    ))}
+  </div>
+  <script is:inline data-astro-rerun>
+    /* First paint: the cards become toggle buttons, and a deep link's ?engagement= applies
+       before the module script loads, so the overview and the other details do not flash
+       (mirrors show() in wwm/state.ts). */
+    (function () {
+      var s = document.currentScript, r = s && s.previousElementSibling;
+      if (!r || !r.hasAttribute('data-wwm')) return;
+      var v = new URLSearchParams(location.search).get('engagement');
+      var ds = r.querySelectorAll('[data-wwm-detail]'), ok = false;
+      ds.forEach(function (d) { if (d.getAttribute('data-wwm-detail') === v) ok = true; });
+      if (!ok) v = null;
+      r.querySelectorAll('[data-wwm-choose]').forEach(function (c) {
+        c.setAttribute('role', 'button');
+        c.setAttribute('aria-pressed', String(c.getAttribute('data-wwm-choose') === v));
+      });
+      /* The Overview hides the stacked no-JS details here too, before paint: left to the module
+         script, the shared band jumped up into view after load (a 0.29 layout shift at 1440). */
+      ds.forEach(function (d) { d.hidden = d.getAttribute('data-wwm-detail') !== v; });
+      /* The end band shows the chosen model's poster from the first paint (ticket #37; mirrors
+         showPoster() in SceneBand.astro). */
+      var b = r.querySelector('[data-scene-band]');
+      if (b) {
+        b.setAttribute('data-scene-model', v || '');
+        b.querySelectorAll('[data-scene-poster]').forEach(function (p) { p.hidden = p.getAttribute('data-scene-poster') !== (v || ''); });
+      }
+      if (!v) return;
+      r.setAttribute('data-state', 'selected');
+      r.querySelectorAll('[data-wwm-closing]').forEach(function (c) { c.hidden = c.getAttribute('data-wwm-closing') !== v; });
+      r.querySelectorAll('[data-wwm-overview]').forEach(function (el) { el.hidden = true; });
+    })();
+  </script>
 </BaseLayout>
 
+<script>
+  import { initWorkWithMe } from '../components/orbit/wwm/state';
 
-<style>
-  .service-values-title {
-    font-size: clamp(1.75rem, 3.4vw, 2.75rem);
-    line-height: 1.16;
+  let teardown: (() => void) | undefined;
+  document.addEventListener('astro:page-load', () => { teardown?.(); teardown = initWorkWithMe(); });
+  document.addEventListener('astro:before-swap', () => { teardown?.(); teardown = undefined; });
+</script>
+
+<style is:global>
+  /* Work with me: one 12-column grid, heading in 1-4, content in 6-12 (the Home v2 idiom). */
+  .wwm-band { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; padding-top: var(--space-band); padding-bottom: var(--space-band-sm); }
+  .wwm-head { grid-column: 1 / span 4; }
+  .wwm-body { grid-column: 6 / -1; min-width: 0; }
+  .wwm-measure { max-width: 60ch; }
+  .wwm-follow { margin-top: 16px; }
+  .wwm h2[tabindex='-1']:focus { outline: none; }
+  .wwm h2[tabindex='-1']:focus-visible { outline: 2px solid var(--accent-on-ground); }
+
+  /* ---- the white sheet (layout O1) -------------------------------------------------------- */
+  /* Shared pieces written for the ground (SectionHead, the muted lead, link-ground) take the
+     sheet's values inside it, so they read dark on white without forking their markup. */
+  .wwm-sheet {
+    --ground: var(--sheet);
+    --ground-raised: #f6f6f3;
+    --on-ground: var(--on-sheet);
+    --on-ground-muted: var(--on-sheet-muted);
+    --on-ground-faint: #6c6f67;
+    --line-on-ground: var(--line-on-sheet);
+    --control-line-on-ground: #b7b9b1;
+    --accent-on-ground: var(--accent);
+    margin-bottom: 0;
+  }
+  @media (min-width: 861px) { .sheet.wwm-sheet { padding-top: 56px; } }
+
+  /* ---- selector cards --------------------------------------------------------------------- */
+  .wwm-cards-caption { font-size: 15px; line-height: 1.5; color: var(--on-sheet-muted); margin-bottom: 16px; }
+  .wwm-cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .wwm-cards li { display: flex; min-width: 0; }
+  .wwm-card { flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 22px 24px 24px; border: 1px solid var(--line-on-sheet); border-radius: var(--r-sheet); background: var(--sheet); color: var(--on-sheet); transition: border-color 0.15s, box-shadow 0.15s; }
+  .wwm-card:hover { border-color: #b7b9b1; }
+  /* Pressed: a 2px logo-red edge (1px border plus a 1px inset ring, so nothing moves); never a fill. */
+  .wwm-card[aria-pressed='true'] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .wwm-card:focus-visible { outline: 2px solid var(--on-sheet); outline-offset: 3px; border-radius: var(--r-sheet); }
+  .wwm-card-tag { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.4; font-weight: 500; color: var(--on-sheet-muted); }
+  .wwm-card-name { font-size: 21px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+  .wwm-card-summary { font-size: 15px; line-height: 1.5; color: var(--on-sheet-muted); }
+
+  /* ---- what follows the cards in the sheet ------------------------------------------------ */
+  .wwm-content { margin-top: 40px; border-top: 1px solid var(--line-on-sheet); }
+  .wwm-content > .wwm-shared { padding-top: var(--space-band-sm); padding-bottom: 0; }
+
+  /* Browser Back to the Overview (D1): the overview sections fade back in instead of popping. */
+  @media (prefers-reduced-motion: no-preference) {
+    .wwm.wwm-returning [data-wwm-overview]:not([hidden]) { animation: wwm-in 0.35s ease-out; }
   }
 
-  .service-values-title span {
-    display: block;
+  /* ---- a selected model's detail: calm sections on the sheet ---------------------------- */
+  /* Readable pattern (designer review, Brandon approved the before and after): the heading in
+     columns 1–4, one reading column (about 630px, 18px, the sheet's ink, not muted), a hairline
+     between sections, nothing above a heading, no motion. */
+  .wwm-detail-intro { padding-top: var(--space-band-sm); padding-bottom: 40px; }
+  .wwm-detail-intro .section-eyebrow { display: flex; align-items: center; gap: 8px; }
+  .wwm-detail-intro .section-head { max-width: none; }
+  .wwm-read { max-width: 630px; font-size: 18px; line-height: 1.6; color: var(--on-sheet); }
+  .wwm-detail-intro .wwm-read { font-size: clamp(18px, 1.4vw, 20px); line-height: 1.5; }
+  .wwm-section { padding-top: 40px; padding-bottom: 40px; border-top: 1px solid var(--line-on-sheet); }
+  .wwm-section-title { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; color: var(--on-sheet); }
+  .wwm-detail > .wwm-evidence { padding-bottom: 0; }
+  .wwm-fits { list-style: none; margin: 0; padding: 0; max-width: 630px; }
+  .wwm-fits li { padding: 12px 0; border-top: 1px solid var(--line-on-sheet); font-size: 18px; line-height: 1.6; color: var(--on-sheet); }
+  .wwm-fits li:first-child { border-top: 0; padding-top: 0; }
+  .wwm-fits li:last-child { padding-bottom: 0; }
+
+  .wwm-ev-lead { margin-bottom: 24px; }
+  .wwm-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; max-width: 630px; }
+  .wwm-group-label { font-size: 15px; font-weight: 600; color: var(--on-sheet); margin-bottom: 8px; }
+  .wwm-ev-list { list-style: none; margin: 0; padding: 0; }
+  .wwm-ev-list li { display: flex; flex-direction: column; gap: 2px; padding: 12px 0; border-top: 1px solid var(--line-on-sheet); }
+  .wwm-ev-name { font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--on-sheet); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; text-decoration-color: var(--line-on-sheet); transition: text-decoration-color 0.15s; align-self: flex-start; }
+  .wwm-ev-name:hover { text-decoration-color: var(--accent); }
+  .wwm-ev-note { font-size: 15px; line-height: 1.5; color: var(--on-sheet); }
+  .wwm-ev-origin { font-size: 14px; line-height: 1.5; color: var(--on-sheet-muted); }
+  .wwm-group-link { padding-top: 12px; border-top: 1px solid var(--line-on-sheet); }
+
+  /* ---- closing sheets (ClosingSheet): one seam above them on this page --------------------- */
+  .sheet.wwm-close { margin-top: var(--space-band-sm); }
+
+  /* ---- shared body ---------------------------------------------------------------------- */
+  .wwm-links { display: flex; flex-wrap: wrap; gap: 16px 32px; margin-top: 28px; }
+
+  /* Swaps are instant under reduced motion; otherwise a short fade as a detail appears. */
+  @media (prefers-reduced-motion: no-preference) {
+    .wwm[data-state='selected'] .wwm-detail:not([hidden]) { animation: wwm-in 0.28s ease-out; }
+    @keyframes wwm-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  }
+
+
+  @media (max-width: 1100px) {
+    .wwm-head { grid-column: 1 / span 5; }
+    .wwm-body { grid-column: 7 / -1; }
+    .wwm-groups { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  }
+
+  /* Phones: one column; compact stacked cards (tag and name: with the summary three cards do
+     not fit above the fold at 390x844), and inline detail. */
+  @media (max-width: 860px) {
+    .wwm-band { grid-template-columns: minmax(0, 1fr); row-gap: 16px; padding-top: var(--space-band-sm); padding-bottom: 0; }
+    .wwm-head, .wwm-body { grid-column: 1 / -1; }
+    .wwm-band .t-body { font-size: 16px; }
+    .wwm-detail-intro { padding-top: 32px; padding-bottom: 32px; }
+    .wwm-section { padding-top: 32px; padding-bottom: 32px; }
+    .wwm-read, .wwm-fits li { font-size: 17px; }
+    .wwm-section-title { font-size: 20px; }
+    .wwm-cards { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .wwm-card { padding: 14px 16px 16px; gap: 2px; }
+    .wwm-card-name { font-size: 19px; }
+    .wwm-card-summary { display: none; }
+    .wwm-content { margin-top: 32px; }
+    .wwm-content > .wwm-shared { padding-top: 32px; }
   }
 </style>

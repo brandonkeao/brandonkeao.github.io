@@ -1,0 +1,41 @@
+---
+// One engagement model's three sections: When this fits, What I would take on, How we would
+// work together. They used to be a scroll story (ticket #10): a sticky media column played the
+// formation scene beside the steps, each step held about 84svh of scroll, and the off-beat copy
+// ghosted. The designer review (Oct 13, Brandon approved the readability before and after)
+// turned it into calm, static sections on the white sheet: a heading in columns 1–4, one
+// reading column of about 630px in the sheet's ink, a hairline between sections, no motion,
+// no numbers and nothing above the heading. The formation scene went to the page's closing
+// band. Copy is verbatim from ./content.ts. The step ids (#wwm-<slug>-{fits,work,together},
+// linked from orbit-data.ts) and .step-copy are kept.
+import type { Engagement } from './content';
+
+interface Props { e: Engagement }
+const { e } = Astro.props;
+const id = `wwm-${e.slug}`;
+
+const steps = [
+  { key: 'fits', id: `${id}-fits`, title: 'When this fits' },
+  { key: 'work', id: `${id}-work`, title: 'What I would take on' },
+  { key: 'together', id: `${id}-together`, title: 'How we would work together' },
+] as const;
+---
+
+<div class="wwm-story" data-story={e.slug}>
+  {steps.map((st) => (
+    <section class="wwm-band wwm-section story-step" id={st.id} data-story-step={st.key} aria-labelledby={`${st.id}-title`}>
+      <div class="wwm-head">
+        <h3 class="wwm-section-title" id={`${st.id}-title`}>{st.title}</h3>
+      </div>
+      <div class="wwm-body step-copy">
+        {st.key === 'fits' && (
+          <ul class="wwm-fits">
+            {e.fits.map((f) => <li>{f}</li>)}
+          </ul>
+        )}
+        {st.key === 'work' && <p class="wwm-read">{e.takeOn}</p>}
+        {st.key === 'together' && <p class="wwm-read">{e.together}</p>}
+      </div>
+    </section>
+  ))}
+</div>
