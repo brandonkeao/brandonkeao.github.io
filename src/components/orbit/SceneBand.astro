@@ -79,7 +79,9 @@ const key = scene ?? set;
   const FORMATION_DEFAULT: Record<'wide' | 'phone', View> = { wide: { fovScale: 0.8, shiftY: 0.55 }, phone: { fovScale: 0.9, shiftY: 0.4 } };
   const COLLECTION_VIEW: Record<CollectionKind, Record<'wide' | 'phone', { fovScale: number; shiftX: number; shiftY: number }>> = {
     portfolio: { wide: { fovScale: 0.85, shiftX: 0, shiftY: -0.2 }, phone: { fovScale: 0.8, shiftX: 0, shiftY: -0.2 } },
-    playbooks: { wide: { fovScale: 0.7, shiftX: 0.3, shiftY: -0.6 }, phone: { fovScale: 0.8, shiftX: 0.3, shiftY: -0.4 } },
+    // #67: show the low flight across the night face as well as the skyline.
+    // The previous close crop framed the horizon but put the entire formation below the band.
+    playbooks: { wide: { fovScale: 1.15, shiftX: 0.22, shiftY: 0.15 }, phone: { fovScale: 1.15, shiftX: 0.22, shiftY: 0.15 } },
   };
   const MAP_FRAMING = {
     wide: { zoom: 2.6, offsetX: 0, offsetY: -0.8, maxPixelRatio: 1.5, moonScale: 0.8 },
