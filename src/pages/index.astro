@@ -175,14 +175,22 @@ const engagements = [
   .hv-role-scale-line { position: relative; height: 1.5px; background: color-mix(in srgb, var(--on-ground) 32%, transparent); }
   .hv-role-scale-point { position: absolute; left: 50%; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: var(--accent-on-ground); }
   @media (min-width: 861px) {
-    /* Desktop: the headline spans both columns; the lead and actions sit left; the callout sits
-       right with its bottom on the actions' baseline, as in Brandon's reference. */
-    .hv-hero .page-hero-top { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 0 96px; align-items: end; }
+    /* Desktop: the headline, the lead and the actions in the left column; the callout on the right,
+       its top on the headline's top (Brandon, 2026-10-16, #61: "aligned at the top of the blue box
+       with the "Senior product leadership..." header"; it was bottom-aligned with the actions).
+       The right column and the gap shrink with the window so the headline keeps two lines at 1440
+       and does not wrap early at 1280. */
+    .hv-hero .page-hero-top { display: grid; grid-template-columns: minmax(0, 1fr) clamp(280px, 24vw, 340px); gap: 0 clamp(48px, 6.6vw, 96px); align-items: start; }
     .hv-hero .page-hero-main { display: contents; }
-    .hv-hero .page-hero-main > h1 { grid-column: 1 / -1; grid-row: 1; }
-    .hv-hero .page-hero-main > .page-hero-lead { grid-column: 1; grid-row: 2; align-self: start; }
+    .hv-hero .page-hero-main > h1 { grid-column: 1; grid-row: 1; }
+    .hv-hero .page-hero-main > .page-hero-lead { grid-column: 1; grid-row: 2; }
     .hv-hero .page-hero-main > .hv-hero-actions { grid-column: 1; grid-row: 3; }
-    .hv-hero .page-hero-aside { grid-column: 2; grid-row: 2 / 4; align-self: end; }
+    .hv-hero .page-hero-aside { grid-column: 2; grid-row: 1 / 4; align-self: start; }
+  }
+  @media (min-width: 861px) and (max-width: 1099px) {
+    /* Narrow desktops: the left column is too narrow for the accent on its own line without a
+       fourth line, so it flows inline and the headline stays at three. */
+    .hv-hero .page-hero-accent { display: inline; }
   }
 
   /* ---- field 2: paper ------------------------------------------------------------------- */
