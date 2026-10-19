@@ -107,8 +107,11 @@ const launches = mark === 'chain';
      the same length in cqw (inside a transform, where % would be the dot's own width). */
   .hero-line--chain { container-type: inline-size; --hero-exit: calc(min(430px, 100%) * 0.479); --hero-exit-cq: calc(min(430px, 100cqw) * 0.479); }
   .hero-line--chain .hero-rule { left: var(--hero-exit); }
-  .hero-line--exchange, .hero-line--formation { --hero-exit: min(228px, 82%); }
-  .hero-line--exchange .hero-rule, .hero-line--formation .hero-rule { left: var(--hero-exit); }
+  .hero-line--exchange { --hero-exit: min(228px, 82%); }
+  .hero-line--exchange .hero-rule { left: var(--hero-exit); }
+  /* Formation (#73): a separate rule beneath all eight ships, never a nose-level exit.
+     The scene scales down only below 280px; its baseline follows that scaling. */
+  .hero-line--formation { height: auto; --rule-y: calc(100% * 86 / 96); }
   .hero-traveller { position: absolute; left: var(--hero-exit); top: calc(var(--rule-y) - 3.5px); width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: currentColor; opacity: 0; }
   /* The motif's own short shelf or ground would double the rule's tint where they overlap. */
   .hero-line--books .motion-line > .ml-draw.ml-soft:first-child,
@@ -126,11 +129,12 @@ const launches = mark === 'chain';
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-rule { animation: hero-rule-draw 950ms cubic-bezier(0.33, 0, 0.2, 1) 920ms both; }
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-traveller { animation: hero-travel 950ms cubic-bezier(0.33, 0, 0.2, 1) 920ms forwards; }
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-arrow { animation-delay: 1690ms; }
-    /* Exchange and formation settle first, then hand off to the same long terminal rule. */
-    .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-rule,
-    .hero-line--formation:has(.motion-line[data-motion-play]) .hero-rule { animation-duration: 950ms; animation-delay: 620ms; }
-    .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-arrow,
-    .hero-line--formation:has(.motion-line[data-motion-play]) .hero-arrow { animation-delay: 1370ms; }
+    .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-rule { animation-duration: 950ms; animation-delay: 620ms; }
+    .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-arrow { animation-delay: 1370ms; }
+    /* The newcomer arrives by 1.9s, the team settles by 3.37s, then the underline draws.
+       The terminal arrow waits for the complete rule rather than appearing during it. */
+    .hero-line--formation:has(.motion-line[data-motion-play]) .hero-rule { animation: hero-rule-draw 1000ms ease-in-out 3600ms both; }
+    .hero-line--formation:has(.motion-line[data-motion-play]) .hero-arrow { animation: hero-resolve 160ms ease-out 4600ms both; }
   }
   @keyframes hero-rule-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @keyframes hero-travel { 0% { opacity: 1; transform: translateX(0); } 90% { opacity: 1; transform: translateX(calc(100cqw - var(--hero-exit-cq) - 9px)); } 100% { opacity: 0; transform: translateX(calc(100cqw - var(--hero-exit-cq) - 9px)); } }

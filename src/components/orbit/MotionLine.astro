@@ -1,4 +1,5 @@
 ---
+import FormationMark from './FormationMark.astro';
 // Red line marks under page titles, brought back from the earlier site at Brandon's
 // request (2026-10-06). Each draws once when it comes into view; it never replays.
 // The final drawing is plain SVG, so reduced motion and no-JS readers see it still.
@@ -122,6 +123,8 @@ const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
       </g>
     </svg>
   </div>
+) : kind === 'formation' ? (
+  <FormationMark />
 ) : kind === 'chain' ? (
   <div class="motion-line motion-line-stretch motion-line-scene motion-line-chain" data-motion aria-hidden="true">
     <svg width="100%" height="100%" viewBox="0 0 430 60" preserveAspectRatio="xMinYMax meet" fill="none" focusable="false">
@@ -167,18 +170,6 @@ const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
     <circle class="ml-agreement" cx="100" cy="20" r="5.5" />
     <circle class="ml-dot ml-agreement-dot" cx="100" cy="20" r="2" />
     <path class="ml-draw ml-exit" pathLength="1" d="M106 20H228" />
-  </>}
-  {kind === 'formation' && <>
-    <g class="ml-formation-craft" style="--ml-from-x:-18px; --ml-from-y:-5px">
-      <path d="M44 8l-9-2-4-5h-3l2 6h-4v2h4l-2 6h3l4-5 9-2z" />
-    </g>
-    <g class="ml-formation-craft ml-d1" style="--ml-from-x:-18px; --ml-from-y:5px">
-      <path d="M44 32l-9-2-4-5h-3l2 6h-4v2h4l-2 6h3l4-5 9-2z" />
-    </g>
-    <g class="ml-formation-craft ml-d2" style="--ml-from-x:-10px; --ml-from-y:0px">
-      <path d="M78 20l-9-2-4-5h-3l2 6h-4v2h4l-2 6h3l4-5 9-2z" />
-    </g>
-    <path class="ml-draw ml-exit" pathLength="1" d="M78 20H228" />
   </>}
   {kind === 'connect' && <>
     <path class="ml-draw" pathLength="1" d="M12 20h96" />
@@ -340,7 +331,6 @@ const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
   .ml-agreement { fill: var(--ground); transform-box: fill-box; transform-origin: center; }
   .ml-agreement-dot { transform-box: fill-box; transform-origin: center; }
   .ml-exit { --ml-delay: 420ms; }
-  .ml-formation-craft { transform-box: view-box; transform-origin: center; }
   .ml-d1 { --ml-delay: 100ms; } .ml-d2 { --ml-delay: 200ms; } .ml-d3 { --ml-delay: 300ms; } .ml-d4 { --ml-delay: 400ms; }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -385,8 +375,6 @@ const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
     .motion-line[data-motion-armed]:not([data-motion-play]) :is(.ml-agreement, .ml-agreement-dot) { opacity: 0; transform: scale(0.5); }
     .motion-line[data-motion-play] .ml-agreement { animation: ml-node 280ms cubic-bezier(0.3, 1.4, 0.5, 1) 360ms both; }
     .motion-line[data-motion-play] .ml-agreement-dot { animation: ml-node-fill 220ms ease-out 480ms both; }
-    .motion-line[data-motion-armed]:not([data-motion-play]) .ml-formation-craft { opacity: 0.35; transform: translate(var(--ml-from-x), var(--ml-from-y)); }
-    .motion-line[data-motion-play] .ml-formation-craft { animation: ml-form-up 620ms cubic-bezier(0.22, 1, 0.36, 1) var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-traveller { animation: ml-travel 1100ms cubic-bezier(0.22, 1, 0.36, 1) both; }
     .motion-line[data-motion-play] .ml-resolve { animation: ml-resolve 1100ms ease-out both; }
   }
@@ -404,7 +392,6 @@ const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
   @keyframes ml-place { from { transform: translateY(-4px); } to { transform: translateY(0); } }
   @keyframes ml-meet { from { transform: scale(0.6); opacity: 0.45; } to { transform: scale(1); opacity: 1; } }
   @keyframes ml-align { from { transform: translateY(var(--ml-offset, 0px)); } to { transform: translateY(0); } }
-  @keyframes ml-form-up { from { opacity: 0.35; transform: translate(var(--ml-from-x), var(--ml-from-y)); } to { opacity: 1; transform: none; } }
   @keyframes ml-travel { 0% { opacity: 1; transform: translateX(0); } 85% { opacity: 1; transform: translateX(218px); } 100% { opacity: 0; transform: translateX(218px); } }
   @keyframes ml-resolve { 0%, 75% { opacity: 0; } 100% { opacity: 1; } }
 </style>
