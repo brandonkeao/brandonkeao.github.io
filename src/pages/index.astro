@@ -61,7 +61,7 @@ const engagements = [
   </div>
 
   <!-- Field 2: paper. The person: who I am, how I think, and a client's words. -->
-  <Sheet class="hv-sheet" label="About Brandon, how I think, and what a client said">
+  <Sheet class="hv-sheet" label="About Brandon, how I think, and what people say">
     <section class="hv-band hv-about" aria-labelledby="hv-about">
       <div class="hv-head">
         <SectionHead id="hv-about" eyebrow="About Brandon" title="A builder who cares about things that actually work." />
@@ -93,11 +93,15 @@ const engagements = [
       </ul>
     </section>
 
-    <section class="hv-band hv-quote" aria-label="What a client said">
+    <section class="hv-band hv-quote" aria-label="What people say">
       <div class="hv-body">
         <Quote
           quote="“Finding someone who can translate business objectives into technical requirements is difficult. Finding someone who can also own the project, teams, and client relationship is rare.”"
           cite="Andre Sugai, CTO and Partner, Ora Interactive"
+        />
+        <Quote
+          quote="“I was consistently impressed by his thoughtful approach to product problem-solving and design. He is a wonderful collaborator who has a knack for bringing people together to generate ideas that are more than the sum of its parts.”"
+          cite="Jenny McKenzie"
         />
       </div>
     </section>
@@ -204,8 +208,8 @@ const engagements = [
   .hv-about-text::after { content: ''; display: block; clear: both; }
   .hv-portrait { float: right; width: 200px; height: 200px; margin: 6px 0 20px 40px; }
 
-  /* The client's words close the paper: the quote spans the whole sheet (Brandon, 2026-10-07), a red rule beside it. */
-  .hv-quote .hv-body { grid-column: 1 / -1; }
+  /* Testimonials close the paper: each spans the whole sheet with its own red rule. */
+  .hv-quote .hv-body { grid-column: 1 / -1; display: grid; gap: clamp(32px, 4vw, 48px); }
   .hv-quote blockquote { border-left: 3px solid var(--accent); padding-left: 28px; color: var(--on-sheet); }
   .hv-quote .quote-cite { padding-left: 31px; color: var(--on-sheet-muted); }
 
