@@ -12,7 +12,6 @@ import SceneBand from '../components/orbit/SceneBand.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import ClosingSheet from '../components/orbit/ClosingSheet.astro';
 import SectionHead from '../components/orbit/SectionHead.astro';
-import Quote from '../components/orbit/Quote.astro';
 import ExperienceStrip from '../components/orbit/ExperienceStrip.astro';
 import WorldNote from '../components/orbit/WorldNote.astro';
 const homeClosing = {
@@ -22,6 +21,24 @@ const homeClosing = {
 };
 
 const companies = ['Rebrandly', 'Pie Insurance', 'Bitly', 'PAIRIN', 'Ora Interactive', 'Sears', 'Bridgewater', 'Bloomberg', 'Goldman Sachs', 'Deutsche Bank', 'Capital Group', 'Thomson Reuters', 'Saxo Bank'];
+
+const recommendations = [
+  {
+    quote: '“Finding someone who can translate business objectives into technical requirements is difficult. Finding someone who can also own the project, teams, and client relationship is rare.”',
+    name: 'Andre Sugai',
+    details: ['CTO and Partner', 'Ora Interactive'],
+  },
+  {
+    quote: '“I was consistently impressed by his thoughtful approach to product problem-solving and design. He is a wonderful collaborator who has a knack for bringing people together to generate ideas that are more than the sum of its parts.”',
+    name: 'Jenny McKenzie',
+    details: ['Director of Product Design', 'Bitly'],
+  },
+  {
+    quote: '“A strong team member, team leader, and individual contributor, Brandon excelled in the variety of client cultures that we worked with. His delivery acumen, attention to detail, and willingness to learn provided deep and lasting value to our clients.”',
+    name: 'Josh Nardo',
+    details: ['Worked together for seven years'],
+  },
+];
 
 const reading = [
   { meta: 'Working together', title: 'Manager README', href: '/manager-readme/' },
@@ -93,16 +110,20 @@ const engagements = [
       </ul>
     </section>
 
-    <section class="hv-band hv-quote" aria-label="What people say">
-      <div class="hv-body">
-        <Quote
-          quote="“Finding someone who can translate business objectives into technical requirements is difficult. Finding someone who can also own the project, teams, and client relationship is rare.”"
-          cite="Andre Sugai, CTO and Partner, Ora Interactive"
-        />
-        <Quote
-          quote="“I was consistently impressed by his thoughtful approach to product problem-solving and design. He is a wonderful collaborator who has a knack for bringing people together to generate ideas that are more than the sum of its parts.”"
-          cite="Jenny McKenzie, Director of Product Design, Bitly"
-        />
+    <section class="hv-band hv-quote" aria-labelledby="hv-recommendations">
+      <SectionHead id="hv-recommendations" eyebrow="Recommendations" title="People I’ve worked with." />
+      <div class="hv-body hv-recommendations">
+        {recommendations.map(({ quote, name, details }) => (
+          <figure class="hv-recommendation">
+            <blockquote>{quote}</blockquote>
+            <figcaption class="quote-cite">
+              <span class="hv-recommendation-name">{name}</span>
+              <span class="hv-recommendation-details">
+                {details.map((detail) => <span>{detail}</span>)}
+              </span>
+            </figcaption>
+          </figure>
+        ))}
       </div>
     </section>
   </Sheet>
@@ -208,10 +229,28 @@ const engagements = [
   .hv-about-text::after { content: ''; display: block; clear: both; }
   .hv-portrait { float: right; width: 200px; height: 200px; margin: 6px 0 20px 40px; }
 
-  /* Testimonials close the paper: each spans the whole sheet with its own red rule. */
-  .hv-quote .hv-body { grid-column: 1 / -1; display: grid; gap: clamp(32px, 4vw, 48px); }
-  .hv-quote blockquote { border-left: 3px solid var(--accent); padding-left: 28px; color: var(--on-sheet); }
-  .hv-quote .quote-cite { padding-left: 31px; color: var(--on-sheet-muted); }
+  /* Selected Featured + Pair (#81): one broad recommendation, then two supporting voices. */
+  .hv-quote { row-gap: 34px; }
+  .hv-quote .section-head { grid-column: 1 / -1; max-width: none; }
+  .hv-quote .t-section { font-size: 30px; line-height: 1.15; font-weight: 500; }
+  .hv-quote .hv-body { grid-column: 1 / -1; }
+  .hv-recommendations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .hv-recommendation { display: flex; flex-direction: column; gap: 24px; min-width: 0; margin: 0; padding: 24px; border-top: 2px solid var(--accent); border-radius: 0 0 8px 8px; background: #f4f4f0; }
+  .hv-recommendation:first-child { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) 180px; align-items: center; gap: 32px; }
+  .hv-recommendation blockquote { margin: 0; color: var(--on-sheet); font-size: clamp(20px, 1.6vw, 22px); line-height: 1.48; letter-spacing: -0.012em; font-weight: 400; }
+  .hv-recommendation:first-child blockquote { font-size: 24px; }
+  .hv-recommendation .quote-cite { display: flex; flex-direction: column; min-height: 66px; margin: auto 0 0; padding: 0; color: var(--on-sheet-muted); font-size: 13px; line-height: 1.5; }
+  .hv-recommendation:first-child .quote-cite { margin-top: 0; }
+  .hv-recommendation-name { color: var(--on-sheet); font-size: 14px; font-weight: 500; }
+  .hv-recommendation-details { display: flex; flex-direction: column; margin-top: 4px; }
+
+  @media (max-width: 1000px) {
+    .hv-recommendations { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+    .hv-recommendation:first-child { display: flex; align-items: stretch; gap: 24px; }
+    .hv-recommendation blockquote, .hv-recommendation:first-child blockquote { font-size: 21px; line-height: 1.4; }
+    .hv-recommendation .quote-cite { min-height: 0; }
+    .hv-quote .t-section { font-size: 27px; }
+  }
 
   /* ---- field 3: the stage --------------------------------------------------------------- */
   .hv-field { padding-bottom: var(--space-band); }
@@ -251,8 +290,6 @@ const engagements = [
 
     /* About: a 104px portrait on the right of the opening lines, the text wrapping beside it. */
     .hv-portrait { width: 104px; height: 104px; margin: 4px 0 12px 16px; }
-    .hv-quote blockquote { padding-left: 20px; }
-    .hv-quote .quote-cite { padding-left: 23px; }
 
     .hv-field { padding-bottom: var(--space-band-sm); }
     .hv-ways { padding-top: var(--space-band-sm); }
