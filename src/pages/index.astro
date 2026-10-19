@@ -48,7 +48,7 @@ const engagements = [
       title="Senior product leadership making outcomes move."
       accent="making outcomes move."
       mark="chain"
-      lead="Senior enough to shape the direction. Close enough to the work to help make it happen."
+      lead={'Senior enough to shape the direction. Close\u00a0enough to the work to help make it happen.'}
       class="hv-hero"
     >
       <div class="hv-hero-actions">
@@ -154,7 +154,9 @@ const engagements = [
      one size up from the shared title and across the whole column; the lead one size up. */
   .hv-hero.page-header { padding-top: 80px; padding-bottom: 48px; }
   .hv-hero .t-page-title { font-size: clamp(40px, 4.8vw, 69px); }
-  .hv-hero .page-hero-lead { font-size: clamp(18px, 1.46vw, 21px); font-weight: 600; color: var(--on-ground); margin-top: 24px; max-width: 760px; text-wrap: balance; }
+  /* Selected Option A (#75): one continuous desktop statement, with natural wrapping when
+     the screen needs it. The nonbreaking space keeps the phrase "Close enough" together. */
+  .hv-hero .page-hero-lead { font-size: 22px; font-weight: 400; line-height: 1.5; color: #dedfd9; margin-top: 24px; max-width: none; text-wrap: wrap; }
   .hv-hero .hero-line { margin-top: 36px; }
   .hv-hero-actions { margin-top: 22px; }
   .hv-hero + .experience--ground { padding-top: 16px; margin-bottom: 72px; }
@@ -230,6 +232,7 @@ const engagements = [
     /* Phones: the concise hero flows naturally into the experience strip. */
     .hv-hero.page-header { padding-top: 32px; padding-bottom: 44px; }
     .hv-hero .t-page-title { font-size: clamp(32px, 9.2vw, 38px); }
+    .hv-hero .page-hero-lead { font-size: 19px; text-wrap: balance; }
     .hv-hero .hero-line { margin-top: 28px; }
     .hv-hero + .experience--ground { padding-top: 12px; margin-bottom: 48px; }
     .hv-band { grid-template-columns: minmax(0, 1fr); row-gap: 24px; }
