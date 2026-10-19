@@ -1,0 +1,74 @@
+---
+// Approved hero story (#73): seven scattered ships, one joins, then a shared heading.
+// PageHero draws the independent underline after this group settles. Final geometry is
+// server-rendered; MotionLine's existing one-play observer only enables the CSS sequence.
+const ships = [
+  { x: 40, y: 62, angle: -32 },
+  null,
+  { x: 83, y: 25, angle: 44 },
+  { x: 116, y: 59, angle: -46 },
+  { x: 161, y: 30, angle: 28 },
+  { x: 193, y: 65, angle: -40 },
+  { x: 224, y: 20, angle: 48 },
+  { x: 261, y: 52, angle: -23 },
+];
+---
+
+<div class="motion-line motion-line-formation" data-motion aria-hidden="true">
+  <svg width="280" height="96" viewBox="0 0 280 96" fill="none" focusable="false">
+    {ships.map((from, i) => {
+      const x = 24 + i * 34;
+      const y = i % 2 ? 38 : 62;
+      const delay = 2100 + Math.abs(i - 1) * 75;
+      return <g transform={`translate(${x} ${y})`}>
+        <g class:list={['mlf-ship', !from && 'mlf-newcomer']}
+          style={from ? `--mlf-x:${from.x - x}px;--mlf-y:${from.y - y}px;--mlf-angle:${from.angle}deg;--mlf-delay:${delay}ms` : undefined}>
+          <g class="mlf-drift">
+            <path class="mlf-front" d="M-15 -10L16 0L-15 10L-6 0Z" />
+            <path class="mlf-top" d="M-15 -10L16 0L-6 0Z" />
+            <path class="mlf-side" d="M-6 0L16 0L-15 10Z" />
+            <path class="mlf-edge" d="M-15 -10L16 0L-15 10L-6 0Z" />
+            <path class="mlf-edge mlf-seam" d="M-6 0H16" />
+          </g>
+        </g>
+      </g>;
+    })}
+  </svg>
+</div>
+
+<style is:global>
+  .motion-line.motion-line-formation { width: 280px; max-width: 100%; height: auto; aspect-ratio: 280 / 96; }
+  .motion-line-formation svg { display: block; width: 100%; height: 100%; overflow: hidden; }
+  .mlf-front { fill: color-mix(in srgb, currentColor 12%, var(--ground)); stroke: none; }
+  .mlf-top { fill: color-mix(in srgb, currentColor 22%, var(--ground)); stroke: none; }
+  .mlf-side { fill: color-mix(in srgb, currentColor 30%, var(--ground)); stroke: none; }
+  .mlf-newcomer .mlf-top { fill: color-mix(in srgb, currentColor 38%, var(--ground)); }
+  .mlf-newcomer .mlf-side { fill: color-mix(in srgb, currentColor 46%, var(--ground)); }
+  .mlf-edge { fill: none; stroke: currentColor; stroke-width: 1.35; }
+  .mlf-seam { opacity: 0.55; }
+  .mlf-ship, .mlf-drift { transform-origin: 0 0; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlf-ship:not(.mlf-newcomer) { transform: translate(var(--mlf-x), var(--mlf-y)) rotate(var(--mlf-angle)); }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlf-newcomer { opacity: 0; }
+    .motion-line[data-motion-play] .mlf-ship:not(.mlf-newcomer) { animation: mlf-organize 820ms ease-in-out var(--mlf-delay) both; }
+    .motion-line[data-motion-play] .mlf-ship:not(.mlf-newcomer) .mlf-drift { animation: mlf-drift var(--mlf-delay) ease-in-out both; }
+    .motion-line[data-motion-play] .mlf-newcomer { animation: mlf-join 1150ms ease-in-out 750ms both; }
+  }
+
+  @keyframes mlf-organize {
+    from { transform: translate(var(--mlf-x), var(--mlf-y)) rotate(var(--mlf-angle)); }
+    to { transform: none; }
+  }
+  @keyframes mlf-drift {
+    0%, 100% { transform: none; }
+    25% { transform: translate(2px, -2px) rotate(2deg); }
+    65% { transform: translate(-2px, 2px) rotate(-2deg); }
+  }
+  @keyframes mlf-join {
+    0% { transform: translate(-78px, -20px) rotate(18deg); opacity: 0; }
+    16% { opacity: 1; }
+    60% { transform: translate(-24px, -15px) rotate(6deg); }
+    100% { transform: none; opacity: 1; }
+  }
+</style>
