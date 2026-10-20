@@ -12,6 +12,7 @@
     "@astrojs/sitemap": "^3.6.0",
     "@tailwindcss/vite": "^4.1.18",
     "astro": "^5.16.6",
+    "posthog-js": "^1.438.13",
     "tailwindcss": "^4.1.18",
     "three": "0.186.1"
   },

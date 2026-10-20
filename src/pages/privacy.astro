@@ -1,0 +1,24 @@
+---
+// Privacy (website #1, runbook B4). DRAFT wording for Brandon's approval; every statement here
+// follows from Analytics.astro's configuration, so change both together.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/orbit/PageHero.astro';
+import Sheet from '../components/orbit/Sheet.astro';
+---
+
+<BaseLayout title="Privacy" description="What this site records about a visit, and what it doesn't.">
+  <PageHero title="Privacy" lead="What this site records about a visit, and what it doesn't." />
+  <Sheet label="Privacy">
+    <article class="prose">
+      <h2>Analytics</h2>
+      <p>This site counts visits with PostHog in cookieless mode. It records which pages are viewed and a few named actions: a click on a contact link, a copy of the email address, a click on a link that leaves the site. It sets no cookies and stores nothing in your browser. Your IP address and browser signature are used once, on PostHog's servers, to tell visits apart within a day; they are not kept.</p>
+      <h2>What is not here</h2>
+      <p>No advertising networks, no Google Analytics, no session recording, no forms that collect data. If your browser sends Do Not Track, nothing is recorded at all.</p>
+      <h2>Email</h2>
+      <p>If you write to me, the message stays between us. I don't add addresses to a list.</p>
+      <h2>Hosting</h2>
+      <p>The site is served by Vercel, which keeps short-lived request logs to run the service.</p>
+      <p class="t-caption muted-s">Last updated October 2026.</p>
+    </article>
+  </Sheet>
+</BaseLayout>
