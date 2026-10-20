@@ -4,22 +4,17 @@
   "trailingSlash": true,
   "redirects": [
     {
-      "source": "/consulting",
+      "source": "/consulting/",
       "destination": "/services/",
       "permanent": true
     },
     {
-      "source": "/projects",
+      "source": "/projects/",
       "destination": "/portfolio/",
       "permanent": true
     },
     {
-      "source": "/writing",
-      "destination": "/",
-      "permanent": false
-    },
-    {
-      "source": "/writing/:slug*",
+      "source": "/writing/(.*)",
       "destination": "/",
       "permanent": false
     }
