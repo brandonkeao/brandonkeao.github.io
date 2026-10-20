@@ -165,14 +165,11 @@ const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
     <g class="ml-place ml-d4"><rect x="124" y="12" width="28" height="24" rx="1" /><path d="M132 18h12" /></g>
   </>}
   {kind === 'exchange' && <>
-    {/* Two parties, both from the left, mirrored about the line, meet at the agreement point
-        (#85; Brandon, 2026-10-20: the old lower strand came in from the right and hung under the
-        rule "like a broken fork"). There is no exit path: in the page hero the rule itself
-        leaves from under the agreement circle, so the line past it is one element, no seam. */}
     <path class="ml-draw ml-exchange-in" pathLength="1" d="M8 9h53c16 0 18 11 32 11" />
-    <path class="ml-draw ml-exchange-in ml-d2" pathLength="1" d="M8 31h53c16 0 18-11 32-11" />
+    <path class="ml-draw ml-exchange-in ml-d2" pathLength="1" d="M151 31h-39c-14 0-16-11-29-11" />
     <circle class="ml-agreement" cx="100" cy="20" r="5.5" />
     <circle class="ml-dot ml-agreement-dot" cx="100" cy="20" r="2" />
+    <path class="ml-draw ml-exit" pathLength="1" d="M106 20H228" />
   </>}
   {kind === 'connect' && <>
     <path class="ml-draw" pathLength="1" d="M12 20h96" />
@@ -333,6 +330,7 @@ const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
   .ml-meet { transform-origin: 117px 20px; }
   .ml-agreement { fill: var(--ground); transform-box: fill-box; transform-origin: center; }
   .ml-agreement-dot { transform-box: fill-box; transform-origin: center; }
+  .ml-exit { --ml-delay: 420ms; }
   .ml-d1 { --ml-delay: 100ms; } .ml-d2 { --ml-delay: 200ms; } .ml-d3 { --ml-delay: 300ms; } .ml-d4 { --ml-delay: 400ms; }
 
   @media (prefers-reduced-motion: no-preference) {
