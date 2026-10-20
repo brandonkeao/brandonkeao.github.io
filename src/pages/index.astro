@@ -1,25 +1,17 @@
 ---
 // Home (promoted from the Home v2 proposal, ticket #8 Direction B, 2026-10-09). The hero is the
-// shared PageHero with the `momentum` line, and the planet scene that filled it now plays in the
-// end band above the closing call to action, like every other page (ticket #51; Brandon,
-// 2026-10-14: "move the annimation to the bottom of the page to be consistent across the site").
+// shared PageHero with the `momentum` line. The end-of-page scene band and its caption (#51, #57)
+// are held out of the production release (ticket #87, Brandon 2026-10-20); the page ends on the
+// closing call to action. SceneBand and WorldNote stay in the tree for a later return.
 // Copy verbatim. The Experience strip is unchanged from v2. Structure: stage (hero + strip), one paper sheet (about, how I think,
 // quote), stage (ways to work together), then the closing callout with the one brand-red button.
 // One grid: 12 columns, heading in columns 1-4, content in 6-12; one column at 860 and below.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/orbit/PageHero.astro';
-import SceneBand from '../components/orbit/SceneBand.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import ClosingSheet from '../components/orbit/ClosingSheet.astro';
 import SectionHead from '../components/orbit/SectionHead.astro';
 import ExperienceStrip from '../components/orbit/ExperienceStrip.astro';
-import WorldNote from '../components/orbit/WorldNote.astro';
-const homeClosing = {
-  "title": "My work is like a planetary system, with a shared approach at its center.",
-  "body": "That center is how I work: understand, start, own, improve. I want to understand the problem and how the pieces fit together, then start something useful so we can learn. Taking ownership means staying with the problem, and improving means paying attention to the small things as well as the big decisions. Across this system, missions take us to different moons to establish or improve bases of operations. Those bases represent the projects. The formations show how I work with a team, and the playbooks help us work out how to approach a mission. The red line carries that idea of momentum through the site: making decisions, learning, and building toward better outcomes.",
-  "turn": "If something is stuck in your world, let's talk about where to start."
-};
-
 const companies = ['Rebrandly', 'Pie Insurance', 'Bitly', 'PAIRIN', 'Ora Interactive', 'Sears', 'Bridgewater', 'Bloomberg', 'Goldman Sachs', 'Deutsche Bank', 'Capital Group', 'Thomson Reuters', 'Saxo Bank'];
 
 const recommendations = [
@@ -152,12 +144,6 @@ const engagements = [
 
   <!-- Field 4: the ask. One white callout closes the page (Brandon 2026-10-07: "one large bottom
        dedicated component that is a very clear call to action"). -->
-  <!-- The planet scene, as the end band every page has (#51). -->
-  <SceneBand set="home" speed={2} />
-  {/* The world below (#57): the picture explained in its own words, first person then turned to the
-      reader; the last line leads into the closing. Draft copy under Brandon's review on staging. */}
-  <WorldNote {...homeClosing} />
-
   <ClosingSheet size="display" eyebrow="Start a conversation" title="If you're stuck, let's talk about what to try first." button="Let's talk" titleId="hv-close" />
 </BaseLayout>
 

@@ -3,8 +3,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import CollectionHero from '../components/orbit/collection/CollectionHero.astro';
-import SceneBand from '../components/orbit/SceneBand.astro';
-import WorldNote from '../components/orbit/WorldNote.astro';
 import Collection from '../components/orbit/collection/Collection.astro';
 import CollectionRow from '../components/orbit/collection/CollectionRow.astro';
 import DetailHead from '../components/orbit/collection/DetailHead.astro';
@@ -36,11 +34,6 @@ const playbooks = [
     "source": "Method source: The Sprint authors"
   }
 ];
-const closing = {
-  "title": "A playbook is like a flight plan for a formation of ships.",
-  "body": "It gives us a shared way to approach the work, so we can coordinate without having to figure everything out from scratch. I use these methods to make assumptions visible and help a team understand why we're choosing one approach over another. The plan gives us somewhere to start; the team still has to adapt it to the project and learn from what happens.",
-  "turn": "If you're working through a decision, there may be something here you can use."
-};
 ---
 <BaseLayout title="Playbooks" description="Tools for building shared understanding. Practical ways to connect customer problems, business goals, and the work a team takes on.">
   <CollectionHero scene="playbooks" title="Playbooks" lead="Tools for building shared understanding."
@@ -93,8 +86,7 @@ const closing = {
 </section>
     </Collection>
   </Sheet>
-  <SceneBand scene="playbooks" />
-  <WorldNote {...closing} />
+  {/* The end band and its caption are held out of the production release (#87). */}
   <Prefooter prompt="What decision is your team working through?" />
 </BaseLayout>
 
@@ -102,4 +94,7 @@ const closing = {
   .content-points { list-style: disc; padding-left: 1.2em; }
   .content-points li + li { margin-top: 16px; }
   .collection-intro { max-width: 66ch; margin-top: 20px; }
+  /* With the end band held out (#87) the closing sheet follows the collection sheet directly; it
+     keeps the ground seam that stacked sheets and Work with me's closing use. */
+  :global([data-cl-when] > .sheet.closing-sheet) { margin-top: var(--space-band-sm); }
 </style>
