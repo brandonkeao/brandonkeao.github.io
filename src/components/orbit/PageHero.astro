@@ -13,7 +13,8 @@ import MotionLine from './MotionLine.astro';
 type Kind = 'momentum' | 'map' | 'align' | 'principles' | 'blocks' | 'blueprint' | 'chain' | 'books' | 'exchange' | 'formation' | 'connect' | 'converge' | 'build';
 interface Props {
   title: string;
-  mark: Kind;
+  /** The page's motif on the hero line; omit it for a hero with no line (Manager README, #85). */
+  mark?: Kind;
   lead?: string;
   class?: string;
   /** The title's last words, set in italic and the on-ground red, on their own line at desktop
@@ -22,6 +23,9 @@ interface Props {
   accent?: string;
 }
 const { title, mark, lead, class: extra, accent } = Astro.props;
+// No mark, no line: no rule, motif, traveller or arrowhead (Manager README; Brandon, 2026-10-20:
+// "Remove the redline animation for the Manager README page."). The header's own bottom padding
+// (--space-hero-step) then sits between the lead and the sheet.
 const accented = !!accent && title.endsWith(accent);
 const head = accented ? title.slice(0, -accent!.length).trimEnd() : title;
 // `align` is drawn as one stretched SVG across the whole line: its three strands run across the
@@ -62,13 +66,13 @@ const launches = mark === 'chain';
       <slot />
     </>
   )}
-  <div class:list={['hero-line', `hero-line--${mark}`]} aria-hidden="true">
+  {mark && <div class:list={['hero-line', `hero-line--${mark}`]} aria-hidden="true">
     {stretched
       ? <MotionLine kind="align" stretch mergeAt={0.28} />
       : fullWidth
       ? <MotionLine kind="principles" />
       : <><span class="hero-rule"></span><MotionLine kind={mark} />{launches && <span class="hero-traveller"></span>}<svg class="hero-arrow" viewBox="0 0 8 14" width="8" height="14" fill="none" focusable="false"><path d="m1 1 6 6-6 6" /></svg></>}
-  </div>
+  </div>}
 </header>
 
 <style is:global>
