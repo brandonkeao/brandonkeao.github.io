@@ -1,7 +1,7 @@
 {
   "name": "brandonkeao.github.io",
-  "version": "0.0.1",
   "type": "module",
+  "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
