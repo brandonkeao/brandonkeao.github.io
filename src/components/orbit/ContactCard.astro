@@ -54,6 +54,7 @@ const { kind, label, value, href, action } = Astro.props;
         if (!this.isConnected) return;
         btn.textContent = 'Copied';
         status.textContent = 'Email address copied.';
+        this.dispatchEvent(new CustomEvent('analytics', { bubbles: true, detail: { event: 'email_copy', props: { method: 'clipboard' } } }));
       } catch {
         if (!this.isConnected) return;
         btn.textContent = 'Copy failed';
