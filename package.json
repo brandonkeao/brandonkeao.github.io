@@ -17,5 +17,8 @@
   },
   "devDependencies": {
     "@types/three": "0.186.0"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }
