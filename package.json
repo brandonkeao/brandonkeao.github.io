@@ -1,7 +1,7 @@
 {
   "name": "brandonkeao.github.io",
-  "type": "module",
   "version": "0.0.1",
+  "type": "module",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -17,5 +17,8 @@
   },
   "devDependencies": {
     "@types/three": "0.186.0"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }
