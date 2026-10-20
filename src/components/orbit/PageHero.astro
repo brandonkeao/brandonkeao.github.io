@@ -13,7 +13,8 @@ import MotionLine from './MotionLine.astro';
 type Kind = 'momentum' | 'map' | 'align' | 'principles' | 'blocks' | 'blueprint' | 'chain' | 'books' | 'exchange' | 'formation' | 'connect' | 'converge' | 'build';
 interface Props {
   title: string;
-  mark: Kind;
+  /** The page's motif on the hero line; omit it for a hero with no line (Manager README, #85). */
+  mark?: Kind;
   lead?: string;
   class?: string;
   /** The title's last words, set in italic and the on-ground red, on their own line at desktop
@@ -22,6 +23,9 @@ interface Props {
   accent?: string;
 }
 const { title, mark, lead, class: extra, accent } = Astro.props;
+// No mark, no line: no rule, motif, traveller or arrowhead (Manager README; Brandon, 2026-10-20:
+// "Remove the redline animation for the Manager README page."). The header's own bottom padding
+// (--space-hero-step) then sits between the lead and the sheet.
 const accented = !!accent && title.endsWith(accent);
 const head = accented ? title.slice(0, -accent!.length).trimEnd() : title;
 // `align` is drawn as one stretched SVG across the whole line: its three strands run across the
@@ -62,13 +66,13 @@ const launches = mark === 'chain';
       <slot />
     </>
   )}
-  <div class:list={['hero-line', `hero-line--${mark}`]} aria-hidden="true">
+  {mark && <div class:list={['hero-line', `hero-line--${mark}`]} aria-hidden="true">
     {stretched
       ? <MotionLine kind="align" stretch mergeAt={0.28} />
       : fullWidth
       ? <MotionLine kind="principles" />
       : <><span class="hero-rule"></span><MotionLine kind={mark} />{launches && <span class="hero-traveller"></span>}<svg class="hero-arrow" viewBox="0 0 8 14" width="8" height="14" fill="none" focusable="false"><path d="m1 1 6 6-6 6" /></svg></>}
-  </div>
+  </div>}
 </header>
 
 <style is:global>
@@ -107,10 +111,7 @@ const launches = mark === 'chain';
      the same length in cqw (inside a transform, where % would be the dot's own width). */
   .hero-line--chain { container-type: inline-size; --hero-exit: calc(min(430px, 100%) * 0.479); --hero-exit-cq: calc(min(430px, 100cqw) * 0.479); }
   .hero-line--chain .hero-rule { left: var(--hero-exit); }
-  /* exchange (Manager README, #85): the rule leaves from the agreement circle's centre (100 of
-     the mark's 234), tucked under the ground-filled circle, so the mark's exit and the column
-     line are one element and there is no join to see. */
-  .hero-line--exchange { --hero-exit: 100px; }
+  .hero-line--exchange { --hero-exit: min(228px, 82%); }
   .hero-line--exchange .hero-rule { left: var(--hero-exit); }
   /* Formation (#73): a separate rule beneath all eight ships, never a nose-level exit.
      The scene scales down only below 280px; its baseline follows that scaling. */
@@ -132,9 +133,7 @@ const launches = mark === 'chain';
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-rule { animation: hero-rule-draw 950ms cubic-bezier(0.33, 0, 0.2, 1) 920ms both; }
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-traveller { animation: hero-travel 950ms cubic-bezier(0.33, 0, 0.2, 1) 920ms forwards; }
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-arrow { animation-delay: 1690ms; }
-    /* exchange: the rule sets out as the agreement circle lands (0.42 s) and reaches the edge at
-       1.57 s; the arrowhead resolves in its last 0.2 s, as before. */
-    .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-rule { animation-duration: 1150ms; animation-delay: 420ms; }
+    .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-rule { animation-duration: 950ms; animation-delay: 620ms; }
     .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-arrow { animation-delay: 1370ms; }
     /* Formation's third beat (#86): the underline draws once the eight have organized, and the
        terminal arrow waits for the complete rule. The beat lengths live in FormationMark. */
