@@ -2,12 +2,20 @@
 // Approved hero story (#73): seven scattered ships, one joins, then a shared heading.
 // PageHero draws the independent underline after this group settles. Final geometry is
 // server-rendered; MotionLine's existing one-play observer only enables the CSS sequence.
+// Three beats (#86; Brandon, 2026-10-20: "2 to 3 clean beats like the others"): the seven
+// drift, then the newcomer joins while all eight organize as one move, then the underline
+// draws and its arrowhead resolves. The beat lengths are the custom properties at the top of
+// the style block; PageHero's formation rule reads the same properties.
+// Forward only (#86; Brandon, 2026-10-20: "can we not have reversed motion? … keeping things
+// moving forward"): every ship starts behind or level with its slot (the arrowhead points right),
+// creeps a little of the way in during beat 1 and covers the rest in beat 2, so its x, y and angle
+// each change in one direction only. No wobble, overshoot or back-ease.
 const ships = [
-  { x: 40, y: 62, angle: -32 },
+  { x: 20, y: 74, angle: -32 },
   null,
   { x: 83, y: 25, angle: 44 },
   { x: 116, y: 59, angle: -46 },
-  { x: 161, y: 30, angle: 28 },
+  { x: 157, y: 30, angle: 28 },
   { x: 193, y: 65, angle: -40 },
   { x: 224, y: 20, angle: 48 },
   { x: 261, y: 52, angle: -23 },
@@ -19,11 +27,10 @@ const ships = [
     {ships.map((from, i) => {
       const x = 24 + i * 34;
       const y = i % 2 ? 38 : 62;
-      const delay = 2100 + Math.abs(i - 1) * 75;
       return <g transform={`translate(${x} ${y})`}>
         <g class:list={['mlf-ship', !from && 'mlf-newcomer']}
-          style={from ? `--mlf-x:${from.x - x}px;--mlf-y:${from.y - y}px;--mlf-angle:${from.angle}deg;--mlf-delay:${delay}ms` : undefined}>
-          <g class="mlf-drift">
+          style={from ? `--mlf-x:${from.x - x}px;--mlf-y:${from.y - y}px;--mlf-angle:${from.angle}deg;--mlf-i:${Math.abs(i - 1)}` : undefined}>
+          <g>
             <path class="mlf-front" d="M-15 -10L16 0L-15 10L-6 0Z" />
             <path class="mlf-top" d="M-15 -10L16 0L-6 0Z" />
             <path class="mlf-side" d="M-6 0L16 0L-15 10Z" />
@@ -37,6 +44,21 @@ const ships = [
 </div>
 
 <style is:global>
+  /* Beat timings (#86). Beat 1: the seven creep forward --mlf-creep of the way to their slots
+     over --mlf-t-drift. Beat 2: the newcomer joins
+     and all eight organize over --mlf-t-organize, each ship offset by --mlf-t-spread per step
+     from the newcomer (at most 6 steps), small enough to read as one motion. Beat 3: the rule
+     draws over --mlf-t-rule from the end of beat 2, then the arrowhead resolves over --mlf-t-arrow.
+     Declared on the hero line too, so PageHero's rule and arrowhead read the same values. */
+  :is(.hero-line--formation, .motion-line-formation) {
+    --mlf-t-drift: 600ms;
+    --mlf-t-organize: 700ms;
+    --mlf-t-spread: 5ms;
+    --mlf-t-rule: 500ms;
+    --mlf-t-arrow: 150ms;
+    --mlf-creep: 0.12;
+  }
+  .mlf-ship { --mlf-delay: calc(var(--mlf-t-drift) + var(--mlf-i, 0) * var(--mlf-t-spread)); }
   .motion-line.motion-line-formation { width: 280px; max-width: 100%; height: auto; aspect-ratio: 280 / 96; }
   .motion-line-formation svg { display: block; width: 100%; height: 100%; overflow: hidden; }
   .mlf-front { fill: color-mix(in srgb, currentColor 12%, var(--ground)); stroke: none; }
@@ -46,29 +68,28 @@ const ships = [
   .mlf-newcomer .mlf-side { fill: color-mix(in srgb, currentColor 46%, var(--ground)); }
   .mlf-edge { fill: none; stroke: currentColor; stroke-width: 1.35; }
   .mlf-seam { opacity: 0.55; }
-  .mlf-ship, .mlf-drift { transform-origin: 0 0; }
+  .mlf-ship { transform-origin: 0 0; }
 
   @media (prefers-reduced-motion: no-preference) {
     .motion-line[data-motion-armed]:not([data-motion-play]) .mlf-ship:not(.mlf-newcomer) { transform: translate(var(--mlf-x), var(--mlf-y)) rotate(var(--mlf-angle)); }
     .motion-line[data-motion-armed]:not([data-motion-play]) .mlf-newcomer { opacity: 0; }
-    .motion-line[data-motion-play] .mlf-ship:not(.mlf-newcomer) { animation: mlf-organize 820ms ease-in-out var(--mlf-delay) both; }
-    .motion-line[data-motion-play] .mlf-ship:not(.mlf-newcomer) .mlf-drift { animation: mlf-drift var(--mlf-delay) ease-in-out both; }
-    .motion-line[data-motion-play] .mlf-newcomer { animation: mlf-join 1150ms ease-in-out 750ms both; }
+    /* Creep holds its end until organize takes over from that same pose (organize does not
+       fill backwards, so it cannot cover the creep). */
+    .motion-line[data-motion-play] .mlf-ship:not(.mlf-newcomer) { animation: mlf-creep var(--mlf-delay) ease-in-out both, mlf-organize var(--mlf-t-organize) ease-in-out var(--mlf-delay) forwards; }
+    .motion-line[data-motion-play] .mlf-newcomer { animation: mlf-join var(--mlf-t-organize) ease-in-out var(--mlf-t-drift) both; }
   }
 
-  @keyframes mlf-organize {
+  @keyframes mlf-creep {
     from { transform: translate(var(--mlf-x), var(--mlf-y)) rotate(var(--mlf-angle)); }
+    to { transform: translate(calc(var(--mlf-x) * (1 - var(--mlf-creep))), calc(var(--mlf-y) * (1 - var(--mlf-creep)))) rotate(calc(var(--mlf-angle) * (1 - var(--mlf-creep)))); }
+  }
+  @keyframes mlf-organize {
+    from { transform: translate(calc(var(--mlf-x) * (1 - var(--mlf-creep))), calc(var(--mlf-y) * (1 - var(--mlf-creep)))) rotate(calc(var(--mlf-angle) * (1 - var(--mlf-creep)))); }
     to { transform: none; }
   }
-  @keyframes mlf-drift {
-    0%, 100% { transform: none; }
-    25% { transform: translate(2px, -2px) rotate(2deg); }
-    65% { transform: translate(-2px, 2px) rotate(-2deg); }
-  }
+  /* One eased path in from behind and below the group (#86). */
   @keyframes mlf-join {
-    0% { transform: translate(-78px, -20px) rotate(18deg); opacity: 0; }
-    16% { opacity: 1; }
-    60% { transform: translate(-24px, -15px) rotate(6deg); }
-    100% { transform: none; opacity: 1; }
+    from { transform: translate(-78px, 10px) rotate(-8deg); opacity: 0; }
+    to { transform: none; opacity: 1; }
   }
 </style>
