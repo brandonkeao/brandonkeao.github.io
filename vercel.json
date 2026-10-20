@@ -3,18 +3,51 @@
   "framework": "astro",
   "trailingSlash": true,
   "redirects": [
-    { "source": "/consulting", "destination": "/services/", "permanent": true },
-    { "source": "/projects", "destination": "/portfolio/", "permanent": true }
+    {
+      "source": "/consulting",
+      "destination": "/services/",
+      "permanent": true
+    },
+    {
+      "source": "/projects",
+      "destination": "/portfolio/",
+      "permanent": true
+    },
+    {
+      "source": "/writing",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/writing/:slug*",
+      "destination": "/",
+      "permanent": false
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
       ]
     }
   ]
