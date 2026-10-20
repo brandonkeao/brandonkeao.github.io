@@ -107,7 +107,10 @@ const launches = mark === 'chain';
      the same length in cqw (inside a transform, where % would be the dot's own width). */
   .hero-line--chain { container-type: inline-size; --hero-exit: calc(min(430px, 100%) * 0.479); --hero-exit-cq: calc(min(430px, 100cqw) * 0.479); }
   .hero-line--chain .hero-rule { left: var(--hero-exit); }
-  .hero-line--exchange { --hero-exit: min(228px, 82%); }
+  /* exchange (Manager README, #85): the rule leaves from the agreement circle's centre (100 of
+     the mark's 234), tucked under the ground-filled circle, so the mark's exit and the column
+     line are one element and there is no join to see. */
+  .hero-line--exchange { --hero-exit: 100px; }
   .hero-line--exchange .hero-rule { left: var(--hero-exit); }
   /* Formation (#73): a separate rule beneath all eight ships, never a nose-level exit.
      The scene scales down only below 280px; its baseline follows that scaling. */
@@ -129,7 +132,9 @@ const launches = mark === 'chain';
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-rule { animation: hero-rule-draw 950ms cubic-bezier(0.33, 0, 0.2, 1) 920ms both; }
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-traveller { animation: hero-travel 950ms cubic-bezier(0.33, 0, 0.2, 1) 920ms forwards; }
     .hero-line--chain:has(.motion-line[data-motion-play]) .hero-arrow { animation-delay: 1690ms; }
-    .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-rule { animation-duration: 950ms; animation-delay: 620ms; }
+    /* exchange: the rule sets out as the agreement circle lands (0.42 s) and reaches the edge at
+       1.57 s; the arrowhead resolves in its last 0.2 s, as before. */
+    .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-rule { animation-duration: 1150ms; animation-delay: 420ms; }
     .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-arrow { animation-delay: 1370ms; }
     /* The newcomer arrives by 1.9s, the team settles by 3.37s, then the underline draws.
        The terminal arrow waits for the complete rule rather than appearing during it. */
