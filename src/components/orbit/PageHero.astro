@@ -136,10 +136,10 @@ const launches = mark === 'chain';
        1.57 s; the arrowhead resolves in its last 0.2 s, as before. */
     .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-rule { animation-duration: 1150ms; animation-delay: 420ms; }
     .hero-line--exchange:has(.motion-line[data-motion-play]) .hero-arrow { animation-delay: 1370ms; }
-    /* The newcomer arrives by 1.9s, the team settles by 3.37s, then the underline draws.
-       The terminal arrow waits for the complete rule rather than appearing during it. */
-    .hero-line--formation:has(.motion-line[data-motion-play]) .hero-rule { animation: hero-rule-draw 1000ms ease-in-out 3600ms both; }
-    .hero-line--formation:has(.motion-line[data-motion-play]) .hero-arrow { animation: hero-resolve 160ms ease-out 4600ms both; }
+    /* Formation's third beat (#86): the underline draws once the eight have organized, and the
+       terminal arrow waits for the complete rule. The beat lengths live in FormationMark. */
+    .hero-line--formation:has(.motion-line[data-motion-play]) .hero-rule { animation: hero-rule-draw var(--mlf-t-rule) ease-in-out calc(var(--mlf-t-drift) + var(--mlf-t-organize)) both; }
+    .hero-line--formation:has(.motion-line[data-motion-play]) .hero-arrow { animation: hero-resolve var(--mlf-t-arrow) ease-out calc(var(--mlf-t-drift) + var(--mlf-t-organize) + var(--mlf-t-rule)) both; }
   }
   @keyframes hero-rule-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @keyframes hero-travel { 0% { opacity: 1; transform: translateX(0); } 90% { opacity: 1; transform: translateX(calc(100cqw - var(--hero-exit-cq) - 9px)); } 100% { opacity: 0; transform: translateX(calc(100cqw - var(--hero-exit-cq) - 9px)); } }
