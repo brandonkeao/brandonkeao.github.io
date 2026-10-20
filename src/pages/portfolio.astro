@@ -3,8 +3,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import CollectionHero from '../components/orbit/collection/CollectionHero.astro';
-import SceneBand from '../components/orbit/SceneBand.astro';
-import WorldNote from '../components/orbit/WorldNote.astro';
 import Collection from '../components/orbit/collection/Collection.astro';
 import CollectionRow from '../components/orbit/collection/CollectionRow.astro';
 import DetailHead from '../components/orbit/collection/DetailHead.astro';
@@ -64,11 +62,6 @@ const stories: { id: StoryId; tab: string; title: string; description: string; r
     ]
   }
 ];
-const closing = {
-  "title": "The projects in my portfolio are like bases of operations on different moons.",
-  "body": "Each base is a project a team has worked to establish or improve. The missions are how we carry out that work, with different teams, conditions, and ways of working. Some of these projects start something new; others make an existing product or operation work better. A base is what stands once the team is established. What connects these stories is how I work: understand, start, own, and improve.",
-  "turn": "If one of these stories feels familiar, I'd like to hear what you're working through."
-};
 ---
 <BaseLayout title="Portfolio" description="Product work, in context. The problems, decisions, and teams behind the work.">
   <CollectionHero scene="portfolio" title="Portfolio" lead="Product work, in context."
@@ -142,8 +135,7 @@ const closing = {
 </section>
     </Collection>
   </Sheet>
-  <SceneBand scene="portfolio" />
-  <WorldNote {...closing} />
+  {/* The end band and its caption are held out of the production release (#87). */}
   <Prefooter prompt="Is your team working through a similar problem?" />
 </BaseLayout>
 
@@ -151,4 +143,7 @@ const closing = {
   .content-points { list-style: disc; padding-left: 1.2em; }
   .content-points li + li { margin-top: 16px; }
   .collection-intro { max-width: 66ch; margin-top: 20px; }
+  /* With the end band held out (#87) the closing sheet follows the collection sheet directly; it
+     keeps the ground seam that stacked sheets and Work with me's closing use. */
+  :global([data-cl-when] > .sheet.closing-sheet) { margin-top: var(--space-band-sm); }
 </style>

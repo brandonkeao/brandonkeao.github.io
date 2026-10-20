@@ -5,44 +5,16 @@
 // on the page, above the fold — with the chosen model's content continuing below them in the
 // same sheet. The cards are the one switcher: they replace the overview rows, the hero's chip
 // dock and the phone tabs, and stay in place after a choice. The orbital scene left the hero for
-// a band at the end of the page, above the closing call to action (Brandon, 2026-10-13).
+// a band at the end of the page (Brandon, 2026-10-13); that band and its captions are held out of
+// the production release (ticket #87, Brandon 2026-10-20), so the page ends on its closing sheet.
 // ?engagement= makes a choice shareable. All copy is verbatim from
 // analysis/2026-10-09-hifi-directions/COPY_PACK.md and is DRAFT under Brandon's review. Layout
 // choices are AI-made and reversible.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/orbit/PageHero.astro';
 import ClosingSheet from '../components/orbit/ClosingSheet.astro';
-import SceneBand from '../components/orbit/SceneBand.astro';
-import WorldNote from '../components/orbit/WorldNote.astro';
 import EngagementDetail from '../components/orbit/wwm/EngagementDetail.astro';
 import { ENGAGEMENTS } from '../components/orbit/wwm/content';
-
-// The world below (#57): the overview's caption and one per model, following the accepted
-// Formation story (inside, on the wing, above; every story ends with the team going into the
-// atmosphere). Draft copy under Brandon's review on staging (Brandon OS
-// analysis/2026-10-14-end-of-page-world/COPY.md).
-const worldNotes: Record<string, { title: string; body: string; turn: string }> = {
-  "overview": {
-    "title": "Working with a team is like flying in formation.",
-    "body": "Everyone brings different skills, but we need a shared understanding of where we're headed and how we'll work together to get there. The formations across this site represent the different ways I can contribute. I might join the team full time, take responsibility for a product initiative, or help work through a problem that cuts across the business. How I fit depends on what the team needs. In each case, I want to understand what matters to the business and its customers, then work with the team to turn that into something we can act on.",
-    "turn": "Tell me what you're trying to do, and we can work out where I'd be useful."
-  },
-  "full-time": {
-    "title": "A full-time product role is like joining the formation.",
-    "body": "I'm part of the team, sharing responsibility for where we're going and doing the work to get there. I like talking with customers, working through a problem with design and engineering, and staying close enough to see what happens when we put something into people's hands. Understanding the business gives that work direction. Staying with the team gives me the chance to learn from what we build and help improve it over time.",
-    "turn": "If that's the kind of role you're shaping, I'd like to hear what it needs to own."
-  },
-  "fractional": {
-    "title": "Fractional product leadership is like flying alongside a formation for one stage of its journey.",
-    "body": "The team has somewhere it needs to get to, and I take responsibility for helping it make that progress. In practice, that means agreeing on a product outcome, working through the decisions with the team, and helping carry the work into delivery. I also care about the team's ability to carry it forward. We'd be clear about what they can own, where they still need help, and when it makes sense for me to step back.",
-    "turn": "If there's a stage of the work where that would help, tell me where things stand."
-  },
-  "advisory": {
-    "title": "Advisory and consulting are like getting a wider view from orbit.",
-    "body": "That perspective can reveal connections that are easy to miss when you're close to one part of the work. I see things as systems, so I'd want to understand how the customer experience, the operations, and the numbers affect each other. Then we'd work through what that means with the people closest to the problem. The wider view should help us decide what to do on the ground, whether that's a recommendation, a small fix, or a change I help put into practice.",
-    "turn": "If something keeps getting in your team's way, let's start there."
-  }
-};
 
 const lead = 'Bring me into your team full time, work with me on a product outcome, or get help with a business problem.';
 ---
@@ -89,18 +61,12 @@ const lead = 'Bring me into your team full time, work with me on a product outco
       </div>
     </div>
 
-    {/* The band follows the selection (ticket #37): each model's own Formation story; the
-        Overview keeps the general scene. */}
-    <SceneBand set="work" speed={2} models={ENGAGEMENTS.map((e) => e.slug)} />
-
     <div data-wwm-overview>
-      <WorldNote {...worldNotes.overview} />
       <ClosingSheet class="wwm-close" eyebrow="Let's talk" title="Not sure where your work fits? Tell me what you're trying to do." button="Let's talk" />
     </div>
-    {/* Each model's own caption and closing; shown with its model (no-JS readers get the overview's). */}
+    {/* Each model's own closing; shown with its model (no-JS readers get the overview's). */}
     {ENGAGEMENTS.map((e) => (
       <div data-wwm-closing={e.slug} hidden>
-        <WorldNote level="h3" {...worldNotes[e.slug]} />
         <ClosingSheet class="wwm-close" level="h3" label={`Let's talk about ${e.name}`} eyebrow="Let's talk" title={e.cta.title} button={e.cta.button} href={e.cta.href} />
       </div>
     ))}
@@ -123,13 +89,6 @@ const lead = 'Bring me into your team full time, work with me on a product outco
       /* The Overview hides the stacked no-JS details here too, before paint: left to the module
          script, the shared band jumped up into view after load (a 0.29 layout shift at 1440). */
       ds.forEach(function (d) { d.hidden = d.getAttribute('data-wwm-detail') !== v; });
-      /* The end band shows the chosen model's poster from the first paint (ticket #37; mirrors
-         showPoster() in SceneBand.astro). */
-      var b = r.querySelector('[data-scene-band]');
-      if (b) {
-        b.setAttribute('data-scene-model', v || '');
-        b.querySelectorAll('[data-scene-poster]').forEach(function (p) { p.hidden = p.getAttribute('data-scene-poster') !== (v || ''); });
-      }
       if (!v) return;
       r.setAttribute('data-state', 'selected');
       r.querySelectorAll('[data-wwm-closing]').forEach(function (c) { c.hidden = c.getAttribute('data-wwm-closing') !== v; });
