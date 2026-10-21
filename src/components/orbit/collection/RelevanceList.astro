@@ -1,0 +1,16 @@
+---
+// Per-engagement-model relevance lines. A conditional entry renders as a dashed slot.
+import './collection.css';
+
+interface Props { entries: { model: string; text: string; conditional?: boolean }[] }
+const { entries } = Astro.props;
+---
+
+<ul class="cl-rel">
+  {entries.map((e) => (
+    <li class:list={[e.conditional && 'cl-conditional']}>
+      <b>{e.model}</b>
+      <p>{e.text}</p>
+    </li>
+  ))}
+</ul>

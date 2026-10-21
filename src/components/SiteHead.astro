@@ -1,16 +1,20 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
+import Analytics from './Analytics.astro';
 
 interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  /** Proposal pages: keep out of search results. */
+  noindex?: boolean;
 }
 
 const {
   title,
   description = "Brandon Keao is a product leader, builder, and advisor helping teams build useful products, stronger systems, and lasting growth.",
-  ogImage
+  ogImage,
+  noindex = false
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -18,22 +22,39 @@ const resolvedOgImage = ogImage ? new URL(ogImage, Astro.site).toString() : unde
 ---
 
 <meta charset="utf-8" />
+<!-- Lets CSS hold animated marks until their script runs; without JS they show as drawn.
+     Also installs, once, a popstate hook ahead of Astro's router (its listener is registered
+     first, so a page's own listener runs too late to stop it): a page that owns some history
+     entries (Work with me's ?engagement=, ticket #15) sets window.__samePagePop, which returns
+     true when it handled the Back/Forward in place. -->
+<script is:inline>
+  document.documentElement.classList.add('js');
+  if (!window.__samePagePopHook) {
+    window.__samePagePopHook = true;
+    addEventListener('popstate', function (e) { var h = window.__samePagePop; if (h && h(e)) e.stopImmediatePropagation(); }, true);
+    // Astro replaces the root attributes during a page swap, while this inline script runs
+    // only on the first visit. Restore the enhancement marker before the next page paints.
+    document.addEventListener('astro:after-swap', function () { document.documentElement.classList.add('js'); });
+  }
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#2b2d29" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
 <!-- Preconnect to Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-<!-- Load fonts with display=swap for performance -->
+<!-- Orbit uses DM Sans only. The one italic (600) is for the Home headline's accent (#53). -->
 <link
-  href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+  href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,600&display=swap"
   rel="stylesheet"
 />
 
 <!-- SEO -->
 <title>{title} | Brandon Keao</title>
 <meta name="description" content={description} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
 <link rel="canonical" href={canonicalURL} />
 
 <!-- Open Graph -->
@@ -52,13 +73,7 @@ const resolvedOgImage = ogImage ? new URL(ogImage, Astro.site).toString() : unde
 <meta name="generator" content={Astro.generator} />
 
 <!-- View Transitions -->
-<ViewTransitions />
+<ClientRouter />
 
-<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-C99HMEFJ4G"></script>
-<script is:inline>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-C99HMEFJ4G');
-</script>
+<!-- Analytics: PostHog, cookieless; nothing loads without PUBLIC_POSTHOG_KEY (website #1). -->
+<Analytics />

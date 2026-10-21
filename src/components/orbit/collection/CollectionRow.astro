@@ -1,0 +1,45 @@
+---
+// One numbered collection row. The title is a real link (?<param>=<id>#<detail>) whose hit area
+// covers the row; with JS the controller (Collection.astro) handles plain clicks in place. Without
+// JS the link jumps to the item's detail, which follows the list stacked, so nothing is lost.
+import OriginChip from './OriginChip.astro';
+import RelevantTo from './RelevantTo.astro';
+import type { StoryId } from './origins';
+import './collection.css';
+
+interface Props {
+  id: string;
+  index: number;
+  controls: string;
+  // The collection's URL param; defaults to the detail id's prefix (`story-pie` → `story`).
+  param?: string;
+  title: string;
+  description: string;
+  action?: string;
+  eyebrow?: string;
+  origin?: StoryId;
+  relevant?: string[];
+  when?: string;
+  source?: string;
+}
+const { id, index, controls, title, description, action, eyebrow, origin, relevant, when, source } = Astro.props;
+const param = Astro.props.param ?? (controls.endsWith(`-${id}`) ? controls.slice(0, -(id.length + 1)) : controls.split('-')[0]);
+const href = `?${new URLSearchParams({ [param]: id })}#${controls}`;
+const moon = ((index - 1) % 3) + 1;
+---
+
+<li>
+  <article class="cl-row">
+    <span class="cl-row-num"><i class={`dot dot-${moon}`} aria-hidden="true"></i>{String(index).padStart(2, '0')}</span>
+    <div class="cl-row-body">
+      {eyebrow && <p class="cl-row-eyebrow">{eyebrow}</p>}
+      <h3 class="cl-row-title"><a class="cl-row-btn" href={href} data-cl-select={id} aria-controls={controls}>{title}</a></h3>
+      {origin && <p><OriginChip story={origin} /></p>}
+      <p class="t-body muted-s cl-row-desc">{description}</p>
+      {when && <p class="t-small muted-s cl-row-line"><b>When it fits:</b> {when}</p>}
+      {source && <p class="t-small muted-s cl-source">{source} <span aria-hidden="true">↗</span></p>}
+      {relevant && <RelevantTo models={relevant} />}
+    </div>
+    <span class="cl-row-action" aria-hidden="true">{action ? <>{action.replace(/\s*→$/, '')} <span>→</span></> : <span>→</span>}</span>
+  </article>
+</li>

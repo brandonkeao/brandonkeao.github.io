@@ -1,0 +1,19 @@
+---
+// Head of a selected-state detail: optional eyebrow and chips, the title (focus target after a
+// row is chosen), optional origin chip and lead.
+import Tag from '../Tag.astro';
+import OriginChip from './OriginChip.astro';
+import type { StoryId } from './origins';
+import './collection.css';
+
+interface Props { title: string; eyebrow?: string; chips?: string[]; origin?: StoryId; lead?: string }
+const { title, eyebrow, chips, origin, lead } = Astro.props;
+---
+
+<header class="cl-detail-head">
+  {eyebrow && <p class="cl-detail-eyebrow">{eyebrow}</p>}
+  {chips && <div class="cl-detail-chips">{chips.map((c) => <Tag>{c}</Tag>)}</div>}
+  <h2 class="t-title cl-detail-title" tabindex="-1" data-cl-focus>{title}</h2>
+  {origin && <p class="cl-detail-origin"><OriginChip story={origin} /></p>}
+  {lead && <p class="t-lead muted-s cl-detail-lead">{lead}</p>}
+</header>

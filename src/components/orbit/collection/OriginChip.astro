@@ -1,0 +1,10 @@
+---
+// Fixed origin chip. The text comes only from ORIGINS, so it can never vary by context.
+import { ORIGINS, type StoryId } from './origins';
+import './collection.css';
+
+interface Props { story: StoryId; class?: string }
+const { story, class: extra } = Astro.props;
+---
+
+<span class:list={['cl-origin', extra]}>{ORIGINS[story]}</span>

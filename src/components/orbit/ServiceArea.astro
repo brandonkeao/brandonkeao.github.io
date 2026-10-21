@@ -1,0 +1,9 @@
+---
+interface Props { title: string; tags: string[] }
+const { title, tags } = Astro.props;
+---
+
+<div class="area">
+  <h3 class="t-item" style="min-height:58px">{title}</h3>
+  <ul style="margin-top:14px;list-style:none;padding:0">{tags.map((t) => <li class="tag">{t}</li>)}</ul>
+</div>

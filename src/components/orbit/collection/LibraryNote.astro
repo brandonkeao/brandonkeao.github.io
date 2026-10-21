@@ -1,0 +1,12 @@
+---
+// Library note band on the ground. The body is the only sanctioned library wording (copy pack).
+import './collection.css';
+
+interface Props { title: string }
+const { title } = Astro.props;
+---
+
+<section class="cl-note" aria-labelledby="cl-note-title">
+  <h2 id="cl-note-title" class="t-item">{title}</h2>
+  <p class="t-body muted-g">Additional cleared examples live in the member library. Access is reviewed before it opens; creating an account does not unlock everything.</p>
+</section>
