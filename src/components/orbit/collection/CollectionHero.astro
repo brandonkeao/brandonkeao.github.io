@@ -1,15 +1,13 @@
 ---
-// Collection hero (Portfolio, Playbooks) on the system's own stage. The copy reads like the
-// other heroes (ticket #16, Brandon 2026-10-12 "looks sloppy"): the title with the page's own
-// mark (Brandon, 2026-10-13: Portfolio's `blocks`, Playbooks' `blueprint`; Work with me keeps
-// `align`), one lead set as a white statement, then the rest of the copy as one muted body
-// paragraph (T1 Statement, Brandon 2026-10-13). Copy is verbatim; only the styling and spacing
-// changed. The stage beside it is decorative: no chips, no
-// selection and no controls (the pause chip came off, Brandon 2026-10-13). Each page has its own scene
-// (collection-scene.ts): Portfolio's Three approaches, Playbooks' Limb and lights (Brandon's
-// built-world picks, 2026-10-13); it no longer reuses the Home orbital set.
-import OrbitStage from '../OrbitStage.astro';
-import MotionLine from '../MotionLine.astro';
+// Collection hero (Portfolio, Playbooks) as the shared page hero (ticket #38; Brandon,
+// 2026-10-13: "extend this pattern and approach for the hero for the portfolio and playbooks
+// page and put these animations at the bottom of the page"). PageHero gives the title and the
+// page's own mark run out as the content-width red line (Portfolio's `blocks`, Playbooks'
+// `blueprint`). The copy is one lead paragraph, the hero's own, like every other page (ticket #47;
+// Brandon, 2026-10-14: "two text elements when it should be one"). It replaces the white statement
+// plus muted body (T1 Statement, 10-13). The words stay verbatim, joined in their order. The built-world scene that sat beside this copy now plays in the page's end band
+// (SceneBand `scene`), so the hero holds no canvas.
+import PageHero from '../PageHero.astro';
 import type { CollectionKind } from '../../../lib/orbit/collection-scene';
 import './collection.css';
 
@@ -17,11 +15,4 @@ interface Props { title: string; lead: string; body: string; note: string; scene
 const { title, lead, body, note, scene } = Astro.props;
 ---
 
-<OrbitStage scene={scene} size="small">
-  <div slot="headline" style="width:fit-content;max-width:100%">
-    <h1 id="cl-hero-title" class="t-page-title">{title}</h1>
-    <MotionLine kind={scene === 'portfolio' ? 'blocks' : 'blueprint'} />
-  </div>
-  <p class="t-lead-strong cl-hero-lead">{lead}</p>
-  <p class="t-body muted-g cl-hero-body">{body} {note}</p>
-</OrbitStage>
+<PageHero title={title} mark={scene === 'portfolio' ? 'blocks' : 'blueprint'} lead={`${lead} ${body} ${note}`} class="cl-hero" />

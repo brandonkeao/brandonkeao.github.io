@@ -1,16 +1,18 @@
 ---
-// Work with me (ticket #8, Direction B: one page, "compress to switcher").
-// Overview: intro, the orbit (assistive; it reuses the Home motion, per Brandon's ask to
-// "leverage the current animation direction"), the three ways as rows (the canonical path),
-// the shared body of work, and one closing sheet. Choosing a way compresses the rows into a
-// sticky switcher and reveals that model's detail in place; ?engagement= makes it shareable.
-// All copy is verbatim from analysis/2026-10-09-hifi-directions/COPY_PACK.md and is DRAFT
-// under Brandon's review. Layout choices are AI-made and reversible.
+// Work with me (ticket #8, Direction B; ticket #34, designer review Phase 1, layout O1).
+// The shared page hero on the ground (title, lead, then a compact formation handing off to the
+// full-width red line); then one white sheet that opens on the three selector cards — the most important element
+// on the page, above the fold — with the chosen model's content continuing below them in the
+// same sheet. The cards are the one switcher: they replace the overview rows, the hero's chip
+// dock and the phone tabs, and stay in place after a choice. The orbital scene left the hero for
+// a band at the end of the page (Brandon, 2026-10-13); that band and its captions are held out of
+// the production release (ticket #87, Brandon 2026-10-20), so the page ends on its closing sheet.
+// ?engagement= makes a choice shareable. All copy is verbatim from
+// analysis/2026-10-09-hifi-directions/COPY_PACK.md and is DRAFT under Brandon's review. Layout
+// choices are AI-made and reversible.
 import BaseLayout from '../layouts/BaseLayout.astro';
-import OrbitStage from '../components/orbit/OrbitStage.astro';
-import Sheet from '../components/orbit/Sheet.astro';
+import PageHero from '../components/orbit/PageHero.astro';
 import ClosingSheet from '../components/orbit/ClosingSheet.astro';
-import MotionLine from '../components/orbit/MotionLine.astro';
 import EngagementDetail from '../components/orbit/wwm/EngagementDetail.astro';
 import { ENGAGEMENTS } from '../components/orbit/wwm/content';
 
@@ -19,91 +21,78 @@ const lead = 'Bring me into your team full time, work with me on a product outco
 
 <BaseLayout title="Work with me" description={lead}>
   <div class="wwm" data-wwm data-state="overview">
-    {/* speed matches the Home hero so a moon moves at the same rate on both pages
-        (Brandon, 2026-10-09); per-moon variety comes from Kepler periods in orbits.ts. */}
-    {/* Selecting a model flies the stage to that moon (Brandon, 2026-10-12): it centres and
-        grows with its mission formation around it, on desktop and phones alike; the overview
-        system recedes away. Controls live in the copy column (round 6): the three ways only
-        (the pause chip came off, Brandon 2026-10-13) — no caption, no stage dock, and no way back to the Overview (round 14:
-        visitors switch directly; browser Back still cuts to it). The chosen model's intro
-        shows beside the moon so desktop reads it without scrolling (phones scroll to the
-        detail as before). The rows stay the canonical path. */}
-    <OrbitStage set="work" size="large" controls="copy" speed={2}>
-      <div slot="headline" style="width:fit-content;max-width:100%">
-        <h1 class="t-page-title">Work with me</h1>
-        <MotionLine kind="align" stretch />
-      </div>
-      <p class="t-lead muted-g wwm-hero-lead">{lead}</p>
-    </OrbitStage>
+    <PageHero title="Work with me" mark="formation" lead={lead} class="wwm-hero" />
 
-    <div class="wwm-flow" data-wwm-flow>
-      <!-- Overview: the three ways, full-width rows. Real links, so they work without JavaScript. -->
-      <section class="wwm-band ground-pad wwm-select" aria-labelledby="wwm-ways-title" data-wwm-select>
-        <div class="wwm-head">
-          <h2 class="t-section" id="wwm-ways-title">Ways to work together</h2>
-          <p class="t-lead muted-g wwm-follow">Choose an option to see how we could work together.</p>
-        </div>
-        <ul class="wwm-body wwm-rows">
+    <div class="sheet wwm-sheet" data-wwm-flow>
+      <!-- The three ways as selector cards. Real links, so they work without JavaScript; the
+           script makes them toggle buttons (aria-pressed), nothing pressed on load. -->
+      <section class="wwm-select" aria-labelledby="wwm-ways-title" data-wwm-select>
+        <h2 class="sr-only" id="wwm-ways-title">Ways to work together</h2>
+        <p class="wwm-cards-caption">Choose an option to see how we could work together.</p>
+        <ul class="wwm-cards">
           {ENGAGEMENTS.map((e) => (
             <li>
-              <a class="wwm-row" href={`/services/?engagement=${e.slug}#wwm-${e.slug}`} data-wwm-choose={e.slug}>
-                <span class="wwm-row-tag"><i class={`dot dot-${e.dot}`} aria-hidden="true"></i>{e.tag}</span>
-                <span class="wwm-row-title"><span class="t-item wwm-row-name">{e.name}</span><span class="wwm-arrow" aria-hidden="true">→</span></span>
-                <span class="t-body muted-g wwm-measure">{e.summary}</span>
+              <a class="wwm-card" href={`/services/?engagement=${e.slug}#wwm-${e.slug}`} data-wwm-choose={e.slug} aria-controls={`wwm-${e.slug}`}>
+                <span class="wwm-card-tag"><i class={`dot dot-${e.dot}`} aria-hidden="true"></i>{e.tag}</span>
+                <span class="wwm-card-name">{e.name}</span>
+                <span class="wwm-card-summary">{e.summary}</span>
               </a>
             </li>
           ))}
         </ul>
       </section>
 
-      <!-- Selected: the rows compress into this sticky switcher (shown by the script only). -->
-      <nav class="wwm-switcher ground-pad" aria-label="Switch way of working" data-wwm-switcher hidden>
-        <div class="wwm-tabs">
-          {ENGAGEMENTS.map((e) => (
-            <button class="wwm-tab" type="button" data-wwm-tab={e.slug} aria-pressed="false" aria-controls={`wwm-${e.slug}`}>
-              <i class={`dot dot-${e.dot}`} aria-hidden="true"></i>{e.name}
-            </button>
-          ))}
-        </div>
-      </nav>
+      <div class="wwm-content">
+        {ENGAGEMENTS.map((e) => <EngagementDetail e={e} />)}
 
-      {ENGAGEMENTS.map((e) => <EngagementDetail e={e} />)}
+        <section class="wwm-band wwm-shared" aria-labelledby="wwm-shared-title" data-wwm-overview>
+          <div class="wwm-head">
+            <h2 class="t-section" id="wwm-shared-title">One shared body of work</h2>
+            <p class="t-lead muted-g wwm-follow">Whichever way we work together, the same work backs it up.</p>
+          </div>
+          <div class="wwm-body">
+            <p class="t-body muted-g wwm-measure">The Portfolio shows applied work in its original context; the Playbooks explain reusable methods. Both support all three ways of working together — a project from one kind of role can inform a different kind of engagement without changing what it was.</p>
+            <p class="wwm-links">
+              <a class="link-ground" href="/portfolio/">Browse the Portfolio →</a>
+              <a class="link-ground" href="/playbooks/">Explore the Playbooks →</a>
+            </p>
+          </div>
+        </section>
+      </div>
     </div>
-
-    <section class="wwm-band ground-pad wwm-shared" aria-labelledby="wwm-shared-title" data-wwm-overview>
-      <div class="wwm-head">
-        <h2 class="t-section" id="wwm-shared-title">One shared body of work</h2>
-        <p class="t-lead muted-g wwm-follow">Whichever way we work together, the same work backs it up.</p>
-      </div>
-      <div class="wwm-body">
-        <p class="t-body muted-g wwm-measure">The Portfolio shows applied work in its original context; the Playbooks explain reusable methods. Both support all three ways of working together — a project from one kind of role can inform a different kind of engagement without changing what it was.</p>
-        <p class="wwm-links">
-          <a class="link-ground" href="/portfolio/">Browse the Portfolio →</a>
-          <a class="link-ground" href="/playbooks/">Explore the Playbooks →</a>
-        </p>
-      </div>
-    </section>
 
     <div data-wwm-overview>
       <ClosingSheet class="wwm-close" eyebrow="Let's talk" title="Not sure where your work fits? Tell me what you're trying to do." button="Let's talk" />
     </div>
+    {/* Each model's own closing; shown with its model (no-JS readers get the overview's). */}
+    {ENGAGEMENTS.map((e) => (
+      <div data-wwm-closing={e.slug} hidden>
+        <ClosingSheet class="wwm-close" level="h3" label={`Let's talk about ${e.name}`} eyebrow="Let's talk" title={e.cta.title} button={e.cta.button} href={e.cta.href} />
+      </div>
+    ))}
   </div>
   <script is:inline data-astro-rerun>
-    /* First paint: apply a deep link's ?engagement= before the module script loads, so the
-       overview and the other details do not flash (mirrors apply() in wwm/state.ts). */
+    /* First paint: the cards become toggle buttons, and a deep link's ?engagement= applies
+       before the module script loads, so the overview and the other details do not flash
+       (mirrors show() in wwm/state.ts). */
     (function () {
       var s = document.currentScript, r = s && s.previousElementSibling;
       if (!r || !r.hasAttribute('data-wwm')) return;
       var v = new URLSearchParams(location.search).get('engagement');
       var ds = r.querySelectorAll('[data-wwm-detail]'), ok = false;
       ds.forEach(function (d) { if (d.getAttribute('data-wwm-detail') === v) ok = true; });
-      if (!ok) return;
-      r.setAttribute('data-state', 'selected');
-      r.querySelector('[data-wwm-select]').hidden = true;
-      r.querySelector('[data-wwm-switcher]').hidden = false;
+      if (!ok) v = null;
+      r.querySelectorAll('[data-wwm-choose]').forEach(function (c) {
+        c.setAttribute('role', 'button');
+        c.setAttribute('aria-pressed', String(c.getAttribute('data-wwm-choose') === v));
+      });
+      /* The Overview hides the stacked no-JS details here too, before paint: left to the module
+         script, the shared band jumped up into view after load (a 0.29 layout shift at 1440). */
       ds.forEach(function (d) { d.hidden = d.getAttribute('data-wwm-detail') !== v; });
+      if (!v) return;
+      r.setAttribute('data-state', 'selected');
+      r.querySelectorAll('[data-wwm-closing]').forEach(function (c) { c.hidden = c.getAttribute('data-wwm-closing') !== v; });
       r.querySelectorAll('[data-wwm-overview]').forEach(function (el) { el.hidden = true; });
-      r.querySelectorAll('[data-wwm-tab]').forEach(function (t) { t.setAttribute('aria-pressed', String(t.getAttribute('data-wwm-tab') === v)); });
     })();
   </script>
 </BaseLayout>
@@ -123,101 +112,74 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   .wwm-body { grid-column: 6 / -1; min-width: 0; }
   .wwm-measure { max-width: 60ch; }
   .wwm-follow { margin-top: 16px; }
-  .wwm-hero-lead { max-width: 560px; }
-  .wwm-arrow { font-size: 20px; line-height: 1; color: var(--on-ground-faint); transition: color 0.15s; }
-  .wwm-eyebrow, .wwm-row-tag { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.4; font-weight: 500; color: var(--on-ground-muted); margin-bottom: 12px; }
   .wwm h2[tabindex='-1']:focus { outline: none; }
   .wwm h2[tabindex='-1']:focus-visible { outline: 2px solid var(--accent-on-ground); }
 
-  /* ---- overview rows: full width, each one link ----------------------------------------- */
-  /* The first band meets the hero at the shared hero step (64 / 40), not the 112px band step
-     (Brandon, 2026-10-13: the Overview's empty ground before "Ways to work together"). */
-  .wwm-select { padding-top: var(--space-hero-step); padding-bottom: var(--space-band); }
-  /* Overview with JS (no detail showing): the rows' bottom step is the seam, so the shared
-     band adds none (was 112 + 112). Without JS the stacked details sit between and keep it. */
-  .wwm:not(:has(.wwm-detail:not([hidden]))) .wwm-shared { padding-top: 0; }
-  .wwm-rows { list-style: none; margin: 0; padding: 0; }
-  .wwm-rows li { border-top: 1px solid var(--line-on-ground); }
-  .wwm-rows li:last-child { border-bottom: 1px solid var(--line-on-ground); }
-  .wwm-row { display: flex; flex-direction: column; gap: 4px; padding: 24px 0; }
-  .wwm-row .wwm-row-tag { margin-bottom: 4px; }
-  .wwm-row-title { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
-  .wwm-row-name, .wwm-ev-name { text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1.5px; text-underline-offset: 4px; transition: text-decoration-color 0.15s; }
-  .wwm-row:hover .wwm-row-name, .wwm-ev:hover .wwm-ev-name { text-decoration-color: var(--on-ground); }
-  .wwm-row:hover .wwm-arrow, .wwm-ev:hover .wwm-arrow { color: var(--on-ground); }
-
-  /* ---- sticky switcher ------------------------------------------------------------------ */
-  .wwm-switcher { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; padding-top: 14px; padding-bottom: 14px; background: var(--ground); border-bottom: 1px solid var(--line-on-ground); }
-  /* Desktop's switcher is the hero's chip row (round 6); the sticky tabs stay a phone
-     affordance, three tabs only (round 14: no way back to the Overview). Unmeasured, --wwm-switcher-h falls back to 46px in the story CSS. */
-  @media (min-width: 861px) { .wwm-switcher { display: none; } }
-  .wwm-tabs { display: flex; gap: 8px; min-width: 0; }
-  .wwm-tab { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 10px 16px; border-radius: var(--r-pill); border: 1px solid var(--control-line-on-ground); font-size: 15px; color: var(--on-ground-muted); white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
-  .wwm-tab:hover { color: var(--on-ground); }
-  .wwm-tab[aria-pressed='true'] { color: var(--on-ground); border-color: var(--accent-on-ground); }
-
-  /* While a model is selected, the wide-overview poster never shows (round 9, Brandon:
-     "make the refresh and loading states feel very natural and clean") — a deep-linked or
-     refreshed selected page keeps plain ground until the scene fades in already settled
-     on its moon, instead of flashing the overview still first. */
-  .wwm[data-state='selected'] .orbit-hero .stage-poster { display: none; }
-
-  /* ---- a selected model's detail -------------------------------------------------------- */
-  /* The chosen model's intro is the page-wide top section under the hero (Brandon,
-     2026-10-12 round 7: "the detailed paragraph go the length of the page, so not under
-     the CTA columns … the top section and the user need scroll down to learn more"). It is
-     the shared SectionHead band (round 13: "a component like the one we use on the home
-     page"), and on desktop it stays stuck to the top of the screen while the story scrolls
-     beneath — "the category (moon) they select is ever present". Scoped to the enhanced
-     selected state, so the no-JS stacked page keeps plain bands. state.ts publishes the
-     band's measured height as --wwm-intro-h for the story's sticky media and hash jumps. */
-  .wwm-detail-intro { padding-top: var(--space-band-sm); }
-  .wwm-detail-intro .section-eyebrow { display: flex; align-items: center; gap: 8px; }
-  .wwm-detail-intro .section-head { max-width: none; }
-  @media (min-width: 861px) {
-    .wwm[data-state='selected'] .wwm-detail-intro {
-      position: sticky;
-      top: 0;
-      z-index: 6;
-      background: var(--ground);
-      border-bottom: 1px solid var(--line-on-ground);
-      padding-top: 32px;
-      padding-bottom: 28px;
-    }
-    .wwm-evidence { scroll-margin-top: calc(var(--wwm-intro-h, 0px) + 16px); }
+  /* ---- the white sheet (layout O1) -------------------------------------------------------- */
+  /* Shared pieces written for the ground (SectionHead, the muted lead, link-ground) take the
+     sheet's values inside it, so they read dark on white without forking their markup. */
+  .wwm-sheet {
+    --ground: var(--sheet);
+    --ground-raised: #f6f6f3;
+    --on-ground: var(--on-sheet);
+    --on-ground-muted: var(--on-sheet-muted);
+    --on-ground-faint: #6c6f67;
+    --line-on-ground: var(--line-on-sheet);
+    --control-line-on-ground: #b7b9b1;
+    --accent-on-ground: var(--accent);
+    margin-bottom: 0;
   }
-  /* One stage height for both states on desktop (2026-10-13, the enter-transition rework): the
-     box holds the selected state's clamp in the Overview too, so choosing a model never resizes
-     it. The selected rule it came from (round 10: tag, name and summary above the fold beside
-     the moon; round 11: tall windows cap) still sets the value; the 660 cap is the Oct 13 one.
-     A box that changed height while the camera flew re-fitted the renderer on every frame of
-     the 0.85s ride — each re-fit cleared the canvas after it had drawn, so the stage strobed
-     blank through most of the flight at windows under ~980px tall, and the flow below shifted
-     by the height difference. The hero copy keeps its own --stage-h padding, so nothing in the
-     hero moves between states. */
-  @media (min-width: 861px) {
-    .wwm .orbit-hero--large .map-stage { height: clamp(480px, calc(100svh - 320px), 660px); }
-  }
-  /* Browser Back to the Overview (D1): the stage cuts with no flight, and the rows and shared
-     sections fade back in instead of popping. */
+  @media (min-width: 861px) { .sheet.wwm-sheet { padding-top: 56px; } }
+
+  /* ---- selector cards --------------------------------------------------------------------- */
+  .wwm-cards-caption { font-size: 15px; line-height: 1.5; color: var(--on-sheet-muted); margin-bottom: 16px; }
+  .wwm-cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .wwm-cards li { display: flex; min-width: 0; }
+  .wwm-card { flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 22px 24px 24px; border: 1px solid var(--line-on-sheet); border-radius: var(--r-sheet); background: var(--sheet); color: var(--on-sheet); transition: border-color 0.15s, box-shadow 0.15s; }
+  .wwm-card:hover { border-color: #b7b9b1; }
+  /* Pressed: a 2px logo-red edge (1px border plus a 1px inset ring, so nothing moves); never a fill. */
+  .wwm-card[aria-pressed='true'] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .wwm-card:focus-visible { outline: 2px solid var(--on-sheet); outline-offset: 3px; border-radius: var(--r-sheet); }
+  .wwm-card-tag { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.4; font-weight: 500; color: var(--on-sheet-muted); }
+  .wwm-card-name { font-size: 21px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+  .wwm-card-summary { font-size: 15px; line-height: 1.5; color: var(--on-sheet-muted); }
+
+  /* ---- what follows the cards in the sheet ------------------------------------------------ */
+  .wwm-content { margin-top: 40px; border-top: 1px solid var(--line-on-sheet); }
+  .wwm-content > .wwm-shared { padding-top: var(--space-band-sm); padding-bottom: 0; }
+
+  /* Browser Back to the Overview (D1): the overview sections fade back in instead of popping. */
   @media (prefers-reduced-motion: no-preference) {
-    .wwm.wwm-returning .wwm-select:not([hidden]),
     .wwm.wwm-returning [data-wwm-overview]:not([hidden]) { animation: wwm-in 0.35s ease-out; }
   }
-  .wwm-fits { list-style: none; margin: 0; padding: 0; }
-  .wwm-fits li { padding: 16px 0; border-top: 1px solid var(--line-on-ground); color: var(--on-ground-muted); }
-  .wwm-fits li:last-child { border-bottom: 1px solid var(--line-on-ground); }
-  .wwm-work .t-item + p { margin-top: 12px; }
 
-  .wwm-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
-  .wwm-group-label { font-weight: 500; color: var(--on-ground-muted); margin-bottom: 12px; }
-  .wwm-ev-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
-  .wwm-ev { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px; border: 1px solid var(--line-on-ground); border-radius: var(--r-sheet); background: var(--ground-raised); transition: border-color 0.15s; }
-  a.wwm-ev:hover { border-color: var(--control-line-on-ground); }
-  .wwm-ev-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; }
-  .wwm-ev .wwm-ev-name { font-size: 19px; }
-  .wwm-origin { margin: 0; font-size: 13px; padding: 4px 10px; }
-  .wwm-group-link { margin-top: 4px; }
+  /* ---- a selected model's detail: calm sections on the sheet ---------------------------- */
+  /* Readable pattern (designer review, Brandon approved the before and after): the heading in
+     columns 1–4, one reading column (about 630px, 18px, the sheet's ink, not muted), a hairline
+     between sections, nothing above a heading, no motion. */
+  .wwm-detail-intro { padding-top: var(--space-band-sm); padding-bottom: 40px; }
+  .wwm-detail-intro .section-eyebrow { display: flex; align-items: center; gap: 8px; }
+  .wwm-detail-intro .section-head { max-width: none; }
+  .wwm-read { max-width: 630px; font-size: 18px; line-height: 1.6; color: var(--on-sheet); }
+  .wwm-detail-intro .wwm-read { font-size: clamp(18px, 1.4vw, 20px); line-height: 1.5; }
+  .wwm-section { padding-top: 40px; padding-bottom: 40px; border-top: 1px solid var(--line-on-sheet); }
+  .wwm-section-title { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; color: var(--on-sheet); }
+  .wwm-detail > .wwm-evidence { padding-bottom: 0; }
+  .wwm-fits { list-style: none; margin: 0; padding: 0; max-width: 630px; }
+  .wwm-fits li { padding: 12px 0; border-top: 1px solid var(--line-on-sheet); font-size: 18px; line-height: 1.6; color: var(--on-sheet); }
+  .wwm-fits li:first-child { border-top: 0; padding-top: 0; }
+  .wwm-fits li:last-child { padding-bottom: 0; }
+
+  .wwm-ev-lead { margin-bottom: 24px; }
+  .wwm-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; max-width: 630px; }
+  .wwm-group-label { font-size: 15px; font-weight: 600; color: var(--on-sheet); margin-bottom: 8px; }
+  .wwm-ev-list { list-style: none; margin: 0; padding: 0; }
+  .wwm-ev-list li { display: flex; flex-direction: column; gap: 2px; padding: 12px 0; border-top: 1px solid var(--line-on-sheet); }
+  .wwm-ev-name { font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--on-sheet); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; text-decoration-color: var(--line-on-sheet); transition: text-decoration-color 0.15s; align-self: flex-start; }
+  .wwm-ev-name:hover { text-decoration-color: var(--accent); }
+  .wwm-ev-note { font-size: 15px; line-height: 1.5; color: var(--on-sheet); }
+  .wwm-ev-origin { font-size: 14px; line-height: 1.5; color: var(--on-sheet-muted); }
+  .wwm-group-link { padding-top: 12px; border-top: 1px solid var(--line-on-sheet); }
 
   /* ---- closing sheets (ClosingSheet): one seam above them on this page --------------------- */
   .sheet.wwm-close { margin-top: var(--space-band-sm); }
@@ -229,36 +191,30 @@ const lead = 'Bring me into your team full time, work with me on a product outco
   @media (prefers-reduced-motion: no-preference) {
     .wwm[data-state='selected'] .wwm-detail:not([hidden]) { animation: wwm-in 0.28s ease-out; }
     @keyframes wwm-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-    /* Overview → model on the flight's clock (state.ts sets the three times from orbits.ts):
-       the Overview fades out as the system starts to recede, the page swaps, and the model
-       arrives while its mission fades in. */
-    .wwm.wwm-leaving .wwm-select,
-    .wwm.wwm-leaving [data-wwm-overview] { opacity: 0; transition: opacity var(--wwm-out, 200ms) ease-in; pointer-events: none; }
-    .wwm.wwm-arriving .wwm-detail:not([hidden]) { animation: wwm-in var(--wwm-in-dur, 280ms) ease-out var(--wwm-in-delay, 0ms) both; }
   }
 
-  /* Leaving the story: one and a half band steps, so the next band arrives as the media lets go
-     rather than while it still fills the column (the lab ends the story on a 40svh tail). */
-  @media (min-width: 861px) { .wwm-evidence { padding-top: calc(var(--space-band) * 1.5); } }
 
   @media (max-width: 1100px) {
     .wwm-head { grid-column: 1 / span 5; }
     .wwm-body { grid-column: 7 / -1; }
-    .wwm-groups { grid-template-columns: minmax(0, 1fr); }
+    .wwm-groups { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   }
 
-  /* Phones: one column, full-width choices and inline detail; the switcher's tabs scroll sideways. */
+  /* Phones: one column; compact stacked cards (tag and name: with the summary three cards do
+     not fit above the fold at 390x844), and inline detail. */
   @media (max-width: 860px) {
-    .wwm-band { grid-template-columns: minmax(0, 1fr); row-gap: 24px; padding-top: var(--space-band-sm); padding-bottom: 0; }
+    .wwm-band { grid-template-columns: minmax(0, 1fr); row-gap: 16px; padding-top: var(--space-band-sm); padding-bottom: 0; }
     .wwm-head, .wwm-body { grid-column: 1 / -1; }
-    .wwm-select { padding-top: var(--space-hero-step); padding-bottom: var(--space-band-sm); }
-    .wwm-row { padding: 18px 0; }
-    .wwm-band .t-item { font-size: 19px; }
     .wwm-band .t-body { font-size: 16px; }
-    .wwm-detail-intro { padding-top: 32px; }
-    .wwm-switcher { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 8px; padding-top: 10px; padding-bottom: 10px; padding-right: 0; }
-    .wwm-tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; padding: 2px var(--gutter) 4px 2px; scroll-snap-type: x proximity; }
-    .wwm-tabs::-webkit-scrollbar { display: none; }
-    .wwm-tab { scroll-snap-align: start; font-size: 14px; padding: 8px 14px; }
+    .wwm-detail-intro { padding-top: 32px; padding-bottom: 32px; }
+    .wwm-section { padding-top: 32px; padding-bottom: 32px; }
+    .wwm-read, .wwm-fits li { font-size: 17px; }
+    .wwm-section-title { font-size: 20px; }
+    .wwm-cards { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .wwm-card { padding: 14px 16px 16px; gap: 2px; }
+    .wwm-card-name { font-size: 19px; }
+    .wwm-card-summary { display: none; }
+    .wwm-content { margin-top: 32px; }
+    .wwm-content > .wwm-shared { padding-top: 32px; }
   }
 </style>

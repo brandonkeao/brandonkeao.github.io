@@ -1,0 +1,81 @@
+---
+// PostHog analytics, cookieless (website #1, runbook B4).
+// Nothing loads unless PUBLIC_POSTHOG_KEY is set at build time (Vercel env, Production and
+// Preview; never committed). With a key, the SDK is fetched after the page is idle and started
+// with no cookies or storage (cookieless_mode + memory persistence), no autocapture, no session
+// recording, no surveys. Only named events leave the page: $pageview, contact_click, email_copy,
+// outbound_click. The PostHog project must have cookieless mode switched on as well (runbook C3),
+// or it ignores these events.
+---
+
+<script>
+  const key = import.meta.env.PUBLIC_POSTHOG_KEY as string | undefined;
+  const host = (import.meta.env.PUBLIC_POSTHOG_HOST as string | undefined) || 'https://us.i.posthog.com';
+
+  type Props = Record<string, string | number | boolean | undefined>;
+
+  // Production, preview or local, from the host the page is served on, so previews are filterable.
+  function environment(): string {
+    const h = location.hostname;
+    if (h === 'brandonkeao.com' || h === 'www.brandonkeao.com') return 'production';
+    if (h.endsWith('.vercel.app')) return 'preview';
+    return 'local';
+  }
+
+  async function start() {
+    if (!key) return;
+    const { default: posthog } = await import('posthog-js');
+    posthog.init(key, {
+      api_host: host,
+      cookieless_mode: 'always',
+      persistence: 'memory',
+      autocapture: false,
+      capture_pageview: 'history_change',
+      capture_pageleave: false,
+      disable_session_recording: true,
+      disable_surveys: true,
+      respect_dnt: true,
+    });
+    posthog.register({ environment: environment() });
+
+    const capture = (event: string, props: Props) => posthog.capture(event, props);
+
+    // Links: contact intent (mailto or the contact page) and links that leave the site.
+    document.addEventListener(
+      'click',
+      (e) => {
+        const target = e.target as Element | null;
+        const a = target?.closest?.('a[href]') as HTMLAnchorElement | null;
+        if (!a) return;
+        const href = a.getAttribute('href') || '';
+        const label = (a.textContent || '').trim().slice(0, 80);
+        const page = location.pathname;
+        if (href.startsWith('mailto:')) {
+          capture('contact_click', { method: 'email', href, label, page });
+        } else if (href === '/contact/' || href.startsWith('/contact/')) {
+          capture('contact_click', { method: 'contact_page', href, label, page });
+        } else if (/^https?:\/\//i.test(href)) {
+          try {
+            const u = new URL(href);
+            if (u.host !== location.host) capture('outbound_click', { href, host: u.host, label, page });
+          } catch {
+            /* not a URL */
+          }
+        }
+      },
+      true,
+    );
+
+    // Components announce their own events (the contact card's copy button).
+    document.addEventListener('analytics', (e) => {
+      const d = (e as CustomEvent<{ event?: string; props?: Props }>).detail;
+      if (d?.event) capture(d.event, { page: location.pathname, ...(d.props || {}) });
+    });
+  }
+
+  if (key) {
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+    if (w.requestIdleCallback) w.requestIdleCallback(() => { void start(); }, { timeout: 3000 });
+    else setTimeout(() => { void start(); }, 1500);
+  }
+</script>

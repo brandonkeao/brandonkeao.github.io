@@ -26,7 +26,7 @@ import { Structures, buildingMaterial, cityCluster, cityLights, riser, groundSph
  * - `playbooks` — F3 Limb and lights: the site's own planet up close, its limb arcing across the
  *   upper stage; three skylines stand on the limb and the terminator and the night face carries
  *   city lights clustered into lit blocks; the formation (the chevron wedge with the copper craft)
- *   flies its play low across the night face over them, a 7 s pass every 14 s. The planet's crust
+ *   flies its play low across the night face over them, a 7 s pass every 10 s. The planet's crust
  *   is held so the cities stay put, and its own emission is dimmed under the lights.
  *
  * Both are decorative, not relational (D2): the sites' counts and shapes are unequal so nothing
@@ -370,12 +370,13 @@ const limbLights: Build = (s) => {
       n.normalize().multiplyScalar(R + (i === 0 || i === all.length - 1 ? 0.34 : 0.16)),
     ),
   );
-  const formation = wedge(s, 0.1, 0.04, 0.014);
-  const PERIOD = 14,
+  // #67: separated craft remain legible in the short landscape band, including phones.
+  const formation = wedge(s, 0.14, 0.085, 0.022);
+  const PERIOD = 10,
     FLY = 7;
   return {
     t0: 1.2,
-    poster: 4.0,
+    poster: 3.1,
     tick(t) {
       planet.update(t, 0, 0, 0.34, 0.25);
       body.uniforms.uSpin.value = 1.1; // the crust is held: the cities stay put
@@ -396,6 +397,11 @@ export function createCollectionScene(
   hooks: CollectionHooks,
   /** A fixed clock (seconds, or 'poster' for the settled frame) — used to capture posters. */
   freeze?: number | 'poster',
+  /** A reframing for the end band's short, wide landscape (ticket #38): `fovScale` multiplies
+   *  the fitted vertical field of view (below 1 moves in); `shiftY` moves the image in NDC
+   *  without changing perspective (positive raises the world, so its curve runs along the
+   *  frame's lower edge); `shiftX` likewise across (positive moves the world right). */
+  view: { fovScale?: number; shiftX?: number; shiftY?: number } = {},
 ): CollectionHandle {
   // Clear colour calibrated to tone-map onto the page's --ground (see STAGE_GROUND).
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
@@ -581,8 +587,13 @@ export function createCollectionScene(
     camera.aspect = w / h;
     // Keep the study's horizontal extent in narrower boxes (taller desktop stages, phones).
     const k = Math.max(1, DESIGN_ASPECT / camera.aspect) / (camera.aspect < 1.1 ? build.narrowZoom ?? 1 : 1);
-    camera.fov = (2 * Math.atan(Math.tan((baseFov * Math.PI) / 360) * k) * 180) / Math.PI;
+    camera.fov = (2 * Math.atan(Math.tan((baseFov * Math.PI) / 360) * k) * 180) / Math.PI * (view.fovScale ?? 1);
     camera.updateProjectionMatrix();
+    if (view.shiftY || view.shiftX) {
+      camera.projectionMatrix.elements[9] = -(view.shiftY ?? 0);
+      camera.projectionMatrix.elements[8] = -(view.shiftX ?? 0);
+      camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+    }
     if (!running) draw();
   }
   const ro = new ResizeObserver(resize);

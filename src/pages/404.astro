@@ -1,26 +1,21 @@
 ---
+// The real 404 (website #2, runbook B2). Vercel serves dist/404.html for any unmatched path;
+// GitHub Pages does the same. The hero carries no mark, like Manager README, so the page is
+// calm: a title, one line, and the two ways on.
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/orbit/PageHero.astro';
 import Button from '../components/orbit/Button.astro';
 ---
 
-<BaseLayout
-  title="Page not found"
-  description="The page you requested could not be found."
-  noindex
->
-  <section class="page-header not-found" aria-labelledby="not-found-title">
-    <p class="t-small faint-g">404</p>
-    <h1 id="not-found-title" class="t-page-title">Page not found</h1>
-    <p class="t-lead muted-g page-lead">The page you're looking for isn't here. It may have moved, or the address may be incorrect.</p>
-    <nav class="not-found-links" aria-label="Page not found options">
+<BaseLayout title="Page not found" description="That page isn't here. It may have moved, or the address may be off by a character." noindex>
+  <PageHero title="Page not found" lead="That page isn't here. It may have moved, or the address may be off by a character.">
+    <nav class="not-found-links" aria-label="Ways on">
       <Button href="/">Home</Button>
-      <Button href="/contact/" variant="outline">Contact</Button>
+      <Button href="/contact/" variant="outline">Let's talk</Button>
     </nav>
-  </section>
+  </PageHero>
 </BaseLayout>
 
 <style>
-  .not-found { max-width: 760px; }
-  .not-found .t-small { margin-bottom: 12px; }
-  .not-found-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+  .not-found-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 </style>

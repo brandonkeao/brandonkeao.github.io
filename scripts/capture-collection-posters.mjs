@@ -1,4 +1,4 @@
-// Captures stage posters from the live scenes: `npm run build`, serve dist on 127.0.0.1:4217 (or BASE), then `node scripts/capture-collection-posters.mjs [collections|stages|poses|stories|all]` (default collections: {portfolio,playbooks}-{desktop,mobile}.jpg; stages: home-closeup-* and work-*.jpg with page masks and copy hidden; stories: formation/{full-time,fractional,advisory}.webp at 1152×1224, mid-story; poses: work-{full-time,fractional,advisory}-*.jpg, each way's settled moon) (Playwright from the repo or PLAYWRIGHT_FROM).
+// Captures stage posters from the live scenes: `npm run build`, serve dist on 127.0.0.1:4217 (or BASE), then `node scripts/capture-collection-posters.mjs [collections|stages|poses|stories|all]` (default collections: {portfolio,playbooks}-{desktop,mobile}.jpg; stages: home-closeup-* and work-*.jpg with page masks and copy hidden; stories: formation/{full-time,fractional,advisory}.webp at 1152×1224, mid-story; bands [keys]: band/{work,full-time,fractional,advisory,portfolio,playbooks,home}-{desktop,mobile}.webp, the end band's landscape frame (#37, #38); poses: work-{full-time,fractional,advisory}-*.jpg, each way's settled moon) (Playwright from the repo or PLAYWRIGHT_FROM).
 import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -94,5 +94,32 @@ for (const slug of want('stories') ? ['full-time', 'fractional', 'advisory'] : [
   const info = await sharp(png).resize(1152, 1224, { fit: 'cover' }).webp({ quality: 80 }).toFile(`${out}formation/${slug}.webp`);
   console.log(`formation/${slug}.webp`, info.width, info.height, 'box', Math.round(box.width), Math.round(box.height));
   await page.close();
+}
+// End bands (ticket #37): the landscape frame at the end of Work with me — the Overview's
+// general scene and each model's Formation story mid-story (?scene-p=0.5) — captured from the
+// band's own canvas with its CSS masks lifted (the page masks the poster as it masks the canvas).
+// Desktop: the 1296×378 band at 1440, at 1.5x; phones: the 16:9 band at 390, at 2x.
+const bandLift = `.scene-band-host, .scene-band-poster img { -webkit-mask-image: none !important; mask-image: none !important; }`;
+// Portfolio and Playbooks (ticket #38): their built worlds in the same band, at the settled
+// frame (?scene-t=poster).
+// Home (ticket #51): its planet system in the same band.
+const bandUrl = (key) => key === 'home' ? '/' : key === 'work' ? '/services/'
+  : key === 'portfolio' || key === 'playbooks' ? `/${key}/?scene-t=poster`
+  : `/services/?engagement=${key}&scene-p=0.5`;
+for (const key of want('bands') ? (process.argv[3]?.split(',') ?? ['work', 'full-time', 'fractional', 'advisory', 'portfolio', 'playbooks', 'home']) : []) {
+  for (const [name, [width, height], dsf] of [['desktop', sizes.desktop, 1.5], ['mobile', sizes.mobile, 2]]) {
+    const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: dsf });
+    await page.goto(`${base}${bandUrl(key)}`);
+    await page.addStyleTag({ content: bandLift });
+    await page.evaluate(() => { const r = document.querySelector('.scene-band-stage').getBoundingClientRect(); scrollBy(0, r.top + r.height / 2 - innerHeight / 2); });
+    await page.waitForFunction(() => document.querySelector('.scene-band-stage')?.classList.contains('is-ready'), null, { timeout: 60000 });
+    await page.waitForTimeout(3500); // the canvas cross-fade, and the camera eases to the beat
+    const box = await page.locator('.scene-band-host').boundingBox();
+    const png = await page.screenshot({ clip: box });
+    const { default: sharp } = await import('sharp');
+    const info = await sharp(png).webp({ quality: 80 }).toFile(`${out}band/${key}-${name}.webp`);
+    console.log(`band/${key}-${name}.webp`, info.width, info.height, info.size);
+    await page.close();
+  }
 }
 await browser.close();

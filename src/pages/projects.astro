@@ -1,116 +1,15 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Sheet from '../components/orbit/Sheet.astro';
-import TextLink from '../components/orbit/TextLink.astro';
-
-const projects = [
-  {
-    title: 'Jane - AI Chief of Staff',
-    description: 'An AI Agent persona that manages a team of specialized agents. Applying the same techniques we use for non-deterministic humans to non-deterministic AI.',
-    status: 'active' as const,
-    tags: ['Context Engineering', 'Agentic AI', 'Claude Code'],
-    featured: true,
-    details: [
-      'Multi-agent coordination with specialized roles',
-      'Context Maps for structured information architecture',
-      'Session memory and cross-session learning',
-      'Integration with professional workflows'
-    ]
-  },
-  {
-    title: 'Agentic OS',
-    description: 'The operating system layer for managing AI agent teams. How do you coordinate multiple agents across different domains? This is my answer.',
-    status: 'active' as const,
-    tags: ['Framework', 'Agent Orchestration', 'System Design'],
-    details: [
-      'Agent lifecycle management',
-      'Context routing and optimization',
-      'Session state persistence',
-      'Modular architecture'
-    ]
-  },
-  {
-    title: 'Context Maps',
-    description: 'How do you give AI systems the information they need to be genuinely helpful? Context Maps are my structured approach to solving this problem.',
-    status: 'active' as const,
-    tags: ['Methodology', 'Context Engineering'],
-    details: [
-      'Profile-based context structures',
-      'Dynamic context loading',
-      'Cross-reference linking',
-      'Version control integration'
-    ]
-  }
-];
-
-import MotionLine from '../components/orbit/MotionLine.astro';
+// The legacy Projects URL now leads to the approved Portfolio destination (#65).
 ---
-
-<BaseLayout title="Projects" description="Projects and work by Brandon Keao - context engineering, agentic AI systems, and product leadership.">
-  <header class="page-header">
-    <h1 class="t-page-title">Projects</h1>
-    <MotionLine kind="build" />
-    <p class="t-lead muted-g page-lead" style="max-width:720px">I'm rebuilding how I work, from personal workflows to professional systems, into an Agentic Ecosystem.</p>
-  </header>
-
-  <Sheet label="Featured project">
-    <p class="crumb">Projects › <b>Featured</b></p>
-    <div class="row" style="margin-top:20px">
-      <div class="col">
-        <h2 class="t-section">Jane - AI Chief of Staff</h2>
-        <p class="t-lead" style="margin-top:18px">
-          Jane is an AI Agent persona that helps manage a team of specialized agents. I'm applying the same techniques we use for non-deterministic humans to non-deterministic AI: feedback, coaching, delegation, quality controls.
-        </p>
-        <p class="t-body muted-s" style="margin-top:12px">
-          The goal is practical: AI that understands the <em>context</em> of your work, not just the content. Jane is where I'm testing whether context engineering matters more than prompt engineering.
-        </p>
-        <p class="t-body muted-s" style="margin-top:12px">
-          <strong>Built with:</strong> Claude Code, TypeScript, custom context architecture, session persistence, multi-agent coordination.
-        </p>
-      </div>
-      <aside class="col">
-        <h3 class="t-item">Key capabilities</h3>
-        <ul class="divider-list" style="list-style:none;margin:14px 0 0;padding:0">
-          {projects[0].details?.map(detail => <li class="t-body" style="padding:12px 0">{detail}</li>)}
-        </ul>
-      </aside>
-    </div>
-  </Sheet>
-
-  <Sheet label="Active projects">
-    <p class="crumb">Projects › <b>In progress</b></p>
-    <h2 class="t-section" style="margin-top:12px">Active Projects</h2>
-    <div class="divider-list" style="margin-top:24px">
-      {projects.slice(1).map(project => (
-        <article class="way">
-          <div>
-            <p class="meta">Active · {project.tags.join(' · ')}</p>
-            <h3 class="t-item">{project.title}</h3>
-          </div>
-          <div>
-            <p class="t-body muted-s">{project.description}</p>
-            {project.details && (
-              <ul style="list-style:none;margin:14px 0 0;padding:0">
-                {project.details.map(detail => <li class="tag">{detail}</li>)}
-              </ul>
-            )}
-          </div>
-        </article>
-      ))}
-    </div>
-  </Sheet>
-
-  <Sheet label="Building in public">
-    <div class="row">
-      <div class="col">
-        <h2 class="t-section">Building in Public</h2>
-      </div>
-      <div class="col">
-        <p class="t-lead">
-          I share the journey as I go: what's working, what's broken, what I'm learning. The best insights come from building real things, mistakes included.
-        </p>
-        <p style="margin-top:24px"><TextLink href="https://www.linkedin.com/in/brandonkeao/" external>Follow on LinkedIn</TextLink></p>
-      </div>
-    </div>
-  </Sheet>
-</BaseLayout>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portfolio | Brandon Keao</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href="https://brandonkeao.com/portfolio/" />
+    <meta http-equiv="refresh" content="0; url=/portfolio/" />
+  </head>
+  <body><p>This page has moved to <a href="/portfolio/">Portfolio</a>.</p></body>
+</html>

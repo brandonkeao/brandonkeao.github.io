@@ -1,9 +1,5 @@
 ---
-// Portfolio, Direction B "Orbital stage" (brandonkeao.github.io #8, lane C, 2026-10-09).
-// Copy: Brandon OS projects/personal-website/analysis/2026-10-09-hifi-directions/COPY_PACK.md,
-// verbatim and draft under Brandon's review. Ora / Sears and Bitly are at bounded depth: only
-// the pack's lines, plus its "fuller story" line where Role depth would go.
-// Layout choices are AI-made and reversible.
+// Public content staged for review under #65. Existing collection behavior and scenes are preserved.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sheet from '../components/orbit/Sheet.astro';
 import CollectionHero from '../components/orbit/collection/CollectionHero.astro';
@@ -11,135 +7,143 @@ import Collection from '../components/orbit/collection/Collection.astro';
 import CollectionRow from '../components/orbit/collection/CollectionRow.astro';
 import DetailHead from '../components/orbit/collection/DetailHead.astro';
 import DetailBlock from '../components/orbit/collection/DetailBlock.astro';
-import RelevanceList from '../components/orbit/collection/RelevanceList.astro';
-import LibraryNote from '../components/orbit/collection/LibraryNote.astro';
 import Prefooter from '../components/orbit/collection/Prefooter.astro';
 import type { StoryId } from '../components/orbit/collection/origins';
-
-const FT = 'Full time Senior IC Roles';
-const FR = 'Fractional Product Leadership';
-const AD = 'Advisory and Consulting';
-const FULLER = 'The fuller story is being reconstructed and reviewed.';
-
 const stories: { id: StoryId; tab: string; title: string; description: string; relevant: string[] }[] = [
   {
-    id: 'pie',
-    tab: 'Pie Insurance',
-    title: 'Pie Insurance · Carrier platform',
-    description: 'Platform transition from an MGA operating model toward carrier capabilities — policy, billing, and cross-functional coordination.',
-    relevant: [FT, FR],
+    "id": "rebrandly",
+    "tab": "Rebrandly",
+    "title": "Rebrandly · From assessment to product leadership",
+    "description": "A focused review of the customer journey grew into website repositioning and a full-time product leadership role.",
+    "relevant": [
+      "Full time Senior IC Roles",
+      "Fractional Product Leadership",
+      "Advisory and Consulting"
+    ]
   },
   {
-    id: 'ora',
-    tab: 'Ora / Sears',
-    title: 'Ora / Sears · Embedded product leadership',
-    description: "Product lead for Ora's consulting team working inside the Sears organization on Shop Your Way and WinIt.",
-    relevant: [FR, AD],
+    "id": "pairin",
+    "tab": "PAIRIN / My Colorado Journey",
+    "title": "PAIRIN · Public services and a shared platform",
+    "description": "Connecting the needs of residents and state partners to product direction, shared services, and a growing Product and Design team.",
+    "relevant": [
+      "Full time Senior IC Roles",
+      "Fractional Product Leadership"
+    ]
   },
   {
-    id: 'bitly',
-    tab: 'Bitly',
-    title: 'Bitly · Core product and growth',
-    description: 'Core-product redesign and product-led growth work; sequence and scope still being bounded.',
-    relevant: [FT, FR],
+    "id": "pie",
+    "tab": "Pie Insurance",
+    "title": "Pie Insurance · Connecting the insurance business",
+    "description": "Product leadership across acquisition, underwriting, and billing during Pie's transition to its own carrier platform.",
+    "relevant": [
+      "Full time Senior IC Roles",
+      "Fractional Product Leadership"
+    ]
   },
+  {
+    "id": "bitly",
+    "tab": "Bitly",
+    "title": "Bitly · Helping customers find the product’s value",
+    "description": "A core-product redesign supported by customer research, a shared design foundation, and a growing design team.",
+    "relevant": [
+      "Full time Senior IC Roles",
+      "Fractional Product Leadership"
+    ]
+  },
+  {
+    "id": "ora",
+    "tab": "Ora / Sears",
+    "title": "Ora / Sears · Product leadership inside a client team",
+    "description": "Leading Product for Ora's embedded team working with Sears on Shop Your Way and WinIt.",
+    "relevant": [
+      "Fractional Product Leadership",
+      "Advisory and Consulting"
+    ]
+  }
 ];
-const [pie, ora, bitly] = stories;
 ---
-
-<BaseLayout title="Portfolio" description="Product work, in context. A closer look at the problems, decisions, and teams behind the work.">
-  <CollectionHero
-    scene="portfolio"
-    title="Portfolio"
-    lead="Product work, in context."
-    body="A closer look at the problems, decisions, and teams behind the work."
-    note="Three public stories. Each one supports more than one way of working together."
-  />
-
-  <Sheet class="cl-sheet" label="Selected project stories">
-    <Collection param="story" label="Project stories" items={stories.map((s) => ({ id: s.id, label: s.tab }))} restoreLabel="↑ All projects">
+<BaseLayout title="Portfolio" description="Product work, in context. The problems, decisions, and teams behind the work.">
+  <CollectionHero scene="portfolio" title="Portfolio" lead="Product work, in context."
+    body="The problems, decisions, and teams behind the work. These examples span product strategy, customer experience, and the platforms that support them."
+    note="Five examples, from a focused consulting assessment to product and team leadership." />
+  <Sheet class="cl-sheet" label="Selected projects">
+    <Collection param="story" label="Portfolio" items={stories.map((s) => ({ id: s.id, label: s.tab }))} restoreLabel="↑ All projects">
       <Fragment slot="overview">
-        <h2 class="t-section cl-section-title">Selected project stories</h2>
+        <h2 class="t-section cl-section-title">Selected projects</h2>
         <ol class="cl-rows">
-          {stories.map((s, i) => (
-            <CollectionRow
-              id={s.id}
-              index={i + 1}
-              controls={`story-${s.id}`}
-              title={s.title}
-              action="View story →"
-              origin={s.id}
-              description={s.description}
-              relevant={s.relevant}
-            />
-          ))}
+          {stories.map((s, i) => <CollectionRow id={s.id} index={i + 1} controls={`story-${s.id}`} title={s.title} description={s.description} origin={s.id} relevant={s.relevant} />)}
         </ol>
       </Fragment>
-
-      <section class="cl-detail" id="story-pie" data-cl-detail="pie" aria-label={pie.title}>
-        <DetailHead title={pie.title} chips={['Operating model', 'Platform transition', 'Continuity + controls']} origin="pie" />
-        <DetailBlock num="01" label="Context">
-          <p>A working story about the transition from a third-party MGA operating model toward carrier platform capabilities. The current record connects the work to policy, billing, and cross-functional coordination; the exact initiative boundaries are still being reconstructed.</p>
-        </DetailBlock>
-        <DetailBlock num="02" label="Role">
-          <p>The working record places Brandon on roadmap, sequencing, and risk mitigation. Decision rights and team attribution still need confirmation.</p>
-        </DetailBlock>
-        <DetailBlock label="Where this is relevant">
-          <RelevanceList entries={[
-            { model: FT, text: 'Cross-functional product decisions and complex platform scope — the kind of ownership a senior IC role needs.' },
-            { model: FR, text: 'Sequencing and leadership around a defined product outcome.' },
-            { model: `${AD} — conditional`, text: "A bounded operational problem, Brandon's action, and an observable change still need to be established before this story supports the broader consulting path.", conditional: true },
-          ]} />
-        </DetailBlock>
-        <DetailBlock label="Related playbooks">
-          <div class="cl-related">
-            <a class="link-sheet" href="/playbooks/?playbook=rice">RICE with an opportunity backlog →</a>
-            <p>Relevant to this kind of prioritization work. No verified application yet.</p>
-          </div>
-        </DetailBlock>
-      </section>
-
-      <section class="cl-detail" id="story-ora" data-cl-detail="ora" aria-label={ora.title}>
-        <DetailHead title={ora.title} origin="ora" />
-        <DetailBlock num="01" label="Context"><p>{ora.description}</p></DetailBlock>
-        <DetailBlock num="02" label="Role"><p class="muted-s">{FULLER}</p></DetailBlock>
-        <DetailBlock label="Where this is relevant">
-          <RelevanceList entries={[
-            { model: FR, text: 'Working inside a client team.' },
-            { model: AD, text: 'Client-team context and business-to-product translation.' },
-          ]} />
-        </DetailBlock>
-        <DetailBlock label="Related playbooks">
-          <div class="cl-related">
-            <a class="link-sheet" href="/playbooks/?playbook=ost">Opportunity Solution Trees →</a>
-            <p>Framing the product opportunity. No verified application yet.</p>
-          </div>
-        </DetailBlock>
-      </section>
-
-      <section class="cl-detail" id="story-bitly" data-cl-detail="bitly" aria-label={bitly.title}>
-        <DetailHead title={bitly.title} origin="bitly" />
-        <DetailBlock num="01" label="Context"><p>{bitly.description}</p></DetailBlock>
-        <DetailBlock num="02" label="Role"><p class="muted-s">{FULLER}</p></DetailBlock>
-        <DetailBlock label="Where this is relevant">
-          <RelevanceList entries={[
-            { model: FT, text: 'Product ownership — judgment and execution across teams.' },
-            { model: FR, text: 'Coordinating a defined product initiative.' },
-          ]} />
-        </DetailBlock>
-        <DetailBlock label="Related playbooks">
-          <div class="cl-related">
-            <a class="link-sheet" href="/playbooks/?playbook=ost">Opportunity Solution Trees →</a>
-            <p>Exploring customer needs. No verified application yet.</p>
-          </div>
-        </DetailBlock>
-      </section>
+<section class="cl-detail" id="story-rebrandly" data-cl-detail="rebrandly" aria-label="Rebrandly">
+<DetailHead title="Rebrandly" eyebrow="Fractional consultant, then full-time product leadership" origin="rebrandly" lead="From a focused assessment to product leadership" />
+<DetailBlock label="Context and role"><p>My work with Rebrandly began as a fractional consulting engagement focused on how customers found the product, understood its value, and started using it. Rebrandly provides link-management tools, and I came in to help with product-led growth, positioning, and customer segmentation.</p>
+<p>I started with a Product and UX Deep Dive. One question connected much of the assessment: did a customer's reason for arriving at the website carry through signup and into the product? Someone looking for a particular use case should be able to recognize the value and reach a useful first outcome. Looking at those steps together helped connect the website's message to the experience that followed.</p></DetailBlock>
+<DetailBlock label="What I focused on"><ul class="content-points">
+<li><strong>Follow the customer journey.</strong> I organized the assessment around awareness, acquisition, activation, retention, expansion, and advocacy. At each stage, I documented what worked, where the experience created friction, and what I recommended investigating or changing.</li>
+<li><strong>Connect positioning to the product.</strong> The recommendations linked customer segments and use cases to navigation, onboarding, and the discovery of relevant capabilities. I also examined how trial design and product usage could inform a handoff to sales.</li>
+<li><strong>Give the team something to work through.</strong> I produced a written assessment and companion presentation, with qualitative research and funnel analysis proposed to test the recommendations. A shared research practice was part of the proposal, so teams could build a more consistent understanding of customers.</li>
+</ul></DetailBlock>
+<DetailBlock label="How the work developed"><p>The engagement expanded into helping lead the website's repositioning and relaunch. I subsequently joined Rebrandly full time in product leadership. The assessment and the execution that followed were distinct phases, with the working relationship growing as the scope became clearer.</p>
+<p>I enjoy getting far enough into a problem to make a useful recommendation, then working with the team to see what it takes to carry it through.</p></DetailBlock>
+</section>
+<section class="cl-detail" id="story-pairin" data-cl-detail="pairin" aria-label="PAIRIN / My Colorado Journey">
+<DetailHead title="PAIRIN / My Colorado Journey" eyebrow="Director of Product Management; first product hire" origin="pairin" lead="Connecting the resident's journey to the platform behind it" />
+<DetailBlock label="Context and role"><p>Someone exploring a new career may also need education, training, or support services. My Colorado Journey brought those needs into one experience, across organizations with different information and responsibilities.</p>
+<p>At PAIRIN, I led Product and Design as the company expanded from a software subscription business toward a platform sold directly to states. I was the first product hire, working across business strategy, product definition, and design with a small engineering team. The work required us to think about the resident's experience and the shared capabilities that different state partners needed behind it.</p></DetailBlock>
+<DetailBlock label="What I focused on"><ul class="content-points">
+<li><strong>Connect product direction to the new business.</strong> I helped define the product vision and roadmap with department leaders and the executive team as the company pursued state-level opportunities.</li>
+<li><strong>Give different experiences a consistent connection to the platform.</strong> I led product strategy for shared APIs, the interfaces other software uses to access a service, including an enterprise GraphQL implementation. That work supported integrations in Colorado and Virginia and helped separate changes to the front-end experience from changes to core services.</li>
+<li><strong>Build the team's ability to deliver.</strong> I grew the product team from one to four, mentoring team members and introducing more consistent product, design, and roadmap practices.</li>
+</ul></DetailBlock>
+<DetailBlock label="What changed"><p>My contribution was a clearer platform foundation for state-facing integrations and a stronger Product and Design function. This was part of a broader effort involving engineering, PAIRIN colleagues, and state partners.</p>
+<p>The connection between those two responsibilities matters to me. A product direction has to account for what people need from the service, how the underlying systems fit together, and whether the team can keep building on what it delivers.</p></DetailBlock>
+</section>
+<section class="cl-detail" id="story-pie" data-cl-detail="pie" aria-label="Pie Insurance">
+<DetailHead title="Pie Insurance" eyebrow="Group Product Manager" origin="pie" lead="Connecting acquisition, underwriting, and billing" />
+<DetailBlock label="Context and role"><p>Pie provides workers' compensation insurance for small businesses. My scope crossed several parts of the business: the partner experience that brought in insurance submissions, the internal tools underwriters used to assess risk, and the billing platform. I managed and coached Product Managers across that work and stepped into direct product ownership when a team needed coverage.</p>
+<p>Pie was moving from a model that relied on third-party insurance systems toward its own carrier platform. That made product decisions closely connected to finance, compliance, and operations. The work included a custom policy and billing platform, with a roadmap and sequence that had to account for those dependencies.</p></DetailBlock>
+<DetailBlock label="What I focused on"><ul class="content-points">
+<li><strong>Plan the platform transition across teams.</strong> I directed the product roadmap, sequencing, and risk planning for the migration, working with Finance and Compliance on the requirements the new platform needed to support.</li>
+<li><strong>Help underwriters make informed decisions.</strong> The underwriting team's work focused on getting useful, accurate information in front of the people assessing a quote. The product needed to support their judgment about risk and pricing before a policy was issued.</li>
+<li><strong>Create capabilities other teams could build on.</strong> I established shared API access and reusable front-end components supporting underwriting and policy administration, so distributed engineering teams could develop features against a common foundation.</li>
+<li><strong>Make priorities a shared decision.</strong> I worked with cross-functional leaders on roadmap prioritization, including RICE, connecting customer needs, operational constraints, and company goals.</li>
+</ul></DetailBlock>
+<DetailBlock label="Working across the business"><p>The breadth of the role helped me see connections that were harder to spot from within one product area. A change in acquisition could affect underwriting; a policy decision could affect billing and operations. My contribution combined leadership across those areas with direct work alongside the Product Managers and teams responsible for them.</p></DetailBlock>
+</section>
+<section class="cl-detail" id="story-bitly" data-cl-detail="bitly" aria-label="Bitly">
+<DetailHead title="Bitly" eyebrow="Product, Design, and Customer Research leadership" origin="bitly" lead="Helping customers find the product's value" />
+<DetailBlock label="Context and role"><p>I joined Bitly to focus on the core experience of its link-management product. As I learned the product and its customers, I saw barriers to activation, engagement, and the discovery of useful capabilities. The application looked dated, but the stronger reason for a redesign was the difficulty customers had finding and using its value.</p>
+<p>I advocated for a redesign that connected the experience to those product and business goals. As my role expanded into Design and Customer Research leadership, I hired designers, took on research responsibilities, and worked with the Product Managers and engineering teams to carry the work into delivery.</p></DetailBlock>
+<DetailBlock label="What I focused on"><ul class="content-points">
+<li><strong>Make the product easier to understand.</strong> The redesign brought a unified navigation structure and modular design components to the core application. That provided a common foundation for improving usability and how customers discovered relevant capabilities.</li>
+<li><strong>Build the research and design function.</strong> I built and led a team spanning product design, content strategy, and user research, with usability testing and prototyping as part of the work.</li>
+<li><strong>Reduce the time it took to answer a customer question.</strong> I used “time to insight” as a way to think about our research practice: how quickly could someone find an answer about customers, or establish that we did not yet have one? Qualitative research and quantitative analysis both mattered.</li>
+</ul></DetailBlock>
+<DetailBlock label="Carrying the work into delivery"><p>The team began shipping the redesign before I left. My contribution connected the case for change, the design and research capability needed to pursue it, and the first stages of execution.</p>
+<p>That experience reinforced how closely product experience and team capability fit together. Giving designers room to do good work also means helping them get the customer evidence and business context they need to make decisions.</p></DetailBlock>
+</section>
+<section class="cl-detail" id="story-ora" data-cl-detail="ora" aria-label="Ora / Sears">
+<DetailHead title="Ora / Sears" eyebrow="Senior Product Manager at Ora Interactive" origin="ora" lead="Product leadership inside a client team" />
+<DetailBlock label="Context and role"><p>At Ora Interactive, I was the product lead for a consulting team embedded with Sears, working on Shop Your Way and the WinIt app. The role combined responsibility for the client relationship with product work alongside design, engineering, and the wider Sears organization.</p></DetailBlock>
+<DetailBlock label="What the role involved"><ul class="content-points">
+<li><strong>Lead Product within the embedded team.</strong> I worked across product definition, design, development, and delivery for Ora's largest client.</li>
+<li><strong>Connect the team's work to Sears.</strong> The engagement included Shop Your Way loyalty-program integrations and collaboration across the client organization's teams and departments.</li>
+<li><strong>Keep business and technical needs connected.</strong> My responsibility spanned the client relationship and the product work, bringing both into conversations with the delivery team.</li>
+</ul>
+<p>This experience brought together my consulting background and a dedicated product role. I was leading Product for Ora's team within a larger organization, where the relationship with the client and the work of building the product were closely connected.</p></DetailBlock>
+</section>
     </Collection>
-    <p class="t-small muted-s cl-gate">Dates, outcomes, and public permissions for all three stories remain under review.</p>
   </Sheet>
-
-  <LibraryNote title="More context in the library." />
-
-  <Prefooter prompt="Not sure which story matters for your problem?" />
-  <Prefooter when="pie" prompt="Want the fuller story behind this work?" />
+  {/* The end band and its caption are held out of the production release (#87). */}
+  <Prefooter prompt="Is your team working through a similar problem?" />
 </BaseLayout>
+
+<style>
+  .content-points { list-style: disc; padding-left: 1.2em; }
+  .content-points li + li { margin-top: 16px; }
+  .collection-intro { max-width: 66ch; margin-top: 20px; }
+  /* With the end band held out (#87) the closing sheet follows the collection sheet directly; it
+     keeps the ground seam that stacked sheets and Work with me's closing use. */
+  :global([data-cl-when] > .sheet.closing-sheet) { margin-top: var(--space-band-sm); }
+</style>

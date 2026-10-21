@@ -1,4 +1,5 @@
 ---
+import FormationMark from './FormationMark.astro';
 // Red line marks under page titles, brought back from the earlier site at Brandon's
 // request (2026-10-06). Each draws once when it comes into view; it never replays.
 // The final drawing is plain SVG, so reduced motion and no-JS readers see it still.
@@ -12,25 +13,45 @@
 // ground up; the dimension lines stay, soft. Both are 430 × 60 drawings that scale as a whole
 // (never stretched) to the mark's width, so at 351 they are 351 × 49. The faces are opaque mixes
 // of the red on the ground (12, 22, 30%), so overlapping blocks never double their tint.
+//
+// `chain` (Home, ticket #53; Brandon picked study M2 "Chain" from the Oct 14 line studies): eight
+// dominoes on the ground line. The first tips, each tips the next (90 ms apart, 0.28 s each,
+// ease-in), and the last lies flat at 0.91 s. The page hero owns what follows: its full-column
+// rule sets out from the flat domino at 0.92 s with the traveller and the arrowhead. Settled: the
+// dominoes leaning on each other, the last flat. 430 × 60, scaled as a whole like the others.
 interface Props {
-  kind: 'momentum' | 'map' | 'align' | 'blocks' | 'blueprint' | 'books' | 'exchange' | 'connect' | 'converge' | 'build';
+  kind: 'momentum' | 'map' | 'align' | 'principles' | 'blocks' | 'blueprint' | 'chain' | 'books' | 'exchange' | 'formation' | 'connect' | 'converge' | 'build';
   /** align: size the mark to its container (Brandon, 2026-10-06); blocks and blueprint always
    *  take the container's width, scaled as a whole. */
   stretch?: boolean;
+  /** stretched align only: merge the strands this many px past the enclosing header's h1 left
+   *  edge instead of at the middle (the page hero's full-width line, ticket #34). */
+  merge?: number;
+  /** stretched align only: merge the strands at this fraction of the line's width (the page
+   *  hero, #41: the three strands run across the first ~28% of the content column). */
+  mergeAt?: number;
 }
-const { kind, stretch = false } = Astro.props;
+const { kind, stretch = false, merge, mergeAt } = Astro.props;
 // blocks: the twelve blocks' top-left corners (three structures: 3, 6 and 3 blocks), placed in
 // order, 85 ms apart, after the ground (0.12–1.48 s).
 const BLOCKS: [number, number][] = [[16, 42], [44, 42], [30, 28], [100, 42], [128, 42], [156, 42], [114, 28], [142, 28], [128, 14], [214, 42], [242, 42], [242, 28]];
+// principles: the four nodes' positions as shares of the line, and the line's draw time.
+const PRINCIPLES_AT = [0.06, 0.3, 0.54, 0.78];
+const PRINCIPLES_MS = 1600;
 const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
+// chain: the eight dominoes' left edges, 22 apart; each pivots on its base's far corner (x + 6, 56).
+const DOMINOES = Array.from({ length: 8 }, (_, i) => 24 + i * 22);
 ---
 
 {stretch && kind === 'align' ? (
   // One SVG, three continuous paths (Brandon, 2026-10-09: the piecewise span/SVG build read
   // "segmented... I can visually see where the lines are drawn and overlap"). A script sizes the
   // viewBox to the container so curves stay undistorted; without JS the default geometry
-  // stretches mildly. The glow underlay echoes the orbital traces' softness.
-  <div class="motion-line motion-line-align motion-line-stretch" data-motion data-ml-stretch aria-hidden="true">
+  // stretches mildly. The glow underlay echoes the orbital traces' softness. The arrowhead is its
+  // own path, hidden until the centre line arrives (#55: as a subpath of the centre line it was
+  // painted almost at once, in Chromium and WebKit alike, because dashing restarts at every
+  // subpath; Brandon: "should only show up at the end").
+  <div class="motion-line motion-line-align motion-line-stretch" data-motion data-ml-stretch data-ml-merge={merge} data-ml-merge-at={mergeAt} aria-hidden="true">
     <svg width="100%" height="40" viewBox="0 0 720 40" preserveAspectRatio="none" fill="none" focusable="false">
       <defs>
         <filter id="mls-glow-f" x="-10%" y="-200%" width="120%" height="500%">
@@ -44,14 +65,32 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
       </defs>
       <g class="mls-glow" filter="url(#mls-glow-f)">
         <path class="mls-path" data-ml="top" pathLength="1" d="M 1 6 H 296 C 327 6 327 20 360 20" />
-        <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717 M 711 14 l 6 6 -6 6" />
+        <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717" />
         <path class="mls-path" data-ml="bottom" pathLength="1" d="M 1 34 H 296 C 327 34 327 20 360 20" />
       </g>
       <g class="mls-sharp">
         <path class="mls-path mls-soft" data-ml="top" pathLength="1" d="M 1 6 H 296 C 327 6 327 20 360 20" />
-        <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717 M 711 14 l 6 6 -6 6" />
+        <path class="mls-path" data-ml="center" pathLength="1" d="M 1 20 H 717" />
         <path class="mls-path mls-soft" data-ml="bottom" pathLength="1" d="M 1 34 H 296 C 327 34 327 20 360 20" />
+        <path class="mls-arrow" d="M 711 14 l 6 6 -6 6" />
       </g>
+    </svg>
+  </div>
+) : kind === 'principles' ? (
+  // About's mark (ticket #45; Brandon picked option A, 2026-10-14): one line across the content
+  // column, passing four nodes, one for each How I work principle below the hero (Understand, Start,
+  // Own, Improve). Each ring appears and fills as the line reaches it, and the line ends in an
+  // arrow. The script sizes the geometry to the container; the defaults are for a 720-wide box.
+  <div class="motion-line motion-line-stretch motion-line-principles" data-motion data-ml-principles aria-hidden="true">
+    <svg width="100%" height="40" viewBox="0 0 720 40" fill="none" focusable="false">
+      <path class="mlp-line" pathLength="1" d="M 1 20 H 717" />
+      <path class="mlp-arrow" pathLength="1" d="M 711 14 l 6 6 -6 6" />
+      {PRINCIPLES_AT.map((t, i) => (
+        <g class="mlp-node" style={`--ml-delay:${Math.round(t * PRINCIPLES_MS)}ms`} data-at={t}>
+          <circle class="mlp-ring" cx={Math.round(720 * t)} cy="20" r="7" />
+          <circle class="mlp-dot" cx={Math.round(720 * t)} cy="20" r="3.2" />
+        </g>
+      ))}
     </svg>
   </div>
 ) : kind === 'blocks' ? (
@@ -84,6 +123,20 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
       </g>
     </svg>
   </div>
+) : kind === 'formation' ? (
+  <FormationMark />
+) : kind === 'chain' ? (
+  <div class="motion-line motion-line-stretch motion-line-scene motion-line-chain" data-motion aria-hidden="true">
+    <svg width="100%" height="100%" viewBox="0 0 430 60" preserveAspectRatio="xMinYMax meet" fill="none" focusable="false">
+      <path class="mlx-ground" pathLength="1" d="M2 56H428" />
+      {DOMINOES.map((x, i) => (
+        <g class:list={['mlc-dom', i === DOMINOES.length - 1 && 'mlc-last']} style={`--ml-delay:${i * 90}ms; transform-origin:${x + 6}px 56px`}>
+          <rect class="mlx-f3" x={x} y="28" width="6" height="28" rx="0.8" />
+          <path class="ml-soft" d={`M${x + 1.5} 31h3`} />
+        </g>
+      ))}
+    </svg>
+  </div>
 ) : (
 <svg class={`motion-line motion-line-${kind}`} data-motion aria-hidden="true" focusable="false" viewBox="0 0 234 40" width="234" height="40" fill="none">
   {kind === 'momentum' && <>
@@ -112,8 +165,11 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
     <g class="ml-place ml-d4"><rect x="124" y="12" width="28" height="24" rx="1" /><path d="M132 18h12" /></g>
   </>}
   {kind === 'exchange' && <>
-    <path class="ml-draw" pathLength="1" d="M8 12h170m-6-6 6 6-6 6" />
-    <path class="ml-draw ml-d2" pathLength="1" d="M226 28H56m6-6-6 6 6 6" />
+    <path class="ml-draw ml-exchange-in" pathLength="1" d="M8 9h53c16 0 18 11 32 11" />
+    <path class="ml-draw ml-exchange-in ml-d2" pathLength="1" d="M151 31h-39c-14 0-16-11-29-11" />
+    <circle class="ml-agreement" cx="100" cy="20" r="5.5" />
+    <circle class="ml-dot ml-agreement-dot" cx="100" cy="20" r="2" />
+    <path class="ml-draw ml-exit" pathLength="1" d="M106 20H228" />
   </>}
   {kind === 'connect' && <>
     <path class="ml-draw" pathLength="1" d="M12 20h96" />
@@ -154,16 +210,26 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
     const W = Math.max(220, Math.round(root.clientWidth));
     svg.setAttribute('viewBox', `0 0 ${W} 40`);
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    const mx = Math.round(W * 0.5);
+    // A merge offset anchors the strands' meeting point this far past the title's left edge.
+    // A merge fraction places it at that share of the line's own width.
+    const merge = Number(root.dataset.mlMerge);
+    const mergeAt = Number(root.dataset.mlMergeAt);
+    const anchor = merge ? root.closest('header')?.querySelector('h1') : null;
+    const mx = mergeAt
+      ? Math.round(W * mergeAt)
+      : anchor
+        ? Math.round(anchor.getBoundingClientRect().left - root.getBoundingClientRect().left + merge)
+        : Math.round(W * 0.5);
     const cw = Math.min(64, Math.round(mx * 0.4));
     const outer = (y0: number) =>
       `M 1 ${y0} H ${mx - cw} C ${mx - cw + cw * 0.48} ${y0} ${mx - cw * 0.52} 20 ${mx} 20`;
     const d: Record<string, string> = {
       top: outer(6),
       bottom: outer(34),
-      center: `M 1 20 H ${W - 3} M ${W - 9} 14 l 6 6 -6 6`,
+      center: `M 1 20 H ${W - 3}`,
     };
     svg.querySelectorAll<SVGPathElement>('.mls-path').forEach((p) => p.setAttribute('d', d[p.dataset.ml ?? 'center']));
+    svg.querySelector('.mls-arrow')?.setAttribute('d', `M ${W - 9} 14 l 6 6 -6 6`);
     // Equal speed everywhere: each path's duration follows its real length, so the two outer
     // heads reach the merge exactly as the centre head passes it — one gesture, no stages.
     const center = svg.querySelector<SVGPathElement>('.mls-sharp [data-ml="center"]');
@@ -173,14 +239,36 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
     });
   }
 
+  /** About's principles mark, pixel-true for the container width: the line, its arrowhead, and the
+   *  four nodes at their fixed shares of the width. */
+  function buildPrinciples(root: HTMLElement) {
+    const svg = root.querySelector('svg');
+    if (!svg) return;
+    const W = Math.max(220, Math.round(root.clientWidth));
+    svg.setAttribute('viewBox', `0 0 ${W} 40`);
+    svg.querySelector('.mlp-line')?.setAttribute('d', `M 1 20 H ${W - 3}`);
+    svg.querySelector('.mlp-arrow')?.setAttribute('d', `M ${W - 9} 14 l 6 6 -6 6`);
+    svg.querySelectorAll<SVGGElement>('.mlp-node').forEach((g) => {
+      const x = String(Math.round(W * Number(g.dataset.at)));
+      g.querySelectorAll('circle').forEach((c) => c.setAttribute('cx', x));
+    });
+  }
+
   function init() {
     observer?.disconnect();
     resizer?.disconnect();
     const stretches = document.querySelectorAll<HTMLElement>('[data-ml-stretch]');
+    const principles = document.querySelectorAll<HTMLElement>('[data-ml-principles]');
     stretches.forEach(buildStretch);
+    principles.forEach(buildPrinciples);
     if ('ResizeObserver' in window) {
-      resizer = new ResizeObserver((es) => es.forEach((e) => buildStretch(e.target as HTMLElement)));
+      resizer = new ResizeObserver((es) => es.forEach((e) => {
+        const el = e.target as HTMLElement;
+        if (el.hasAttribute('data-ml-principles')) buildPrinciples(el);
+        else buildStretch(el);
+      }));
       stretches.forEach((el) => resizer?.observe(el));
+      principles.forEach((el) => resizer?.observe(el));
     }
     if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
     observer = new IntersectionObserver((entries) => {
@@ -217,6 +305,11 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
   .mls-sharp .mls-soft { opacity: 0.65; stroke: url(#mls-fade-g); }
   .mls-glow { opacity: 0.42; stroke-width: 4; }
   .mls-glow .mls-path[data-ml='top'], .mls-glow .mls-path[data-ml='bottom'] { opacity: 0.6; stroke: url(#mls-fade-g); }
+  /* principles: rings are ground-filled so the line passes behind them; the dots fill each ring. */
+  .mlp-line, .mlp-arrow { stroke-dasharray: 1; stroke-dashoffset: 0; }
+  .mlp-ring { fill: var(--ground); }
+  .mlp-dot { fill: currentColor; stroke: none; }
+  .mlp-node circle { transform-box: fill-box; transform-origin: center; }
   /* blocks and blueprint: 430 × 60 scenes scaled as a whole to the mark's width (351 × 49 on
      phones); faces are opaque mixes of the red on the ground. */
   .motion-line-scene { width: var(--mark-max, 430px); max-width: 100%; height: auto; aspect-ratio: 430 / 60; }
@@ -227,11 +320,17 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
   .mlx-f3 { fill: color-mix(in srgb, currentColor 30%, var(--ground)); }
   .mlx-dash { stroke-dasharray: 3 4; opacity: 0.75; }
   .mlx-dim { stroke-width: 1; opacity: 0.55; }
+  /* chain: each domino pivots on its base corner; settled is leaning (56°), the last one flat (90°). */
+  .mlc-dom { transform-box: view-box; transform: rotate(56deg); }
+  .mlc-last { transform: rotate(90deg); }
   .ml-dot { fill: currentColor; stroke: none; }
   .ml-soft { opacity: 0.65; }
   .ml-track { opacity: 0.25; }
   .ml-traveller { fill: currentColor; stroke: none; opacity: 0; }
   .ml-meet { transform-origin: 117px 20px; }
+  .ml-agreement { fill: var(--ground); transform-box: fill-box; transform-origin: center; }
+  .ml-agreement-dot { transform-box: fill-box; transform-origin: center; }
+  .ml-exit { --ml-delay: 420ms; }
   .ml-d1 { --ml-delay: 100ms; } .ml-d2 { --ml-delay: 200ms; } .ml-d3 { --ml-delay: 300ms; } .ml-d4 { --ml-delay: 400ms; }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -242,6 +341,18 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
        script), so the strands land on the merge as the centre head passes — one gesture. */
     .motion-line[data-motion-armed]:not([data-motion-play]) .mls-path { stroke-dashoffset: 1; }
     .motion-line[data-motion-play] .mls-path { animation: ml-draw var(--mls-dur, 950ms) linear var(--mls-delay, 0ms) both; }
+    /* The stretched mark's arrowhead resolves as the centre line (950 ms) arrives (#55). */
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mls-arrow { opacity: 0; }
+    .motion-line[data-motion-play] .mls-arrow { animation: ml-fade-in 200ms ease-out 770ms both; }
+    /* principles: the line draws at an even speed over 1.6 s, so each ring (timed by its share of
+       the width) pops in just before the head reaches it and its dot fills just after; the
+       arrowhead draws as the head arrives. */
+    .motion-line[data-motion-armed]:not([data-motion-play]) :is(.mlp-line, .mlp-arrow) { stroke-dashoffset: 1; }
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlp-node circle { opacity: 0; }
+    .motion-line[data-motion-play] .mlp-line { animation: ml-draw 1600ms linear both; }
+    .motion-line[data-motion-play] .mlp-arrow { animation: ml-draw 220ms ease-out 1580ms both; }
+    .motion-line[data-motion-play] .mlp-ring { animation: ml-node 320ms cubic-bezier(0.3, 1.4, 0.5, 1) calc(var(--ml-delay, 0ms) - 120ms) both; }
+    .motion-line[data-motion-play] .mlp-dot { animation: ml-node-fill 280ms ease-out calc(var(--ml-delay, 0ms) + 60ms) both; }
     /* blocks: the ground draws (0–0.4 s), then each block drops 14px and settles, 85 ms apart.
        blueprint: the ground and the dashed plan with its dimensions wipe in (0–0.52 s), then the
        solid building is revealed from the ground up (0.56–1.38 s). */
@@ -253,18 +364,30 @@ const PLAN = 'M40 56V34L70 22L100 34V12H136V38H200V56';
     .motion-line[data-motion-play] .mlx-drop { animation: ml-drop 420ms ease-out var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .mlx-plan { animation: ml-wipe-x 520ms linear both; }
     .motion-line[data-motion-play] .mlx-reveal { animation: ml-reveal 820ms cubic-bezier(0.45, 0, 0.3, 1) 560ms both; }
+    /* chain: armed dominoes stand; on play each tips 90 ms after the one before (0–0.91 s). */
+    .motion-line[data-motion-armed]:not([data-motion-play]) .mlc-dom { transform: none; }
+    .motion-line[data-motion-play] .mlc-dom { animation: ml-tip 280ms cubic-bezier(0.55, 0, 1, 0.45) var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-play] .mlc-last { animation-name: ml-flat; }
     .motion-line[data-motion-play] .ml-arrive { animation: ml-arrive 650ms ease-out var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-place { animation: ml-place 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--ml-delay, 0ms) both; }
     .motion-line[data-motion-play] .ml-meet { animation: ml-meet 950ms ease-out both; }
     .motion-line[data-motion-play] .ml-team { animation: ml-align 850ms ease-out var(--ml-delay, 0ms) both; }
+    .motion-line[data-motion-armed]:not([data-motion-play]) :is(.ml-agreement, .ml-agreement-dot) { opacity: 0; transform: scale(0.5); }
+    .motion-line[data-motion-play] .ml-agreement { animation: ml-node 280ms cubic-bezier(0.3, 1.4, 0.5, 1) 360ms both; }
+    .motion-line[data-motion-play] .ml-agreement-dot { animation: ml-node-fill 220ms ease-out 480ms both; }
     .motion-line[data-motion-play] .ml-traveller { animation: ml-travel 1100ms cubic-bezier(0.22, 1, 0.36, 1) both; }
     .motion-line[data-motion-play] .ml-resolve { animation: ml-resolve 1100ms ease-out both; }
   }
 
   @keyframes ml-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes ml-fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes ml-node { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+  @keyframes ml-node-fill { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
   @keyframes ml-drop { 0% { transform: translateY(-14px); opacity: 0; } 25% { opacity: 1; } 70% { transform: translateY(1.5px); } 100% { transform: none; opacity: 1; } }
   @keyframes ml-wipe-x { from { clip-path: inset(-8px 100% -8px -8px); } to { clip-path: inset(-8px -8px -8px -8px); } }
   @keyframes ml-reveal { from { clip-path: inset(100% -8px -8px -8px); } to { clip-path: inset(-8px -8px -8px -8px); } }
+  @keyframes ml-tip { from { transform: rotate(0); } to { transform: rotate(56deg); } }
+  @keyframes ml-flat { from { transform: rotate(0); } to { transform: rotate(90deg); } }
   @keyframes ml-arrive { from { opacity: 0.45; } to { opacity: 1; } }
   @keyframes ml-place { from { transform: translateY(-4px); } to { transform: translateY(0); } }
   @keyframes ml-meet { from { transform: scale(0.6); opacity: 0.45; } to { transform: scale(1); opacity: 1; } }

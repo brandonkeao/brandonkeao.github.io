@@ -18,7 +18,7 @@ export default defineConfig({
     sitemap({
       filter: (page) => {
         const pathname = new URL(page).pathname.replace(/\/$/, '');
-        return pathname !== '/404' && !['/writing', '/consulting'].some((p) => pathname.startsWith(p));
+        return pathname !== '/404' && !['/writing', '/consulting', '/projects'].some((p) => pathname.startsWith(p));
       }
     })
   ],

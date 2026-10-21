@@ -40,10 +40,10 @@ for (const width of [1440, 390]) {
   for (const route of ['portfolio', 'playbooks']) {
     await test(`${route}: selection, Back/Forward, and cross-page return at ${width}px`, { viewport: { width, height: 900 } }, async page => {
       await page.goto(url(`/${route}/`));
-      await page.waitForSelector('.map-stage.is-ready');
+      await page.waitForSelector('[data-collection]');
       const before = await page.evaluate(() => {
         window.__navigationTest.root = document.querySelector('[data-collection]');
-        window.__navigationTest.canvas = document.querySelector('.scene-host canvas');
+        window.__navigationTest.band = document.querySelector('[data-scene-band]');
         return window.__navigationTest.loads;
       });
       await page.locator('[data-cl-select]').first().click();
@@ -59,9 +59,9 @@ for (const width of [1440, 390]) {
       const identity = await page.evaluate(() => ({
         loads: window.__navigationTest.loads,
         root: window.__navigationTest.root === document.querySelector('[data-collection]'),
-        canvas: window.__navigationTest.canvas === document.querySelector('.scene-host canvas'),
+        band: window.__navigationTest.band === document.querySelector('[data-scene-band]'),
       }));
-      assert.deepEqual(identity, { loads: before, root: true, canvas: true });
+      assert.deepEqual(identity, { loads: before, root: true, band: true });
       await page.locator('header a[href="/about/"]').first().evaluate(link => link.click());
       await page.waitForURL(url('/about/'));
       await page.waitForFunction(() => !!document.querySelector('main') && !document.querySelector('[data-collection]'));

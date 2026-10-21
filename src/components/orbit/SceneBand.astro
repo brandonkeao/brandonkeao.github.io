@@ -1,0 +1,362 @@
+---
+// The scene band at the end of a page (ticket #34, designer review Phase 1): the orbital scene
+// that used to fill the Work with me hero, moved to a band above the closing call to action
+// (Brandon, 2026-10-13: the animations "removed from the Header hero and moved to the bottom of
+// the pages"). Decorative and quiet: no controls, no labels.
+//
+// Per-model scenes (ticket #37): given `models`, the band follows the page's selection. The page
+// writes the chosen model into the stage's `data-scene-model` (services: wwm/state.ts and its
+// first-paint script); the band shows that model's own pre-#34 scene — its Formation story
+// (lib/orbit/formation-scene.ts), the one SurfaceStory played beside the copy until #34 — and
+// with no model (the Overview) the general overview system. Brandon, 2026-10-13: selecting a
+// bucket "should change the visualization at the end to be what we had before for those three
+// buckets, not the general one". The Formation story plays on its own once the band is in view
+// (ticket #59; Brandon, 2026-10-15: it "shouldn't be tied to the scroll. It should start playing
+// at the begining when the user gets to the bottom of the screen"): 0 to 1 on a fixed clock,
+// then it holds; leaving the window stops it and the next arrival starts it over.
+//
+// One WebGL context at most: a model change disposes the current scene (which releases its
+// context) before the next is built, and a scene is only built while the band is within 400px of
+// the window, once the browser has a moment. The renderer pauses itself offscreen and in hidden
+// tabs; everything is disposed on page swap. Reduced motion, no WebGL, a failed load or a lost
+// context: the matching poster is the band. The frame never changes size, so a switch cannot
+// shift the layout.
+//
+// Built from OrbitStage's fallback and lazy-load idiom, but its own markup and class names, so
+// OrbitStage's single-stage script never picks it up.
+//
+// Collection scenes (ticket #38): given `scene` (portfolio | playbooks), the band plays that
+// page's built world (lib/orbit/collection-scene.ts: Portfolio's Three approaches, Playbooks'
+// Limb and lights), which left the page's hero for this band.
+import type { OrbitSet, EngagementSlug } from '../../lib/orbit/orbit-data';
+import type { CollectionKind } from '../../lib/orbit/collection-scene';
+
+interface Props { set?: OrbitSet; speed?: number; models?: EngagementSlug[]; scene?: CollectionKind }
+const { set = 'work', speed = 1, models = [], scene } = Astro.props;
+// The poster and scene key for the general (no model) state: the page's collection, or the set.
+const key = scene ?? set;
+---
+
+<div class="scene-band ground-pad" aria-hidden="true">
+  <div class="scene-band-stage" data-scene-band={set} data-scene-collection={scene} data-speed={speed} data-scene-models={models.join(' ') || undefined}>
+    <picture class="scene-band-poster" data-scene-poster="">
+      <source media="(max-width: 860px)" srcset={`/images/orbit/band/${key}-mobile.webp`} />
+      <img src={`/images/orbit/band/${key}-desktop.webp`} alt="" width="1296" height="378" loading="lazy" decoding="async" />
+    </picture>
+    {/* Each model's still (its Formation story mid-story, in the band's landscape frame; captured
+        by scripts/capture-collection-posters.mjs `bands`); hidden until
+        that model is chosen, so a lazy image that is never shown is never fetched. */}
+    {models.map((m) => (
+      <picture class="scene-band-poster" data-scene-poster={m} hidden>
+        <source media="(max-width: 860px)" srcset={`/images/orbit/band/${m}-mobile.webp`} />
+        <img src={`/images/orbit/band/${m}-desktop.webp`} alt="" width="1296" height="378" loading="lazy" decoding="async" />
+      </picture>
+    ))}
+    <div class="scene-band-host"></div>
+  </div>
+</div>
+
+<script>
+  import { useSet, type OrbitSet, type EngagementSlug } from '../../lib/orbit/orbit-data';
+  import type { CollectionKind } from '../../lib/orbit/collection-scene';
+
+  /** The one live scene: what it is, and how to stop it. */
+  interface Live { key: string; dispose(): void; setProgress?(p: number): void }
+
+  let teardown: (() => void) | undefined;
+
+  /** The band's framings (AI-made, reversible; tuned against the 1440, 1280 and 390 captures).
+      Per model since #63 (Brandon, 2026-10-16, on Advisory: "this annimation has the top cut off so
+      we need to re-think the \"zoom\" here"): each story climbs a different height above the moon,
+      so each gets the field of view and the lift that keep its whole story inside the frame,
+      pinned at 0, 0.3, 0.6 and 1 in the study (Brandon OS analysis/2026-10-16-band-framing). */
+  type View = { fovScale: number; shiftY: number };
+  const FORMATION_VIEW: Record<string, Record<'wide' | 'phone', View>> = {
+    'full-time': { wide: { fovScale: 1.0, shiftY: 0.4 }, phone: { fovScale: 1.05, shiftY: 0.3 } },
+    fractional: { wide: { fovScale: 1.1, shiftY: 0.35 }, phone: { fovScale: 1.15, shiftY: 0.28 } },
+    advisory: { wide: { fovScale: 1.15, shiftY: 0.28 }, phone: { fovScale: 1.2, shiftY: 0.2 } },
+  };
+  const FORMATION_DEFAULT: Record<'wide' | 'phone', View> = { wide: { fovScale: 0.8, shiftY: 0.55 }, phone: { fovScale: 0.9, shiftY: 0.4 } };
+  const COLLECTION_VIEW: Record<CollectionKind, Record<'wide' | 'phone', { fovScale: number; shiftX: number; shiftY: number }>> = {
+    portfolio: { wide: { fovScale: 0.85, shiftX: 0, shiftY: -0.2 }, phone: { fovScale: 0.8, shiftX: 0, shiftY: -0.2 } },
+    // #67: show the low flight across the night face as well as the skyline.
+    // The previous close crop framed the horizon but put the entire formation below the band.
+    playbooks: { wide: { fovScale: 1.15, shiftX: 0.22, shiftY: 0.15 }, phone: { fovScale: 1.15, shiftX: 0.22, shiftY: 0.15 } },
+  };
+  const MAP_FRAMING = {
+    wide: { zoom: 2.6, offsetX: 0, offsetY: -0.8, maxPixelRatio: 1.5, moonScale: 0.8 },
+    phone: { zoom: 3.2, offsetX: 0, offsetY: -0.75, maxPixelRatio: 1.5, moonScale: 0.8 },
+  };
+
+  function hasWebGL() {
+    const probe = document.createElement('canvas');
+    const gl = probe.getContext('webgl2') || probe.getContext('webgl');
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    return !!gl;
+  }
+
+  /** Show the poster for `model` ('' = the general one). Mirrors the first-paint script. */
+  function showPoster(stage: HTMLElement, model: string) {
+    const posters = [...stage.querySelectorAll<HTMLElement>('[data-scene-poster]')];
+    const has = posters.some((p) => p.dataset.scenePoster === model);
+    posters.forEach((p) => { p.hidden = p.dataset.scenePoster !== (has ? model : ''); });
+  }
+
+  function init() {
+    teardown?.();
+    teardown = undefined;
+    const queriedStage = document.querySelector<HTMLElement>('[data-scene-band]');
+    if (!queriedStage) return;
+    const stage: HTMLElement = queriedStage;
+    const host = stage.querySelector<HTMLElement>('.scene-band-host')!;
+    const models = (stage.dataset.sceneModels || '').split(' ').filter(Boolean);
+    const modelOf = () => {
+      const m = stage.dataset.sceneModel || '';
+      return models.includes(m) ? m : '';
+    };
+    showPoster(stage, modelOf());
+
+    const watch = new MutationObserver(() => { showPoster(stage, modelOf()); sync(); });
+    watch.observe(stage, { attributes: true, attributeFilter: ['data-scene-model'] });
+
+    // Reduced motion: the posters are the still frames; no renderer, no context.
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let webgl: boolean | undefined;
+    let live: Live | null = null;
+    let building = 0; // the token of the latest build; a newer one, stop() or teardown voids it
+    let inflight: string | null = null; // the scene a build in flight will make
+    let near = false;
+    let disposed = false;
+    let failed = false;
+
+    // Off production, ?scene-p=<0..1> pins the Formation story's progress (poster capture),
+    // ?scene-t freezes a collection scene's clock, and
+    // ?band-fov, ?band-shift, ?band-sx, ?band-zoom, ?band-oy override the framing below (tuning).
+    let pinned: number | undefined;
+    let freeze: number | 'poster' | undefined;
+    const tune: Record<string, number> = {};
+    if (!/(^|\.)brandonkeao\.com$/.test(location.hostname)) {
+      const q = new URLSearchParams(location.search);
+      const v = parseFloat(q.get('scene-p') ?? '');
+      if (!Number.isNaN(v)) pinned = Math.min(Math.max(v, 0), 1);
+      // ?scene-t=<seconds|poster> freezes a collection scene's clock (as OrbitStage did).
+      const ft = q.get('scene-t');
+      if (ft === 'poster') freeze = 'poster';
+      else if (ft && !Number.isNaN(parseFloat(ft))) freeze = parseFloat(ft);
+      for (const k of ['fov', 'shift', 'sx', 'zoom', 'oy']) {
+        const n = parseFloat(q.get(`band-${k}`) ?? '');
+        if (!Number.isNaN(n)) tune[k] = n;
+      }
+    }
+    // The band is a short, wide landscape (Brandon, 2026-10-13: "a shortish and wide view of the
+    // landscape … not the square box"), so each scene is reframed for it rather than shrunk:
+    // the camera moves in and the image shifts so the world's curve runs along the lower edge
+    // as a horizon, with the formation or the moons above it. Phones are less wide (16:9) and keep a little more of the world.
+    const phone = () => matchMedia('(max-width: 860px)').matches;
+    const formationView = (model: string) => {
+      const v = (FORMATION_VIEW[model] ?? FORMATION_DEFAULT)[phone() ? 'phone' : 'wide'];
+      return { fovScale: tune.fov ?? v.fovScale, shiftY: tune.shift ?? v.shiftY };
+    };
+    const collectionView = () => {
+      const c = COLLECTION_VIEW[stage.dataset.sceneCollection as CollectionKind];
+      const v = phone() ? c.phone : c.wide;
+      return { fovScale: tune.fov ?? v.fovScale, shiftX: tune.sx ?? v.shiftX, shiftY: tune.shift ?? v.shiftY };
+    };
+    const mapFraming = () => {
+      const f = phone() ? MAP_FRAMING.phone : MAP_FRAMING.wide;
+      return { ...f, zoom: tune.zoom ?? f.zoom, offsetY: tune.oy ?? f.offsetY };
+    };
+
+    /** The Formation story's own clock (#59): 0 to 1 over STORY_S seconds once the band is in
+        view, then it holds. It runs on wall time between frames (a stall longer than a second
+        does not count), pauses while the tab is hidden, and resumes where it was. `?scene-p` pins
+        it (poster capture). The scene eases the input itself (PROGRESS_EASE_S in
+        formation-scene.ts), so the feed is linear. */
+    const STORY_S = 12;
+    const MAX_STEP_MS = 1000;
+    let inView = false;
+    let playRaf = 0;
+    let played = 0; // ms of story elapsed
+    let lastTick = 0;
+    function stopPlay() { cancelAnimationFrame(playRaf); playRaf = 0; lastTick = 0; }
+    function resumePlay() {
+      stopPlay();
+      if (!live?.setProgress || document.hidden) return;
+      if (pinned !== undefined) { live.setProgress(pinned); return; }
+      const tick = (now: number) => {
+        playRaf = 0;
+        if (!live?.setProgress || disposed) return;
+        if (lastTick) played += Math.min(now - lastTick, MAX_STEP_MS);
+        lastTick = now;
+        const p = Math.min(played / (STORY_S * 1000), 1);
+        live.setProgress(p);
+        stage.dataset.storyProgress = p.toFixed(3);
+        if (p < 1) playRaf = requestAnimationFrame(tick);
+      };
+      playRaf = requestAnimationFrame(tick);
+    }
+    function playFromStart() {
+      played = 0;
+      live?.setProgress?.(pinned ?? 0);
+      resumePlay();
+    }
+
+    function stop() {
+      stopPlay();
+      delete stage.dataset.storyProgress;
+      building++;
+      inflight = null;
+      live?.dispose();
+      live = null;
+      stage.classList.remove('is-ready');
+    }
+
+    const fallBack = () => {
+      failed = true;
+      stage.classList.add('is-fallback');
+      stop();
+    };
+
+    async function build(key: string, token: number) {
+      if (token !== building || disposed) return;
+      const ready = () => { if (token === building && !disposed) stage.classList.add('is-ready'); };
+      try {
+        if (key) {
+          const { createFormation } = await import('../../lib/orbit/formation-scene');
+          if (token !== building || disposed) return;
+          const scene = createFormation(host, key as EngagementSlug, formationView(key));
+          // A context lost under the scene means the poster for good; our own dispose (which
+          // forces the loss to free the context now) unhooks this first.
+          const canvas = host.querySelector('canvas');
+          canvas?.addEventListener('webglcontextlost', fallBack, { once: true });
+          live = {
+            key,
+            dispose: () => { canvas?.removeEventListener('webglcontextlost', fallBack); scene.dispose(); },
+            setProgress: (p) => scene.setProgress(p),
+          };
+          scene.setProgress(pinned ?? 0);
+          // The scene draws on its next frame; let it land before the poster fades out; then the
+          // story starts from the beginning if the band is already in view.
+          requestAnimationFrame(() => requestAnimationFrame(() => { ready(); if (inView) playFromStart(); }));
+        } else if (stage.dataset.sceneCollection) {
+          const { createCollectionScene } = await import('../../lib/orbit/collection-scene');
+          if (token !== building || disposed) return;
+          const handle = createCollectionScene(host, stage.dataset.sceneCollection as CollectionKind, {
+            onReady: ready,
+            onFailure: fallBack,
+          }, freeze, collectionView());
+          live = { key, dispose: () => handle.dispose() };
+        } else {
+          const { createMap } = await import('../../lib/orbit/map-scene');
+          if (token !== building || disposed) return;
+          useSet((stage.dataset.sceneBand as OrbitSet) || 'work');
+          const map = createMap(host, {
+            onCategoryRequest() {},
+            onItem() {},
+            onSettled() {},
+            onVisibility() {},
+            onReady: ready,
+            onFailure: fallBack,
+          }, undefined, Number(stage.dataset.speed) || 1, mapFraming());
+          map.pause(false);
+          map.reduceMotion(false);
+          live = { key, dispose: () => map.dispose() };
+        }
+      } catch {
+        if (token === building) fallBack();
+      } finally {
+        if (token === building) inflight = null;
+      }
+    }
+
+    const idle = (f: () => void) =>
+      'requestIdleCallback' in window ? requestIdleCallback(f, { timeout: 1500 }) : setTimeout(f, 200);
+
+    /** Bring the live scene in line with the selection: dispose a stale one first (so there is
+        never a second context), then build the wanted one if the band is near. */
+    function sync() {
+      if (disposed || reduced || failed) return;
+      const want = modelOf();
+      if ((live && live.key !== want) || (inflight !== null && inflight !== want)) stop();
+      if (live || inflight !== null || !near) return;
+      webgl ??= hasWebGL();
+      if (!webgl) { fallBack(); return; }
+      // Built when the browser has a moment (a first shader compile is not free), never in the
+      // frame of the click that chose the model; that model's poster holds the frame meanwhile.
+      inflight = want;
+      const token = ++building;
+      idle(() => build(want, token));
+    }
+
+    // Lazy: build while the band is still 400px below the window, once the browser has a moment,
+    // so the scene is usually live by the time it scrolls in. The observer stays on: a model
+    // chosen while the band is far away is built the next time it comes near.
+    const nearIO = new IntersectionObserver((entries) => {
+      const was = near;
+      near = entries[entries.length - 1].isIntersecting;
+      if (near && !was) sync();
+    }, { rootMargin: '400px 0px' });
+    nearIO.observe(stage);
+
+    // In view (a fifth of the band showing): the story starts from the beginning. Out of view: it
+    // stops, and the next arrival starts it over (Brandon, 2026-10-15).
+    const viewIO = new IntersectionObserver((entries) => {
+      const was = inView;
+      inView = entries[entries.length - 1].isIntersecting;
+      if (inView && !was) playFromStart();
+      if (!inView) stopPlay();
+    }, { threshold: 0.2 });
+    viewIO.observe(stage);
+    // A hidden tab pauses the story; it resumes where it was when the tab is visible again.
+    const onVisibility = () => { if (document.hidden) stopPlay(); else if (inView) resumePlay(); };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    // Crossing the phone breakpoint changes the framing: rebuild for the new frame.
+    const bp = matchMedia('(max-width: 860px)');
+    const onBreakpoint = () => { if (live || inflight !== null) { stop(); sync(); } };
+    bp.addEventListener('change', onBreakpoint);
+
+    teardown = () => {
+      disposed = true;
+      bp.removeEventListener('change', onBreakpoint);
+      watch.disconnect();
+      nearIO.disconnect();
+      viewIO.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+      stopPlay();
+      stop();
+    };
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => { teardown?.(); teardown = undefined; });
+</script>
+
+<style is:global>
+  .scene-band { padding-top: var(--space-band-sm); }
+  /* A short, wide landscape across the content column (Brandon, 2026-10-13): 1296×378 at 1440. */
+  .scene-band-stage { position: relative; aspect-ratio: 24 / 7; overflow: hidden; isolation: isolate; background: var(--ground); }
+  .scene-band-poster img, .scene-band-host { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .scene-band-poster img { object-fit: cover; transition: opacity 0.4s; }
+  .scene-band-host { z-index: 1; pointer-events: none; }
+  /* The renderer's moon labels and leaders are never shown on a decorative scene. */
+  .scene-band .scene-labels, .scene-band .label-leaders { display: none; }
+  .scene-band-host canvas { display: block; width: 100%; height: 100%; transition: opacity 0.6s ease; }
+  .scene-band-stage:not(.is-ready) .scene-band-host canvas { opacity: 0; }
+  .scene-band-stage.is-ready .scene-band-poster img { opacity: 0; }
+  /* The frame's edges fade into the page ground (a JPEG cannot hold the ground's exact value). */
+  .scene-band-poster img, .scene-band-host {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%), linear-gradient(180deg, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%), linear-gradient(180deg, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+    mask-composite: intersect;
+  }
+  @media (max-width: 860px) {
+    .scene-band { padding-top: 32px; }
+    .scene-band-stage { aspect-ratio: 16 / 9; }
+    .scene-band-poster img, .scene-band-host {
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%), linear-gradient(180deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+      mask-image: linear-gradient(90deg, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%), linear-gradient(180deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+    }
+  }
+</style>

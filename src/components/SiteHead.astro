@@ -1,5 +1,6 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
+import Analytics from './Analytics.astro';
 
 interface Props {
   title: string;
@@ -44,9 +45,9 @@ const resolvedOgImage = ogImage ? new URL(ogImage, Astro.site).toString() : unde
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-<!-- Orbit uses DM Sans only. -->
+<!-- Orbit uses DM Sans only. The one italic (600) is for the Home headline's accent (#53). -->
 <link
-  href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap"
+  href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,600&display=swap"
   rel="stylesheet"
 />
 
@@ -72,18 +73,7 @@ const resolvedOgImage = ogImage ? new URL(ogImage, Astro.site).toString() : unde
 <meta name="generator" content={Astro.generator} />
 
 <!-- View Transitions -->
-<ViewTransitions />
+<ClientRouter />
 
-<!-- Google Analytics: production host only, so previews and local builds stay out of the property. -->
-<script is:inline>
-  if (location.hostname === 'brandonkeao.com') {
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function () { dataLayer.push(arguments); };
-    gtag('js', new Date());
-    gtag('config', 'G-C99HMEFJ4G');
-    var ga = document.createElement('script');
-    ga.async = true;
-    ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-C99HMEFJ4G';
-    document.head.appendChild(ga);
-  }
-</script>
+<!-- Analytics: PostHog, cookieless; nothing loads without PUBLIC_POSTHOG_KEY (website #1). -->
+<Analytics />
