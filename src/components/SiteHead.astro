@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 import Analytics from './Analytics.astro';
 
 interface Props {
@@ -32,6 +32,9 @@ const resolvedOgImage = ogImage ? new URL(ogImage, Astro.site).toString() : unde
   if (!window.__samePagePopHook) {
     window.__samePagePopHook = true;
     addEventListener('popstate', function (e) { var h = window.__samePagePop; if (h && h(e)) e.stopImmediatePropagation(); }, true);
+    // Astro replaces the root attributes during a page swap, while this inline script runs
+    // only on the first visit. Restore the enhancement marker before the next page paints.
+    document.addEventListener('astro:after-swap', function () { document.documentElement.classList.add('js'); });
   }
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -70,7 +73,7 @@ const resolvedOgImage = ogImage ? new URL(ogImage, Astro.site).toString() : unde
 <meta name="generator" content={Astro.generator} />
 
 <!-- View Transitions -->
-<ViewTransitions />
+<ClientRouter />
 
 <!-- Analytics: PostHog, cookieless; nothing loads without PUBLIC_POSTHOG_KEY (website #1). -->
 <Analytics />

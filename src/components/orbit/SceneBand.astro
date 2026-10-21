@@ -105,8 +105,9 @@ const key = scene ?? set;
   function init() {
     teardown?.();
     teardown = undefined;
-    const stage = document.querySelector<HTMLElement>('[data-scene-band]');
-    if (!stage) return;
+    const queriedStage = document.querySelector<HTMLElement>('[data-scene-band]');
+    if (!queriedStage) return;
+    const stage: HTMLElement = queriedStage;
     const host = stage.querySelector<HTMLElement>('.scene-band-host')!;
     const models = (stage.dataset.sceneModels || '').split(' ').filter(Boolean);
     const modelOf = () => {
